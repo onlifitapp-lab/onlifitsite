@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="scroll-smooth h-full" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Messages | Onlifit</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: {
+                    "primary":"#FF5A5F","primary-container":"#FFE8E9","secondary":"#222222",
+                    "secondary-container":"#F5F5F5","tertiary":"#00A699","tertiary-container":"#E0F5F4",
+                    "surface":"#FFFFFF","surface-container-lowest":"#FFFFFF","surface-container-low":"#F7F7F9",
+                    "surface-container":"#EBEBEB","surface-container-high":"#DDDDDD",
+                    "on-surface":"#222222","on-surface-variant":"#717171","on-primary":"#FFFFFF",
+                    "on-secondary":"#FFFFFF","on-tertiary":"#FFFFFF","outline":"#DDDDDD",
+                    "outline-variant":"#EBEBEB","error":"#E54343","error-container":"#FFDEDE",
+                },
+                fontFamily: { "headline":["Poppins","sans-serif"], "body":["Inter","sans-serif"] },
+                borderRadius: {"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+            }},
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .chat-bubble-received { border-top-left-radius: 0.25rem; }
+        .chat-bubble-sent { border-top-right-radius: 0.25rem; }
+    </style>
+</head>
+<body class="bg-surface h-full font-body text-on-surface overflow-hidden">
+
+<div class="flex flex-col h-full">
+    <!-- Nav -->
+    <nav class="shrink-0 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <div class="flex items-center gap-8">
+                <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                    <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                </div>
+            </div>
+            <div id="nav-auth" class="flex items-center gap-4"></div>
+        </div>
+    </nav>
+
+    <!-- Main Content (Two-Pane) -->
+    <main class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar (Contacts) -->
+        <aside class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low">
+            <div class="p-6 border-b border-outline-variant/50">
+                <h2 class="font-headline text-2xl font-black mb-4">Messages</h2>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                    <input type="text" placeholder="Search contacts..." class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                </div>
+            </div>
+            
+            <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
+                <!-- Contacts will be injected here -->
+            </div>
+        </aside>
+
+        <!-- Message View -->
+        <section class="flex-1 flex flex-col relative bg-white">
+            <div id="chat-header" class="px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+                <div class="flex items-center gap-3">
+                    <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">👤</div>
+                    <div>
+                        <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
+                        <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">call</span></button>
+                    <button class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">videocam</span></button>
+                </div>
+            </div>
+
+            <!-- Chat History -->
+            <div id="chat-history" class="flex-1 overflow-y-auto p-8 space-y-6 flex flex-col">
+                <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
+                    <div class="text-7xl mb-6">💬</div>
+                    <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
+                    <p class="text-sm">Choose someone from the list to start chatting.</p>
+                </div>
+                <!-- Messages will be injected here -->
+            </div>
+
+            <!-- Message Input -->
+            <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                <div class="flex gap-3 items-end">
+                    <button class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all flex-shrink-0"><span class="material-symbols-outlined">add</span></button>
+                    <div class="flex-1 relative">
+                        <textarea id="msg-input" placeholder="Type your message..." rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
+                        <button onclick="handleSend()" class="absolute right-3 bottom-2 text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">send</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="auth.js"></script>
+<script>
+    let user = null;
+    let currentContactId = null;
+
+    async function init() {
+        user = await requireAuth();
+        if (user) {
+            await renderAuthNav();
+            await loadContacts();
+            
+            // Handle auto-selection of chat via URL
+            const params = new URLSearchParams(window.location.search);
+            const contactId = params.get('id');
+            if (contactId) {
+                const trainer = await getTrainerById(contactId);
+                if (trainer) {
+                    await selectChat(trainer.id, trainer.name, trainer.avatar);
+                } else {
+                    const contact = await getUserById(contactId);
+                    if (contact) {
+                        await selectChat(contact.id, contact.name, contact.avatar);
+                    }
+                }
+            }
+
+            // Real-time subscription for new messages
+            subscribeToTable('messages', `receiver_id=eq.${user.id}`, (payload) => {
+                if (payload.eventType === 'INSERT') {
+                    const newMessage = payload.new;
+                    if (newMessage.sender_id === currentContactId) {
+                        loadMessages(); // Refresh if active chat
+                    }
+                    loadContacts(); // Refresh list to show last message/timer
+                }
+            });
+        }
+    }
+
+    async function loadContacts() {
+        const list = document.getElementById('contacts-list');
+        const allTrainers = await getTrainers();
+        const bookings = await getBookingsForUser(user.id);
+        
+        // Unique individuals interacted with
+        const contactIds = [...new Set(bookings.map(b => user.role === 'trainer' ? b.client_id : b.trainer_id))];
+        
+        let contacts = [];
+        if (contactIds.length > 0) {
+            for (const id of contactIds) {
+                let person = allTrainers.find(t => t.id === id);
+                if (!person) {
+                    person = await getUserById(id);
+                }
+                if (person) contacts.push(person);
+            }
+        } else {
+            contacts = allTrainers.slice(0, 3);
+        }
+
+        list.innerHTML = contacts.map(c => `
+            <div onclick="selectChat('${c.id}', '${c.name}', '${c.avatar_url}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
+                <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform">
+                    ${c.avatar_url || '👤'}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start mb-0.5">
+                        <h4 class="font-bold text-sm truncate group-hover:text-primary transition-colors">${c.name}</h4>
+                        <span class="text-[9px] uppercase font-bold text-on-surface-variant opacity-40">Recent</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant truncate opacity-70">${c.specialty || (c.role === 'trainer' ? 'Trainer' : 'Client')}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function selectChat(id, name, avatar) {
+        currentContactId = id;
+        document.getElementById('no-chat-state').classList.add('hidden');
+        document.getElementById('chat-header').classList.remove('hidden');
+        document.getElementById('message-input-area').classList.remove('hidden');
+        
+        document.getElementById('active-name').textContent = name;
+        document.getElementById('active-avatar').textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : '👤';
+        
+        await loadContacts(); 
+        await loadMessages();
+    }
+
+    async function loadMessages() {
+        if (!currentContactId) return;
+        const history = document.getElementById('chat-history');
+        const messages = await getMessages(user.id, currentContactId);
+        
+        history.innerHTML = messages.map(m => {
+            const isMe = m.sender_id === user.id;
+            return `
+                <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-[80%]">
+                        <div class="px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white chat-bubble-sent shadow-lg shadow-primary/10' : 'bg-surface-container-low text-on-surface chat-bubble-received border border-outline-variant/30'}">
+                            ${m.text}
+                        </div>
+                        <p class="text-[9px] font-bold text-on-surface-variant opacity-40 mt-1 uppercase tracking-tighter ${isMe ? 'text-right' : 'text-left'}">
+                            ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        history.scrollTop = history.scrollHeight;
+    }
+
+    async function handleSend() {
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        if (!text || !currentContactId) return;
+
+        const sent = await sendMessage(user.id, currentContactId, text);
+        if (sent) {
+            input.value = '';
+            await loadMessages();
+        }
+    }
+
+    // Enter to send
+    document.getElementById('msg-input').onkeydown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    init();
+</script>
+</body>
+</html>

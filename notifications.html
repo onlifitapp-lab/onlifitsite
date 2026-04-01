@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Notifications | Onlifit</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                colors: {
+                    "primary":"#FF5A5F","primary-container":"#FFE8E9","secondary":"#222222",
+                    "secondary-container":"#F5F5F5","tertiary":"#00A699","tertiary-container":"#E0F5F4",
+                    "surface":"#FFFFFF","surface-container-lowest":"#FFFFFF","surface-container-low":"#F7F7F9",
+                    "surface-container":"#EBEBEB","surface-container-high":"#DDDDDD",
+                    "on-surface":"#222222","on-surface-variant":"#717171","on-primary":"#FFFFFF",
+                    "on-secondary":"#FFFFFF","on-tertiary":"#FFFFFF","outline":"#DDDDDD",
+                    "outline-variant":"#EBEBEB","error":"#E54343","error-container":"#FFDEDE",
+                },
+                fontFamily: { "headline":["Poppins","sans-serif"], "body":["Inter","sans-serif"] },
+                borderRadius: {"DEFAULT":"1rem","lg":"2rem","xl":"3rem","full":"9999px"},
+            }},
+        }
+    </script>
+    <style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .shadow-ambient { box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface">
+
+<!-- Nav -->
+<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-8">
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center">
+                <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+            </div>
+        </div>
+        <div id="nav-auth" class="flex items-center gap-4"></div>
+    </div>
+</nav>
+
+<main class="pt-24 pb-24 px-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="font-headline text-3xl font-black">Notifications</h1>
+            <button onclick="markAllAsRead()" class="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Mark all as read</button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 mb-8 overflow-x-auto hide-scrollbar">
+            <button class="px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20">All</button>
+            <button class="px-5 py-2 rounded-full bg-white text-on-surface-variant text-sm font-bold border border-outline-variant/50 hover:bg-surface-container transition-all">Bookings</button>
+            <button class="px-5 py-2 rounded-full bg-white text-on-surface-variant text-sm font-bold border border-outline-variant/50 hover:bg-surface-container transition-all">Messages</button>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notifications-list" class="space-y-3">
+            <!-- Items will be injected here -->
+        </div>
+
+        <div id="empty-state" class="hidden py-20 text-center">
+            <div class="text-6xl mb-4">📭</div>
+            <h3 class="font-headline text-xl font-bold mb-2">All caught up!</h3>
+            <p class="text-on-surface-variant text-sm">No new notifications for you right now.</p>
+        </div>
+    </div>
+</main>
+
+<script src="auth.js"></script>
+<script src="auth.js"></script>
+<script>
+    let user = null;
+
+    async function init() {
+        user = await requireAuth();
+        if (user) {
+            await renderAuthNav();
+            await loadNotifications();
+
+            // Real-time subscription for new notifications
+            subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
+                loadNotifications();
+                renderAuthNav();
+            });
+        }
+    }
+
+    async function loadNotifications() {
+        const list = document.getElementById('notifications-list');
+        const empty = document.getElementById('empty-state');
+        const notifications = await getNotifications(user.id);
+
+        if (notifications.length === 0) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+        list.innerHTML = notifications.map(n => {
+            const icon = n.type === 'booking' ? 'calendar_today' : (n.type === 'message' ? 'chat_bubble' : 'info');
+            const iconBg = n.type === 'booking' ? 'bg-tertiary/10 text-tertiary' : (n.type === 'message' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary');
+            
+            return `
+                <div onclick="markRead('${n.id}')" class="bg-white p-5 rounded-2xl shadow-sm border ${n.read ? 'border-transparent opacity-60' : 'border-primary/20 bg-primary/[0.02]'} flex gap-4 cursor-pointer hover:shadow-md transition-all group">
+                    <div class="w-12 h-12 rounded-xl ${iconBg} flex-shrink-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">${icon}</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold text-on-surface group-hover:text-primary transition-colors">${n.title}</h4>
+                            <span class="text-[10px] font-bold text-on-surface-variant uppercase opacity-50">${new Date(n.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">${n.message}</p>
+                    </div>
+                    ${!n.read ? '<div class="w-2 h-2 bg-primary rounded-full self-center"></div>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function markRead(id) {
+        await markNotificationAsRead(id);
+        await loadNotifications();
+        await renderAuthNav();
+    }
+
+    async function markAllAsRead() {
+        const notifications = await getNotifications(user.id);
+        for (const n of notifications) {
+            if (!n.read) await markNotificationAsRead(n.id);
+        }
+        await loadNotifications();
+        await renderAuthNav();
+    }
+
+    init();
+</script>
+</body>
+</html>

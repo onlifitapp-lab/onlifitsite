@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Onlifit | Find Your Perfect Personal Trainer</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF5A5F",
+                        "primary-container": "#FFE8E9",
+                        "secondary": "#222222",
+                        "secondary-container": "#F5F5F5",
+                        "secondary-fixed-dim": "#D8D8D8",
+                        "tertiary": "#00A699",
+                        "tertiary-container": "#E0F5F4",
+                        "tertiary-fixed-dim": "#80D3CC",
+                        "background": "#FFFFFF",
+                        "surface": "#FFFFFF",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F7F7F9",
+                        "surface-container": "#EBEBEB",
+                        "surface-container-high": "#DDDDDD",
+                        "surface-container-highest": "#B0B0B0",
+                        "surface-variant": "#F7F7F9",
+                        "surface-dim": "#EBEBEB",
+                        "on-surface": "#222222",
+                        "on-surface-variant": "#717171",
+                        "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF",
+                        "on-tertiary": "#FFFFFF",
+                        "outline": "#DDDDDD",
+                        "outline-variant": "#EBEBEB",
+                        "error": "#E54343",
+                        "error-container": "#FFDEDE",
+                    },
+                    fontFamily: {
+                        "headline": ["Poppins", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Glassmorphism effect */
+        .glass-effect {
+            background: rgba(250, 249, 251, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* Smooth shadows following design system */
+        .shadow-ambient-light {
+            box-shadow: 0 40px 60px -15px rgba(255, 90, 95, 0.06);
+        }
+
+        .shadow-ambient-medium {
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+        }
+
+        .shadow-elevated {
+            box-shadow: 0 40px 60px -15px rgba(255, 90, 95, 0.12);
+        }
+
+        /* Ghost Border */
+        .ghost-border {
+            border: 1px solid rgba(226, 190, 188, 0.2);
+        }
+
+        /* New Phase 1 Styles */
+        .testimonial-carousel {
+            scroll-behavior: smooth;
+        }
+
+        .testimonial-card {
+            min-width: 320px;
+            scroll-snap-align: start;
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-count {
+            animation: countUp 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-surface font-body text-on-surface selection:bg-primary-fixed-dim selection:text-on-primary-fixed">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <div class="flex items-center gap-8">
+                <a href="onlifit.html"
+                    class="text-2xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="about.html"
+                        class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                    <a href="pricing.html"
+                        class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                </div>
+            </div>
+            <div id="nav-auth" class="flex items-center gap-4">
+                <a href="login.html"
+                    class="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all">Login</a>
+                <a href="login.html?tab=signup"
+                    class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:bg-primary-container transition-all duration-300">Sign
+                    Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24">
+
+        <!-- Hero Section -->
+        <!-- Hero Section -->
+        <section class="relative px-6 py-12 lg:py-24 overflow-hidden bg-surface">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Left Content -->
+                <div class="relative z-10 text-center lg:text-left">
+                    <div
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-xs font-bold mb-6">
+                        <span class="material-symbols-outlined text-[16px]">stars</span>
+                        India's #1 Personal Training Marketplace
+                    </div>
+                    <h1 class="font-headline text-5xl lg:text-7xl font-black text-on-surface mb-8 leading-[1.1]">
+                        Workout with the <br />
+                        <span class="text-primary italic">best trainers.</span>
+                    </h1>
+                    <p
+                        class="text-on-surface-variant text-lg lg:text-xl mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                        Master your fitness journey with 5,000+ vetted professionals. From weight loss to athletic
+                        performance, we find the perfect coach for your goals.
+                    </p>
+
+                    <!-- Search Bar -->
+                    <div
+                        class="bg-white rounded-2xl shadow-elevated p-2 border border-outline-variant/30 max-w-2xl mx-auto lg:mx-0 flex flex-col md:flex-row gap-2">
+                        <div
+                            class="flex-1 flex items-center gap-3 px-4 py-3 md:border-r border-outline-variant/50 border-outline-variant/30">
+                            <span class="material-symbols-outlined text-primary">fitness_center</span>
+                            <input id="search-query" type="text" placeholder="What do you want to learn?"
+                                class="w-full border-none focus:ring-0 text-on-surface font-semibold placeholder:text-on-surface-variant/50 outline-none p-0" />
+                        </div>
+                        <div class="flex-1 flex items-center gap-3 px-4 py-3">
+                            <span class="material-symbols-outlined text-tertiary">location_on</span>
+                            <input id="search-location" type="text" placeholder="Mumbai, Delhi, or Online"
+                                class="w-full border-none focus:ring-0 text-on-surface font-semibold placeholder:text-on-surface-variant/50 outline-none p-0" />
+                        </div>
+                        <button onclick="performSearch()"
+                            class="bg-secondary text-on-secondary px-8 py-4 rounded-xl font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-secondary/10">
+                            Find a Coach
+                        </button>
+                    </div>
+
+                    <div
+                        class="mt-8 flex items-center gap-8 justify-center lg:justify-start text-sm font-bold text-on-surface-variant flex-wrap">
+                        <span class="flex items-center gap-1"><span
+                                class="material-symbols-outlined text-[18px] text-tertiary font-bold">check_circle</span>
+                            1st Session Free</span>
+                        <span class="flex items-center gap-1"><span
+                                class="material-symbols-outlined text-[18px] text-tertiary font-bold">check_circle</span>
+                            Vetted Coaches</span>
+                        <span class="flex items-center gap-1"><span
+                                class="material-symbols-outlined text-[18px] text-tertiary font-bold">check_circle</span>
+                            No Contracts</span>
+                    </div>
+                </div>
+
+                <!-- Right Visuals -->
+                <div class="relative hidden lg:block">
+                    <div
+                        class="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-2 border-white rotate-2 group hover:rotate-0 transition-transform duration-700 aspect-[4/5]">
+                        <img src="hero.png" alt="Personal Training Session"
+                            class="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent">
+                        </div>
+
+                        <!-- Floating Stats -->
+                        <div
+                            class="absolute bottom-8 left-8 right-8 glass-effect p-6 rounded-2xl border border-white/20 shadow-xl">
+                            <div class="flex items-center gap-4">
+                                <div class="flex -space-x-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full border-2 border-white bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                        M</div>
+                                    <div
+                                        class="w-10 h-10 rounded-full border-2 border-white bg-tertiary text-white flex items-center justify-center text-xs font-bold">
+                                        S</div>
+                                    <div
+                                        class="w-10 h-10 rounded-full border-2 border-white bg-secondary text-white flex items-center justify-center text-xs font-bold">
+                                        R</div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-on-surface-variant uppercase tracking-tight">
+                                        Active Clients</p>
+                                    <p class="text-xl font-black text-primary">12,480+</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decorative elements -->
+                    <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl -z-0"></div>
+                    <div class="absolute -bottom-20 -left-20 w-60 h-60 bg-tertiary/10 rounded-full blur-3xl -z-0"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Proof Stats Bar -->
+        <div class="bg-surface-container-lowest border-y border-outline-variant/30 py-8 px-6">
+            <div class="max-w-7xl mx-auto flex flex-wrap justify-around items-center gap-8 text-center">
+                <div class="animate-count">
+                    <p class="text-3xl font-black text-primary font-headline">10K+</p>
+                    <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant mt-1">Happy Clients
+                    </p>
+                </div>
+                <div class="w-px h-8 bg-outline-variant/50 hidden md:block"></div>
+                <div class="animate-count" style="animation-delay: 0.1s">
+                    <p class="text-3xl font-black text-secondary font-headline">500+</p>
+                    <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant mt-1">Expert Trainers
+                    </p>
+                </div>
+                <div class="w-px h-8 bg-outline-variant/50 hidden md:block"></div>
+                <div class="animate-count" style="animation-delay: 0.2s">
+                    <p class="text-3xl font-black text-tertiary font-headline">4.9/5</p>
+                    <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant mt-1">Avg Rating</p>
+                </div>
+                <div class="w-px h-8 bg-outline-variant/50 hidden md:block"></div>
+                <div class="animate-count" style="animation-delay: 0.3s">
+                    <p class="text-3xl font-black text-on-surface font-headline">50+</p>
+                    <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant mt-1">Major Cities</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trainers Section -->
+        <section class="py-24 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-20">
+                    <h2 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-4">Premium Trainers</h2>
+                    <p class="text-on-surface-variant text-lg">Vetted professionals ready to transform your fitness
+                        goals.</p>
+                </div>
+
+                <div id="trainers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    <!-- Populated by JS -->
+                    <div class="col-span-full py-20 text-center">
+                        <div
+                            class="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4">
+                        </div>
+                        <p class="text-on-surface-variant font-medium">Finding the best trainers for you...</p>
+                    </div>
+                </div>
+
+                <!-- See More Button -->
+                <div class="text-center">
+                    <button
+                        class="px-8 py-4 font-bold text-lg border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-on-primary transition-all duration-300">
+                        Explore 5,000+ Trainers
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="py-24 px-6 overflow-hidden bg-primary/5">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
+                    <div class="max-w-2xl">
+                        <h2 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-4">Success Stories
+                        </h2>
+                        <p class="text-on-surface-variant text-lg">Hear from real clients who achieved their fitness
+                            goals with Onlifit's community of trainers.</p>
+                    </div>
+                    <div class="hidden md:flex gap-2 mt-8 md:mt-0">
+                        <button onclick="scrollTestimonials(-1)"
+                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <span class="material-symbols-outlined">west</span>
+                        </button>
+                        <button onclick="scrollTestimonials(1)"
+                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <span class="material-symbols-outlined">east</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="testimonial-carousel"
+                    class="flex gap-6 overflow-x-auto testimonial-carousel hide-scrollbar snap-x snap-mandatory">
+                    <!-- Testimonials will be injected here by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-24 px-6 bg-surface-container-low" id="how-it-works">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20">
+                    <h2 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Your Transformation
+                        Path</h2>
+                    <p class="text-on-surface-variant text-lg max-w-2xl mx-auto">Three simple steps to connect with
+                        professional expertise and achieve your physical goals.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                    <!-- Step 1 -->
+                    <div class="relative z-10 flex flex-col items-center text-center group">
+                        <div
+                            class="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:rotate-6 transition-transform duration-500">
+                            <span class="material-symbols-outlined text-primary text-4xl">track_changes</span>
+                        </div>
+                        <h3 class="font-headline text-2xl font-bold mb-4">Define Your Goal</h3>
+                        <p class="text-on-surface-variant px-4">Whether it's weight loss, strength, or flexibility, we
+                            tailor the search to your specific needs.</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="relative z-10 flex flex-col items-center text-center group">
+                        <div
+                            class="w-24 h-24 rounded-3xl bg-secondary/10 flex items-center justify-center mb-8 group-hover:-rotate-6 transition-transform duration-500">
+                            <span class="material-symbols-outlined text-secondary text-4xl">handshake</span>
+                        </div>
+                        <h3 class="font-headline text-2xl font-bold mb-4">Instant Matching</h3>
+                        <p class="text-on-surface-variant px-4">Our algorithm suggests the best local or online trainers
+                            based on your schedule and goals.</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="relative z-10 flex flex-col items-center text-center group">
+                        <div
+                            class="w-24 h-24 rounded-3xl bg-tertiary/10 flex items-center justify-center mb-8 group-hover:rotate-6 transition-transform duration-500">
+                            <span class="material-symbols-outlined text-tertiary text-4xl">forum</span>
+                        </div>
+                        <h3 class="font-headline text-2xl font-bold mb-4">Start Training</h3>
+                        <p class="text-on-surface-variant px-4">Connect instantly via our secure messenger to book your
+                            first session and discuss your plan.</p>
+                    </div>
+                    <!-- Connector Line -->
+                    <div
+                        class="hidden md:block absolute top-12 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-primary/20 via-secondary/20 to-tertiary/20 -z-0">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Us Section -->
+        <section class="py-24 px-6 bg-surface">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-20">
+                    <h2 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Why Choose Onlifit
+                    </h2>
+                    <p class="text-on-surface-variant text-lg max-w-2xl mx-auto">A premium platform designed for your
+                        fitness success and safety.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Benefit 1 -->
+                    <div
+                        class="bg-surface-container-low p-8 rounded-2xl hover:translate-y-[-8px] transition-all duration-500 ghost-border group">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-primary text-3xl group-hover:text-white transition-colors">verified_user</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold mb-3">Verified Experts</h3>
+                        <p class="text-on-surface-variant text-sm">Every trainer undergoes a rigorous background and
+                            certification check before joining our platform.</p>
+                    </div>
+                    <!-- Benefit 2 -->
+                    <div
+                        class="bg-surface-container-low p-8 rounded-2xl hover:translate-y-[-8px] transition-all duration-500 ghost-border group">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:bg-secondary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-secondary text-3xl group-hover:text-white transition-colors">calendar_month</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold mb-3">Flexible Plans</h3>
+                        <p class="text-on-surface-variant text-sm">No long-term contracts required. Pay as you go or
+                            choose a monthly plan that fits your current lifestyle.</p>
+                    </div>
+                    <!-- Benefit 3 -->
+                    <div
+                        class="bg-surface-container-low p-8 rounded-2xl hover:translate-y-[-8px] transition-all duration-500 ghost-border group">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-tertiary/10 flex items-center justify-center mb-6 group-hover:bg-tertiary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-tertiary text-3xl group-hover:text-white transition-colors">shield_check</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold mb-3">Safe & Trusted</h3>
+                        <p class="text-on-surface-variant text-sm">Your data and communications are protected by
+                            end-to-end security measures at all levels.</p>
+                    </div>
+                    <!-- Benefit 4 -->
+                    <div
+                        class="bg-surface-container-low p-8 rounded-2xl hover:translate-y-[-8px] transition-all duration-500 ghost-border group">
+                        <div
+                            class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors">
+                            <span
+                                class="material-symbols-outlined text-primary text-3xl group-hover:text-white transition-colors">trending_up</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold mb-3">Guaranteed Results</h3>
+                        <p class="text-on-surface-variant text-sm">Our trainers use data-driven approaches to track and
+                            ensure your fitness transformation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-24 px-6">
+            <div class="max-w-6xl mx-auto bg-on-surface rounded-lg overflow-hidden relative p-12 lg:p-20 shadow-2xl">
+                <div class="relative z-10 lg:w-2/3">
+                    <h2 class="font-headline text-4xl lg:text-6xl font-bold text-white mb-8 leading-tight">
+                        Ready to meet your<br />
+                        <span class="text-primary-container">new favorite trainer?</span>
+                    </h2>
+                    <p class="text-surface-container-highest text-lg mb-10">Join over 10,000 clients achieving their
+                        fitness goals with Onlifit.</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button
+                            class="bg-primary text-on-primary px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-container transition-all">Get
+                            Started Now</button>
+                        <button
+                            class="bg-white/10 backdrop-blur text-white border border-white/20 px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all">Browse
+                            All Trainers</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full bg-on-surface text-white pt-24 pb-12 px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+                <!-- Brand -->
+                <div class="lg:col-span-1">
+                    <div class="text-3xl font-black tracking-tighter text-primary font-headline mb-6">Onlifit</div>
+                    <p class="text-surface-container-highest/60 text-sm mb-8 leading-relaxed">Connecting people with
+                        expert trainers to achieve life-changing physical transformations through personalized coaching
+                        and modern technology.</p>
+                    <div class="flex gap-4">
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors"><span
+                                class="material-symbols-outlined text-base">facebook</span></a>
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors"><span
+                                class="material-symbols-outlined text-base">terminal</span></a>
+                        <a href="#"
+                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors"><span
+                                class="material-symbols-outlined text-base">forum</span></a>
+                    </div>
+                </div>
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="font-headline font-bold text-lg mb-8">Company</h4>
+                    <div class="flex flex-col gap-4 text-sm text-surface-container-highest/60">
+                        <a href="about.html" class="hover:text-primary transition-colors">About Us</a>
+                        <a href="pricing.html" class="hover:text-primary transition-colors">Pricing Plans</a>
+                        <a href="#" class="hover:text-primary transition-colors">Success Stories</a>
+                        <a href="#" class="hover:text-primary transition-colors">Careers</a>
+                    </div>
+                </div>
+                <!-- Support -->
+                <div>
+                    <h4 class="font-headline font-bold text-lg mb-8">Support</h4>
+                    <div class="flex flex-col gap-4 text-sm text-surface-container-highest/60">
+                        <a href="#" class="hover:text-primary transition-colors">Help Center</a>
+                        <a href="#" class="hover:text-primary transition-colors">Terms of Service</a>
+                        <a href="#" class="hover:text-primary transition-colors">Privacy Policy</a>
+                        <a href="#" class="hover:text-primary transition-colors">Contact Us</a>
+                    </div>
+                </div>
+                <!-- Newsletter -->
+                <div>
+                    <h4 class="font-headline font-bold text-lg mb-8">Newsletter</h4>
+                    <p class="text-sm text-surface-container-highest/60 mb-6 font-medium">Join 5,000+ others getting
+                        workout tips and exclusive trainer deals.</p>
+                    <div class="flex gap-2">
+                        <input type="email" placeholder="Your email"
+                            class="bg-white/5 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary flex-1" />
+                        <button class="bg-primary text-white p-3 rounded-xl hover:bg-primary-container transition-all">
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="border-t border-white/10 pt-12 text-center text-[10px] uppercase tracking-widest text-surface-container-highest/40 font-bold">
+                © 2024 Onlifit. All rights reserved. Built with love for fitness enthusiasts.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        renderAuthNav();
+
+        // Testimonials Carousel Logic
+        function renderTestimonials() {
+            const testimonials = getTopTestimonials();
+            const carousel = document.getElementById('testimonial-carousel');
+            if (!carousel) return;
+
+            carousel.innerHTML = testimonials.map(t => `
+            <div class="testimonial-card flex-none snap-start bg-white p-8 rounded-2xl shadow-ambient-medium border border-outline-variant/20 max-w-sm mr-6">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center text-3xl shadow-sm">
+                        ${t.avatar}
+                    </div>
+                    <div>
+                        <h4 class="font-headline font-bold text-on-surface text-base">${t.name}</h4>
+                        <p class="text-xs text-on-surface-variant font-medium">${t.role} • ${t.goal}</p>
+                    </div>
+                </div>
+                <div class="flex gap-0.5 mb-4 text-tertiary">
+                    ${Array(t.rating).fill('<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: \'FILL\' 1;">star</span>').join('')}
+                </div>
+                <p class="text-sm text-on-surface-variant leading-relaxed italic">"${t.testimonial}"</p>
+                <div class="mt-6 flex items-center gap-2">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Trained with</p>
+                    <span class="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold">${t.trainerName}</span>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        function scrollTestimonials(direction) {
+            const carousel = document.getElementById('testimonial-carousel');
+            const cardWidth = carousel.querySelector('.testimonial-card').offsetWidth + 24;
+            carousel.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize Page Content
+        window.onload = async function () {
+            await renderAuthNav();
+            renderTestimonials();
+            await renderDynamicTrainers();
+        };
+
+        async function renderDynamicTrainers(query = '', location = '') {
+            const container = document.getElementById('trainers-container');
+            if (!container) return;
+
+            let trainers = [];
+            if (query || location) {
+                trainers = await searchTrainers(query, location);
+            } else {
+                trainers = await getTrainers();
+            }
+
+            if (trainers.length === 0) {
+                container.innerHTML = `
+                <div class="col-span-full py-20 text-center">
+                    <span class="material-symbols-outlined text-6xl text-on-surface-variant/20 mb-4">search_off</span>
+                    <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No trainers found</h3>
+                    <p class="text-on-surface-variant">Try adjusting your search criteria.</p>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = trainers.map(t => `
+            <div class="flex-none snap-start group animate-count">
+                <div class="bg-surface-container-lowest rounded-lg p-3 shadow-ambient-medium hover:shadow-elevated transition-all duration-500 ghost-border">
+                    <div class="relative h-96 rounded-lg overflow-hidden mb-4 bg-gradient-to-br from-primary/10 to-primary-container/10 flex items-center justify-center">
+                        <div class="text-7xl">${t.avatar_url || '🏋️'}</div>
+                        <div class="absolute top-4 left-4 flex gap-2">
+                            <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Verified
+                            </span>
+                        </div>
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg ghost-border">
+                            <div class="flex items-center justify-between">
+                                <span class="text-white font-headline font-bold text-xl">${t.name}</span>
+                                <div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">
+                                    ${t.rating || '5.0'} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                        <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">location_on</span>
+                            ${t.location || 'Online'}
+                        </p>
+                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">${t.specialty || 'Personal Trainer'}</h3>
+                        <p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${t.bio || 'Professional fitness coach dedicated to your transformation.'}</p>
+                        <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar">
+                            ${(t.tags || ['Fitness', 'Health']).map(tag => `<span class="text-[10px] uppercase tracking-widest font-bold px-2 py-1 bg-surface-container-high text-on-surface-variant rounded whitespace-nowrap">${tag}</span>`).join('')}
+                        </div>
+                        <div class="mb-4">
+                            <span class="text-primary font-bold text-xl">${formatPrice(t.plans?.hourly?.price || 2000)}</span>
+                            <span class="text-on-surface-variant text-sm">/hour</span>
+                        </div>
+                        <button onclick="window.location.href='trainer-profile.html?id=${t.id}'" class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
+                            Get Allocated
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('search-query').value;
+            const location = document.getElementById('search-location').value;
+
+            // Scroll to trainers section
+            document.getElementById('trainers-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            await renderDynamicTrainers(query, location);
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(price);
+        }
+    </script>
+
+</body>
+
+</html>

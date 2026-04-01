@@ -1,0 +1,52 @@
+Onlifit Features & Routing Tracker
+===================================
+1. onlifit.html (Home Page)
+   - Updated Theme to custom Superprof Palette (Coral/Pink #FF5A5F).
+   - "Get Allocated" buttons redirect to trainer profile pages.
+
+[We will log all future added features and pages below this line]
+
+2. trainer.html (Allocation Result)
+   - Created based on Stitch template "Superprof Inspired Allocation Result".
+   - Styled with Onlifit unified palette.
+   - Wired 'Go to My Bookings' link to bookings.html.
+   
+3. bookings.html (Trainer Dashboard)
+   - Created based on Stitch template "Superprof Inspired Trainer Dashboard".
+   - Styled with Onlifit unified palette and replaced indigo/rose elements with Primary coral theme.
+   - Updated copy to focus on Bookings instead of Allocations.
+
+4. onlifit.html (Home Page Updates)
+   - Wired the "Get Allocated" buttons to redirect users to `trainer.html` to complete the user flow.
+
+5. client-dashboard.html (Client Dashboard)
+   - Built full client dashboard with sidebar navigation (Dashboard, My Bookings, Find Trainers, Saved, Settings).
+   - Stats row: Upcoming sessions, Completed sessions, My Trainers count, Total Invested.
+   - Upcoming bookings list with filter tabs (All / Confirmed / Pending) and cancel action.
+   - Next Session hero card with trainer info and quick actions.
+   - Session Progress ring (monthly goal tracker).
+   - My Trainers sidebar widget with profile links.
+   - Past Sessions collapsible section.
+   - Motivational quotes rotation.
+   - Mobile-responsive sidebar with hamburger toggle.
+   - Auth-gated: redirects to login if not logged in as client.
+   - Animated card entrances and micro-interactions.
+
+6. onlifit.html (Navigation Wiring)
+   - Login/Signup buttons now link to login.html.
+   - "Get Allocated" buttons now go to individual trainer-profile.html?id=tN pages.
+
+7. Messaging & Notifications (Phase 3) [COMPLETED]
+   - Created messages.html: Two-pane real-time-ish chat interface.
+   - Created notifications.html: Multi-category notification center (Bookings, Messages).
+   - Unified Navigation: Added dynamic notification bell and chat icons with unread counts.
+   - Deep Linking: Support for messages.html?id=X to auto-open specific chats.
+   - Booking Alerts: Automated trainer notifications when a client books a session.
+   - Profile Integration: Added 'Message' button to trainer profiles.
+
+8. Advanced User Flow & Onboarding (Phase 4) [COMPLETED]
+   - Mobile Number Support: Added `phone` to auth.js and signup form.
+   - Client Onboarding: Created onboarding.html with Goal, Age, and Gender fields.
+   - Trainer Dashboard Integration: Dynamic 'New Allocation' cards in bookings.html showing detailed client data.
+   - Skippable Onboarding: Allows users to finish profile later.
+   - Marketing Readiness: Client demographics (Goal, Age, Gender) now persisted in `onlifit_users`.

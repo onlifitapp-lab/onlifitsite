@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trainer Allocated | Luminous Mentor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-container": "#c38900",
+              "on-primary-container": "#61000e",
+              "error-container": "#ffdad6",
+              "error": "#ba1a1a",
+              "background": "#faf9fb",
+              "inverse-surface": "#2f3032",
+              "primary": "#b52330",
+              "primary-fixed-dim": "#ffb3b0",
+              "on-tertiary-container": "#3e2900",
+              "on-tertiary": "#ffffff",
+              "secondary-container": "#645efb",
+              "on-tertiary-fixed": "#281900",
+              "primary-fixed": "#ffdad8",
+              "inverse-on-surface": "#f1f0f2",
+              "surface-container-high": "#e8e8ea",
+              "surface-container-highest": "#e3e2e4",
+              "outline-variant": "#e2bebc",
+              "inverse-primary": "#ffb3b0",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#fffbff",
+              "surface-variant": "#e3e2e4",
+              "tertiary-fixed-dim": "#ffba35",
+              "on-error-container": "#93000a",
+              "secondary-fixed-dim": "#c3c0ff",
+              "secondary": "#4b41e1",
+              "surface": "#faf9fb",
+              "on-surface": "#1a1c1d",
+              "on-tertiary-fixed-variant": "#5f4100",
+              "surface-bright": "#faf9fb",
+              "tertiary-fixed": "#ffdeac",
+              "tertiary": "#7e5700",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed": "#0f0069",
+              "on-background": "#1a1c1d",
+              "on-primary": "#ffffff",
+              "surface-tint": "#b52330",
+              "on-primary-fixed": "#410007",
+              "surface-container": "#eeedf0",
+              "on-primary-fixed-variant": "#92001b",
+              "on-secondary-fixed-variant": "#3323cc",
+              "outline": "#8e706f",
+              "on-error": "#ffffff",
+              "secondary-fixed": "#e2dfff",
+              "primary-container": "#ff5a5f",
+              "surface-container-low": "#f4f3f5",
+              "on-surface-variant": "#5a403f",
+              "surface-dim": "#dadadc"
+            },
+            fontFamily: {
+              "headline": ["Lexend"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-effect {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+<!-- Top Navigation Shell Suppressed as per Task (Success/Confirmation splash screen) -->
+<main class="min-h-screen flex items-center justify-center px-6 py-12 md:py-24">
+<div class="max-w-xl w-full flex flex-col items-center text-center">
+<!-- Success Icon & Message Cluster -->
+<div class="mb-12">
+<div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6 shadow-[0_20px_40px_-10px_rgba(181,35,48,0.2)]">
+<span class="material-symbols-outlined text-primary text-5xl font-bold" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h1 class="font-headline text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">Trainer Allocated!</h1>
+<p class="text-on-surface-variant font-medium text-lg italic">We found the perfect mentor for your journey.</p>
+</div>
+<!-- Featured Trainer Card (The Hero Component) -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-8 shadow-[0_40px_60px_-15px_rgba(75,65,225,0.06)] relative overflow-hidden group">
+<!-- Background Accent Decor -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-12 -left-12 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="relative flex flex-col md:flex-row items-center md:items-start gap-8">
+<!-- Avatar Cluster -->
+<div class="relative">
+<div class="w-32 h-32 rounded-lg overflow-hidden ring-4 ring-surface-container-low shadow-xl">
+<img alt="Rajesh Kumar" class="w-full h-full object-cover" data-alt="Professional portrait of a middle-aged South Asian male trainer with a warm, confident smile, clean studio background with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzfiu5Kg2T50c6-q3nr39K3aSLCk3rgQmgV5pPEuEWWvsVQn659tLPxQZQE7YbgPlYmwo6on1eMAsJP_zhdMuNxDwGULk_5fKlV5ErIpTKoFTrm3LVyp4tsleUuLiSlBfuEvaw1lHvAsAbuzE-gOSmcex1tRb0f6V8ej52WL1ADq8-wMaTJI0SD448NXe27gHW3venZ3yePvWCH5lI9oc7JYqJaWnSwZMHEMK5aGF1pVhxflZjtay4Cf58E1PP9tMc7H0Z85hHZYe-"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
+<span class="material-symbols-outlined text-sm" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+                            VERIFIED
+                        </div>
+</div>
+<!-- Trainer Details -->
+<div class="flex-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+<h2 class="font-headline text-2xl font-bold text-on-surface">Rajesh Kumar</h2>
+<div class="flex items-center justify-center md:justify-start gap-1 text-tertiary font-bold">
+<span class="material-symbols-outlined text-xl" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-lg">4.9</span>
+<span class="text-on-surface-variant text-sm font-normal">(128 reviews)</span>
+</div>
+</div>
+<div class="flex items-center justify-center md:justify-start gap-2 text-on-surface-variant text-sm mb-4">
+<span class="material-symbols-outlined text-base" data-icon="location_on">location_on</span>
+<span>Mumbai, India</span>
+<span class="mx-1">•</span>
+<span class="font-medium text-secondary">Advanced Level</span>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
+                            Expert in strategic business leadership and communication. Rajesh has helped over 500+ professionals achieve their career breakthroughs through personalized luminous mentoring sessions.
+                        </p>
+<!-- Highlights -->
+<div class="flex flex-wrap justify-center md:justify-start gap-3">
+<span class="px-4 py-1.5 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Business</span>
+<span class="px-4 py-1.5 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Leadership</span>
+<span class="px-4 py-1.5 bg-surface-container-high rounded-full text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Public Speaking</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interaction Section (Conversion Focused) -->
+<div class="mt-12 w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold rounded-DEFAULT shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+                    Chat on Platform
+                </button>
+<button class="flex items-center justify-center gap-3 py-4 px-6 bg-white border border-outline-variant/30 text-on-surface font-headline font-bold rounded-DEFAULT shadow-sm hover:bg-surface-container-low active:scale-95 transition-all">
+<span class="material-symbols-outlined text-green-600" data-icon="forum">forum</span>
+                    Chat on WhatsApp
+                </button>
+</div>
+<!-- Helpful Note -->
+<div class="mt-8 flex items-center gap-3 px-6 py-4 bg-secondary-fixed/30 rounded-lg max-w-sm mx-auto">
+<span class="material-symbols-outlined text-secondary" data-icon="schedule">schedule</span>
+<p class="text-on-secondary-fixed-variant text-sm font-medium">
+                    Trainer will respond within 12 hours.
+                </p>
+</div>
+<!-- Footer-ish Meta Link -->
+<div class="mt-16">
+<a class="text-on-surface-variant text-sm font-medium hover:text-primary transition-colors flex items-center justify-center gap-1 group" href="#">
+                    View Allocation Details 
+                    <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</main>
+<!-- Footer Cluster from JSON -->
+<footer class="bg-surface-container-low w-full py-12 px-8">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-12">
+<div class="text-on-surface-variant text-[10px] uppercase tracking-widest mb-6 md:mb-0">
+                © 2024 Luminous Mentor. All rights reserved.
+            </div>
+<nav class="flex flex-wrap justify-center gap-8">
+<a class="font-body text-xs uppercase tracking-widest text-slate-400 hover:text-rose-500 underline underline-offset-4 transition-all opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-body text-xs uppercase tracking-widest text-slate-400 hover:text-rose-500 underline underline-offset-4 transition-all opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-body text-xs uppercase tracking-widest text-slate-400 hover:text-rose-500 underline underline-offset-4 transition-all opacity-80 hover:opacity-100" href="#">Contact Support</a>
+<a class="font-body text-xs uppercase tracking-widest text-slate-400 hover:text-rose-500 underline underline-offset-4 transition-all opacity-80 hover:opacity-100" href="#">Careers</a>
+</nav>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Trainer Profile | Onlifit</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF5A5F", "primary-container": "#FFE8E9", "secondary": "#222222",
+                        "secondary-container": "#F5F5F5", "tertiary": "#00A699", "tertiary-container": "#E0F5F4",
+                        "surface": "#FFFFFF", "surface-container-lowest": "#FFFFFF", "surface-container-low": "#F7F7F9",
+                        "surface-container": "#EBEBEB", "surface-container-high": "#DDDDDD",
+                        "on-surface": "#222222", "on-surface-variant": "#717171", "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF", "on-tertiary": "#FFFFFF", "outline": "#DDDDDD",
+                        "outline-variant": "#EBEBEB", "error": "#E54343", "error-container": "#FFDEDE",
+                    },
+                    fontFamily: { "headline": ["Poppins", "sans-serif"], "body": ["Inter", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                }
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .shadow-ambient {
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-surface-container-low font-body text-on-surface">
+
+    <!-- Nav -->
+    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <div id="nav-auth" class="flex items-center gap-4"></div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-16 max-w-5xl mx-auto px-6">
+        <!-- Back -->
+        <a href="onlifit.html"
+            class="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary transition-all mb-8">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span> Back to trainers
+        </a>
+
+        <div id="profile-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Trainer Info -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Header Card -->
+                <div id="trainer-header"
+                    class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- About -->
+                <div id="trainer-about"
+                    class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Reviews -->
+                <div id="trainer-reviews"
+                    class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Right Column: Plans & Booking -->
+            <div class="space-y-6">
+                <div id="trainer-plans"
+                    class="bg-surface rounded-2xl p-6 shadow-ambient border border-outline-variant/20 sticky top-28">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <button onclick="closeBookingModal()"
+                    class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <h3 class="font-headline text-xl font-bold mb-1">Book Session</h3>
+                <p id="modal-trainer-name" class="text-on-surface-variant text-sm mb-6"></p>
+
+                <div id="modal-plan-info" class="bg-primary-container/30 rounded-xl p-4 mb-6"></div>
+
+                <form id="booking-form" onsubmit="handleBooking(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Preferred Date</label>
+                        <input id="booking-date" type="date" required
+                            class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1.5">Preferred Time</label>
+                        <select id="booking-time" required
+                            class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm">
+                            <option value="7:00 AM">7:00 AM</option>
+                            <option value="8:00 AM">8:00 AM</option>
+                            <option value="9:00 AM">9:00 AM</option>
+                            <option value="10:00 AM" selected>10:00 AM</option>
+                            <option value="11:00 AM">11:00 AM</option>
+                            <option value="4:00 PM">4:00 PM</option>
+                            <option value="5:00 PM">5:00 PM</option>
+                            <option value="6:00 PM">6:00 PM</option>
+                            <option value="7:00 PM">7:00 PM</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2 border-t border-outline-variant/20">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-on-surface-variant">Total</span>
+                            <span id="modal-price" class="text-2xl font-black text-primary font-headline"></span>
+                        </div>
+                        <button type="submit"
+                            class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">payment</span> Pay with Razorpay
+                        </button>
+                        <p class="text-[10px] text-on-surface-variant text-center mt-2">Secured by Razorpay. You won't
+                            be charged until the session is confirmed.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 z-[110] hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-surface rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+                <div class="w-20 h-20 bg-tertiary-container rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="material-symbols-outlined text-tertiary text-4xl"
+                        style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                </div>
+                <h3 class="font-headline text-2xl font-bold mb-2">Booking Confirmed!</h3>
+                <p class="text-on-surface-variant text-sm mb-6">Your session has been booked successfully. The trainer
+                    will confirm within 12 hours.</p>
+                <a href="client-dashboard.html"
+                    class="block w-full py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View
+                    My Bookings</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        let trainer = null;
+        let selectedPlan = null;
+
+        // Initialize Page Content
+        window.onload = async function () {
+            await renderAuthNav();
+            const params = new URLSearchParams(window.location.search);
+            const trainerId = params.get('id');
+
+            if (trainerId) {
+                trainer = await getTrainerById(trainerId);
+            }
+
+            if (!trainer) {
+                // Show error or redirect
+                document.body.innerHTML = `
+                <div class="min-h-screen flex items-center justify-center bg-surface-container-lowest p-6">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-6xl text-primary mb-4">person_off</span>
+                        <h1 class="text-2xl font-bold text-on-surface mb-2 font-headline">Trainer Not Found</h1>
+                        <p class="text-on-surface-variant mb-6">The trainer you are looking for does not exist or has been removed.</p>
+                        <a href="onlifit.html" class="px-8 py-3 bg-primary text-on-primary rounded-xl font-bold inline-block">Back to Marketplace</a>
+                    </div>
+                </div>`;
+                return;
+            }
+
+            renderTrainerProfile();
+        };
+
+        function renderTrainerProfile() {
+            // Update page title
+            document.title = trainer.name + ' | Onlifit';
+
+            // Render header
+            document.getElementById('trainer-header').innerHTML = `
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center text-5xl shadow-lg ring-4 ring-surface-container-low">
+                    ${trainer.avatar_url || '🏋️'}
+                </div>
+                <div class="flex-1 text-center sm:text-left">
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-2">
+                        <h1 class="font-headline text-2xl font-bold text-on-surface">${trainer.name}</h1>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary text-on-primary">Verified</span>
+                    </div>
+                    <p class="font-headline text-lg text-primary font-semibold mb-2">${trainer.specialty || 'Fitness Expert'}</p>
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-on-surface-variant">
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">location_on</span> ${trainer.location || 'Online'}
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
+                            <strong class="text-on-surface">${trainer.rating || '5.0'}</strong> (${trainer.review_count || 0} reviews)
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">schedule</span> ${trainer.experience || 'Professional'}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center mt-4 gap-3 text-center sm:text-left justify-center sm:justify-start">
+                        <a href="messages.html?id=${trainer.id}" class="px-6 py-2 bg-white border border-outline-variant text-sm font-bold text-on-surface hover:border-primary hover:text-primary rounded-xl transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Message
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            // Render about
+            document.getElementById('trainer-about').innerHTML = `
+            <h2 class="font-headline text-lg font-bold mb-4">About ${trainer.name.split(' ')[0]}</h2>
+            <p class="text-on-surface-variant leading-relaxed mb-6">${trainer.bio || 'Highly motivated professional dedicated to client success.'}</p>
+            <div class="flex flex-wrap gap-2 mb-6">
+                ${(trainer.tags || ['Fitness', 'Health']).map(t => `<span class="px-3 py-1 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant uppercase tracking-wider">${t}</span>`).join('')}
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-on-surface mb-3">Certifications</h3>
+                <div class="flex flex-wrap gap-2">
+                    ${(trainer.certifications || ['Professional Certification']).map(c => `<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-container/30 rounded-lg text-xs font-semibold text-tertiary"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>${c}</span>`).join('')}
+                </div>
+            </div>
+        `;
+
+            // Render reviews
+            const reviews = trainer.reviews || [];
+            document.getElementById('trainer-reviews').innerHTML = `
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-headline text-lg font-bold">Reviews</h2>
+                <div class="flex items-center gap-1 text-sm">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
+                    <strong>${trainer.rating || '5.0'}</strong>
+                    <span class="text-on-surface-variant">(${trainer.review_count || 0})</span>
+                </div>
+            </div>
+            <div class="space-y-6">
+                ${reviews.length > 0 ? reviews.map(r => `
+                    <div class="pb-6 border-b border-outline-variant/20 last:border-0 last:pb-0">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold text-on-surface-variant">${(r.client?.name || 'U').charAt(0)}</div>
+                                <span class="text-sm font-semibold">${r.client?.name || 'Anonymous User'}</span>
+                            </div>
+                            <span class="text-xs text-on-surface-variant">${new Date(r.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div class="flex gap-0.5 mb-2">${'<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: \'FILL\' 1; color: #f59e0b;">star</span>'.repeat(r.rating || 5)}${'<span class="material-symbols-outlined text-[14px] text-surface-container-high" style="font-variation-settings: \'FILL\' 1;">star</span>'.repeat(5 - (r.rating || 5))}</div>
+                        <p class="text-sm text-on-surface-variant leading-relaxed">${r.text}</p>
+                    </div>
+                `).join('') : '<p class="text-on-surface-variant italic py-4 text-center">No reviews yet. Be the first to book and leave feedback!</p>'}
+            </div>
+        `;
+
+            // Render plans
+            const p = trainer.plans || {};
+            let plansHTML = `<h2 class="font-headline text-lg font-bold mb-1">Plans & Pricing</h2>
+            <p class="text-xs text-on-surface-variant mb-6">Choose a plan that fits your goals</p>
+            <div class="space-y-3">`;
+
+            const renderPlan = (id, plan) => `
+            <button onclick="selectPlan('${id}')" id="plan-btn-${id}" class="plan-btn w-full text-left p-4 rounded-xl border-2 border-outline-variant/30 hover:border-primary/50 transition-all group">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="text-sm font-bold capitalize">${plan.label || id}</span>
+                    <span class="text-lg font-black text-primary font-headline">${formatPrice(plan.price)}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant">${plan.description || ''}</p>
+            </button>`;
+
+            if (p.hourly) plansHTML += renderPlan('hourly', p.hourly);
+            if (p.monthly) plansHTML += renderPlan('monthly', p.monthly);
+            if (p.premium) plansHTML += renderPlan('premium', p.premium);
+
+            // Default plans if none exist for trainer
+            if (Object.keys(p).length === 0) {
+                plansHTML += renderPlan('standard', { label: 'Single Session', price: 2000, description: '1 hour personalized training' });
+            }
+
+            plansHTML += `</div>
+            <button id="book-now-btn" onclick="openBookingModal()" disabled class="w-full mt-6 py-4 bg-secondary text-on-secondary rounded-xl font-bold shadow-lg shadow-secondary/10 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">bolt</span> Book Now
+            </button>
+            <p class="text-[10px] text-center text-on-surface-variant mt-2">Select a plan above to continue</p>
+        `;
+
+            document.getElementById('trainer-plans').innerHTML = plansHTML;
+
+            // Set min date to today
+            const todayDate = new Date().toISOString().split('T')[0];
+            document.getElementById('booking-date').min = todayDate;
+            document.getElementById('booking-date').value = todayDate;
+        }
+
+        function selectPlan(type) {
+            selectedPlan = type;
+            document.querySelectorAll('.plan-btn').forEach(btn => {
+                btn.classList.remove('border-primary', 'bg-primary-container/20');
+                btn.classList.add('border-outline-variant/30');
+            });
+            const active = document.getElementById('plan-btn-' + type);
+            if (active) {
+                active.classList.remove('border-outline-variant/30');
+                active.classList.add('border-primary', 'bg-primary-container/20');
+                document.getElementById('book-now-btn').disabled = false;
+            }
+        }
+
+        async function openBookingModal() {
+            if (!selectedPlan) return;
+
+            const user = await getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html?role=client&hideRole=true&redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+            if (user.role === 'trainer') {
+                alert('Please log in as a client to book a trainer.');
+                return;
+            }
+
+            const plan = (trainer.plans && trainer.plans[selectedPlan]) || { label: 'Standard Session', price: 2000 };
+            document.getElementById('modal-trainer-name').textContent = 'with ' + trainer.name;
+            document.getElementById('modal-plan-info').innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-sm font-bold capitalize">${plan.label || selectedPlan}</p>
+                    <p class="text-xs text-on-surface-variant">${plan.description || ''}</p>
+                </div>
+                <span class="text-primary font-black font-headline">${formatPrice(plan.price)}</span>
+            </div>
+        `;
+            document.getElementById('modal-price').textContent = formatPrice(plan.price);
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        async function handleBooking(e) {
+            e.preventDefault();
+            const user = await getCurrentUser();
+            if (!user) return;
+
+            const date = document.getElementById('booking-date').value;
+            const time = document.getElementById('booking-time').value;
+
+            const bookingBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnContent = bookingBtn.innerHTML;
+            
+            bookingBtn.disabled = true;
+            bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Processing...';
+
+            try {
+                const result = await createBooking(user.id, trainer.id, selectedPlan, { date, time });
+                if (!result) throw new Error('Booking failed');
+                
+                document.getElementById('booking-modal').classList.add('hidden');
+                document.getElementById('success-modal').classList.remove('hidden');
+            } catch (error) {
+                alert('Booking failed: ' + error.message);
+                bookingBtn.disabled = false;
+                bookingBtn.innerHTML = originalBtnContent;
+            }
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(price);
+        }
+    </script>
+</body>
+
+</html>

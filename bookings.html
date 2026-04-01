@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onlifit | Trainer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#FF5A5F",
+                    "primary-container": "#FFE8E9",
+                    "secondary": "#222222",
+                    "secondary-container": "#F5F5F5",
+                    "tertiary": "#00A699",
+                    "tertiary-container": "#E0F5F4",
+                    "background": "#FFFFFF",
+                    "surface": "#FFFFFF",
+                    "surface-container-lowest": "#FFFFFF",
+                    "surface-container-low": "#F7F7F9",
+                    "surface-container": "#EBEBEB",
+                    "surface-container-high": "#DDDDDD",
+                    "on-surface": "#222222",
+                    "on-surface-variant": "#717171",
+                    "on-primary": "#FFFFFF",
+                },
+                fontFamily: {
+                    "headline": ["Poppins", "sans-serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Inter", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "20px", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+    }
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+    }
+</style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface">
+<!-- TopNavBar (Fixed) -->
+<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-8">
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center">
+                <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+            </div>
+        </div>
+        <div id="nav-auth" class="flex items-center gap-4"></div>
+    </div>
+</nav>
+
+<div class="flex min-h-screen pt-20">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col gap-2 py-6 font-headline text-sm hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div id="trainer-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-md">
+    T
+</div>
+<div>
+<p id="trainer-name" class="font-bold text-on-surface">Trainer</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-black">Certified Pro</p>
+</div>
+</div>
+<nav class="flex-1">
+<a class="flex items-center gap-3 px-6 py-3 bg-primary-container text-primary font-bold rounded-r-full mr-4 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="bookings.html">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>My Trainees</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>Earnings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto pb-10">
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all">
+<span class="material-symbols-outlined text-sm">sensors</span> Go Live
+</button>
+</div>
+</aside>
+
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-8 bg-surface-container-low">
+<header class="mb-10 flex justify-between items-end">
+<div>
+<h1 class="text-3xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
+<p class="text-on-surface-variant mt-1">Welcome back, Alex. You have 1 new booking allocation to review.</p>
+</div>
+<div class="flex gap-2">
+<span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant">October 24, 2024</span>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-6">
+<!-- Performance Stats -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Response Rate</p>
+<h3 class="text-3xl font-black text-primary font-headline">98.4%</h3>
+</div>
+<div class="mt-4 h-1 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 98.4%"></div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p>
+<h3 class="text-3xl font-black text-on-surface font-headline">42</h3>
+</div>
+<p class="text-xs text-green-500 font-bold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +3 this month
+</p>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
+<div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Avg Rating</p>
+<div class="flex items-center gap-2">
+<h3 class="text-3xl font-black text-on-surface font-headline">4.92</h3>
+<div class="flex text-yellow-400">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+<div class="flex gap-1 mt-4">
+<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-surface-container-low rounded-full"></div>
+</div>
+</div>
+</div>
+
+<!-- New Allocation Card -->
+<div id="new-allocation-container" class="col-span-12 lg:col-span-4 row-span-2">
+    <!-- Populated by JS -->
+    <div class="bg-white p-12 rounded-2xl shadow-sm border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center h-full">
+        <p class="text-on-surface-variant text-sm">No new allocations</p>
+    </div>
+</div>
+
+<!-- Empty State / Pending Section -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
+<div class="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-surface-variant text-5xl">inbox_customize</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-2">No Pending Bookings</h3>
+<p class="text-on-surface-variant max-w-sm">You're all caught up! When new trainees match with your profile, they will appear here for review.</p>
+<button class="mt-8 px-6 py-2 border border-surface-container-high rounded-full text-sm font-bold text-on-surface-variant hover:bg-surface-container-low transition-all">
+                            Refresh Queue
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script src="auth.js"></script>
+<script>
+    async function initDashboard() {
+        await renderAuthNav();
+        const user = await requireAuth('trainer', 'bookings.html');
+        if (!user) return;
+
+        // Real-time subscription for notifications (updates nav bell)
+        subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
+            renderAuthNav();
+        });
+
+        // ── Sidebar user info ──────────────────────────────────────────
+        const avatarElem = document.getElementById('trainer-avatar');
+        const nameElem = document.getElementById('trainer-name');
+        if (avatarElem) avatarElem.textContent = user.name.charAt(0).toUpperCase();
+        if (nameElem) nameElem.textContent = user.name;
+        
+        const bookings = await getBookings();
+        updateStats(bookings);
+        await renderAllocation(bookings);
+    }
+
+    function updateStats(bookings) {
+        const totalBookings = bookings.length;
+        const thisMonth = bookings.filter(b => {
+            const d = new Date(b.date);
+            const now = new Date();
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length;
+
+        // Update UI
+        document.querySelectorAll('h3.font-headline')[1].textContent = totalBookings;
+        document.querySelector('.text-green-500.font-bold').innerHTML = `<span class="material-symbols-outlined text-sm">trending_up</span> +${thisMonth} this month`;
+    }
+
+    async function renderAllocation(bookings) {
+        const container = document.getElementById('new-allocation-container');
+        if (!container) return;
+
+        // Show latest "confirmed" booking that hasn't been "completed" or "cancelled"
+        const pending = bookings.filter(b => b.status === 'confirmed').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        if (!pending.length) {
+            container.innerHTML = `
+                <div class="bg-white p-12 rounded-2xl shadow-sm border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center h-full">
+                    <div class="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-on-surface-variant text-3xl">inbox</span>
+                    </div>
+                    <p class="text-on-surface-variant text-sm font-medium">No new allocations</p>
+                </div>`;
+            return;
+        }
+
+        const latest = pending[0];
+        const client = await getUserById(latest.client_id);
+
+        container.innerHTML = `
+            <div class="bg-white p-1 rounded-2xl shadow-lg border border-surface-container-high h-full overflow-hidden anim-slide-up">
+                <div class="relative h-48 rounded-t-[19px] overflow-hidden">
+                    <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1548690312-e3b507d17a12?q=80&w=800&auto=format&fit=crop"/>
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
+                    <div class="absolute bottom-4 left-4">
+                        <span class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider mb-2 inline-block">New Allocation</span>
+                        <h4 class="text-white text-xl font-bold">${client?.name || 'Trainee'}</h4>
+                        <div class="flex gap-2 mt-1">
+                            ${client?.age ? `<span class="text-white/80 text-[10px] bg-white/10 px-2 py-0.5 rounded-full">${client.age}y</span>` : ''}
+                            ${client?.gender ? `<span class="text-white/80 text-[10px] bg-white/10 px-2 py-0.5 rounded-full capitalize">${client.gender}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+                            <span class="text-on-surface-variant text-sm">Goal</span>
+                            <span class="font-bold text-primary truncate max-w-[150px] text-right">${client?.goal || 'General Health'}</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+                            <span class="text-on-surface-variant text-sm">Plan</span>
+                            <span class="font-bold text-on-surface capitalize">${latest.plan_type || 'Session'}</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+                            <span class="text-on-surface-variant text-sm">Schedule</span>
+                            <span class="px-3 py-1 bg-secondary text-on-secondary text-xs font-bold rounded-full">${latest.date} ${latest.time}</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
+                            <span class="text-on-surface-variant text-sm">Contact</span>
+                            <span class="text-on-surface text-xs font-medium">${client?.phone || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <a href="messages.html?id=${latest.client_id}" class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-sm">message</span> Message Client
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    initDashboard();
+    
+    // Update date
+    const dateElem = document.querySelector('span.px-4.py-2.bg-white');
+    if (dateElem) dateElem.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+</script>
+</script>
+</body></html>

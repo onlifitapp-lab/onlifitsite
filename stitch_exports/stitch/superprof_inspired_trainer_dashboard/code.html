@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Luminous Mentor | Trainer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&amp;family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: "#4F46E5",
+                            foreground: "#FFFFFF"
+                        },
+                        accent: {
+                            DEFAULT: "#FF5A5F",
+                            foreground: "#FFFFFF"
+                        }
+                    },
+                    fontFamily: {
+                        "headline": ["Lexend", "sans-serif"],
+                        "body": ["Public Sans", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "20px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-body text-slate-900">
+<!-- TopNavBar (Fixed) -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-[0_40px_60px_-15px_rgba(75,65,225,0.06)]">
+<div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-rose-600 dark:text-rose-400 font-headline">Luminous Mentor</span>
+<div class="hidden md:flex gap-6 font-['Lexend'] font-medium text-sm tracking-tight">
+<a class="text-slate-600 dark:text-slate-400 hover:text-rose-500 transition-all duration-300" href="#">Find Trainers</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-rose-500 transition-all duration-300" href="#">Workshops</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-rose-500 transition-all duration-300" href="#">Subscriptions</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-rose-50/50 rounded-full transition-all">Login</button>
+<button class="px-5 py-2 text-sm font-semibold bg-rose-600 text-white rounded-full shadow-lg shadow-rose-200 scale-95 active:scale-90 transition-transform">Sign Up</button>
+</div>
+</div>
+</nav>
+<div class="flex min-h-screen pt-20">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-slate-50 dark:bg-slate-950 flex flex-col gap-2 py-6 font-['Lexend'] text-sm hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+<img class="w-full h-full object-cover" data-alt="Professional male fitness trainer headshot with friendly expression in a modern studio environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnqbPDRgCUndO7TxMZpFiSzO-JpTE7qFwjrWAOpEW65jbBG5wPEHOQitGmPucPHC2c5WgkvuM4mk6_HbxEl5ibGrNn71Xl2FGuKwWa_YqDeQiGA8EhWSxRSJIG5jvG2KhQ3JgERGBksPTeoddJYAF1vShWU6da72ha3QOxYGqyBXZrX9Pg3NhRV2zEn3a1BByVL6p0oMr_y9nxhkHICiWAIy6ONj4AQFV8S467aNyQlBTtWp51OlImrq2u-kLS6u80Q4dnumapQ2UF"/>
+</div>
+<div>
+<p class="font-bold text-slate-900">Alex Rivers</p>
+<p class="text-xs text-slate-500">Elite Trainer</p>
+</div>
+</div>
+<nav class="flex-1">
+<a class="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm rounded-r-full mr-4 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 dark:text-slate-400 hover:translate-x-1 hover:text-indigo-500 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>My Trainees</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 dark:text-slate-400 hover:translate-x-1 hover:text-indigo-500 transition-all" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Schedule</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 dark:text-slate-400 hover:translate-x-1 hover:text-indigo-500 transition-all" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>Earnings</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-slate-500 dark:text-slate-400 hover:translate-x-1 hover:text-indigo-500 transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-6 mt-auto pb-10">
+<button class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">sensors</span>
+                    Go Live
+                </button>
+<a class="flex items-center gap-3 mt-6 text-slate-400 hover:text-indigo-500 transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-8 bg-slate-50">
+<header class="mb-10 flex justify-between items-end">
+<div>
+<h1 class="text-3xl font-black font-headline tracking-tight text-slate-900">Trainer Dashboard</h1>
+<p class="text-slate-500 mt-1">Welcome back, Alex. You have 1 new allocation to review.</p>
+</div>
+<div class="flex gap-2">
+<span class="px-4 py-2 bg-white rounded-full border border-slate-200 text-sm font-medium text-slate-600">October 24, 2024</span>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-6">
+<!-- Performance Stats - Asymmetric Layout -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+<div>
+<p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Response Rate</p>
+<h3 class="text-3xl font-black text-indigo-600 font-headline">98.4%</h3>
+</div>
+<div class="mt-4 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-600" style="width: 98.4%"></div>
+</div>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+<div>
+<p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Clients</p>
+<h3 class="text-3xl font-black text-slate-900 font-headline">42</h3>
+</div>
+<p class="text-xs text-emerald-500 font-bold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +3 this month
+                        </p>
+</div>
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+<div>
+<p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Avg Rating</p>
+<div class="flex items-center gap-2">
+<h3 class="text-3xl font-black text-slate-900 font-headline">4.92</h3>
+<div class="flex text-amber-400">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+<div class="flex gap-1 mt-4">
+<div class="h-1 flex-1 bg-amber-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-amber-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-amber-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-amber-400 rounded-full"></div>
+<div class="h-1 flex-1 bg-slate-100 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- New Allocation Card - High-End Focus -->
+<div class="col-span-12 lg:col-span-4 row-span-2">
+<div class="bg-white p-1 rounded-2xl shadow-xl shadow-indigo-100/50 border border-slate-100 h-full">
+<div class="relative h-48 rounded-t-[19px] overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Confident young woman in athletic wear resting after workout in a bright minimalist gym setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmyUXZ4GNw2SJUEZ_IDL9iIklixzO6EJD0wc5CrHjvLifU3smPRFjk3mUK-RsCbDwGUuEFOE7GVJEFZjdzpzTmJyubsDLBtfEB5zuJONHADn3ovSjwL1tRGOI-T1Y8FUmuTL0I6CmUmRNjI0UL26JaVifKZfjeHX4jY4rbCoSdi0Kws9FkT-lRxPVI30sSLZN1KFPtxAFq4zXDVYMSV4BdA0wcajZN3L64xFZlymCDWqMcufICYRb8G_kH5qs4omdZr5TrRe531LzH"/>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent"></div>
+<div class="absolute bottom-4 left-4">
+<span class="bg-accent text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider mb-2 inline-block">New Allocation</span>
+<h4 class="text-white text-xl font-bold">Julianne Vance</h4>
+</div>
+</div>
+<div class="p-6">
+<div class="space-y-4 mb-8">
+<div class="flex items-center justify-between py-2 border-b border-slate-50">
+<span class="text-slate-400 text-sm">Goal</span>
+<span class="font-bold text-slate-700">Hypertrophy</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-slate-50">
+<span class="text-slate-400 text-sm">Fitness Level</span>
+<span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-bold rounded-full">Intermediate</span>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-slate-50">
+<span class="text-slate-400 text-sm">Location</span>
+<span class="text-slate-700 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-sm">location_on</span> Los Angeles
+                                    </span>
+</div>
+</div>
+<button class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">chat</span>
+                                View Chat
+                            </button>
+</div>
+</div>
+</div>
+<!-- Empty State / Pending Section -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-white rounded-2xl p-12 border border-dashed border-slate-200 flex flex-col items-center justify-center text-center">
+<div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-slate-300 text-5xl">inbox_customize</span>
+</div>
+<h3 class="text-xl font-bold text-slate-900 mb-2">No Pending Allocations</h3>
+<p class="text-slate-500 max-w-sm">You're all caught up! When new trainees match with your profile, they will appear here for review.</p>
+<button class="mt-8 px-6 py-2 border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                            Refresh Queue
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 px-8 bg-slate-50 dark:bg-slate-950">
+<div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto border-t border-slate-200 dark:border-slate-800 pt-8">
+<div class="text-slate-400 font-['Inter'] text-xs uppercase tracking-widest mb-4 md:mb-0">
+                © 2024 Luminous Mentor. All rights reserved.
+            </div>
+<div class="flex gap-8">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-400 opacity-80 hover:opacity-100 hover:text-rose-500 underline underline-offset-4 transition-all" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-400 opacity-80 hover:opacity-100 hover:text-rose-500 underline underline-offset-4 transition-all" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-400 opacity-80 hover:opacity-100 hover:text-rose-500 underline underline-offset-4 transition-all" href="#">Contact Support</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-slate-400 opacity-80 hover:opacity-100 hover:text-rose-500 underline underline-offset-4 transition-all" href="#">Careers</a>
+</div>
+</div>
+</footer>
+</body></html>

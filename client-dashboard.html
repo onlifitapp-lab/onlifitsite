@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>My Dashboard | Onlifit</title>
+    <meta name="description" content="Manage your fitness bookings, track progress, and connect with your trainers on Onlifit."/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF5A5F",
+                        "primary-container": "#FFE8E9",
+                        "secondary": "#222222",
+                        "secondary-container": "#F5F5F5",
+                        "secondary-fixed-dim": "#D8D8D8",
+                        "tertiary": "#00A699",
+                        "tertiary-container": "#E0F5F4",
+                        "tertiary-fixed-dim": "#80D3CC",
+                        "background": "#FFFFFF",
+                        "surface": "#FFFFFF",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#F7F7F9",
+                        "surface-container": "#EBEBEB",
+                        "surface-container-high": "#DDDDDD",
+                        "surface-container-highest": "#B0B0B0",
+                        "surface-variant": "#F7F7F9",
+                        "surface-dim": "#EBEBEB",
+                        "on-surface": "#222222",
+                        "on-surface-variant": "#717171",
+                        "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF",
+                        "on-tertiary": "#FFFFFF",
+                        "outline": "#DDDDDD",
+                        "outline-variant": "#EBEBEB",
+                        "error": "#E54343",
+                        "error-container": "#FFDEDE",
+                    },
+                    fontFamily: {
+                        "headline": ["Poppins", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-nav {
+            background: rgba(255,255,255,0.82);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        /* Animated gradient blob behind hero stat */
+        @keyframes blobPulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+        .blob-pulse { animation: blobPulse 4s ease-in-out infinite; }
+
+        /* Card entrance */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim-slide-up {
+            animation: slideUp 0.5s cubic-bezier(.22,1,.36,1) both;
+        }
+        .anim-delay-1 { animation-delay: 0.08s; }
+        .anim-delay-2 { animation-delay: 0.16s; }
+        .anim-delay-3 { animation-delay: 0.24s; }
+        .anim-delay-4 { animation-delay: 0.32s; }
+
+        /* Progress ring */
+        @keyframes ringGrow {
+            from { stroke-dashoffset: 226; }
+        }
+        .ring-animate { animation: ringGrow 1.2s cubic-bezier(.4,0,.2,1) both; }
+
+        /* Sidebar link hover */
+        .sidebar-link {
+            transition: all 0.25s cubic-bezier(.4,0,.2,1);
+        }
+        .sidebar-link:hover {
+            transform: translateX(4px);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(255,90,95,0.12) 0%, rgba(255,90,95,0) 100%);
+        }
+
+        /* Mobile sidebar toggle */
+        @media (max-width: 767px) {
+            .sidebar-overlay { display: none; }
+            .sidebar-overlay.open { display: block; }
+            .sidebar-panel { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); }
+            .sidebar-panel.open { transform: translateX(0); }
+        }
+
+        /* Booking card hover */
+        .booking-card {
+            transition: all 0.35s cubic-bezier(.22,1,.36,1);
+        }
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px -12px rgba(255,90,95,0.10);
+        }
+
+        /* Status badges */
+        .status-confirmed { background: #E0F5F4; color: #00A699; }
+        .status-pending   { background: #FFF3E0; color: #E67E22; }
+        .status-completed { background: #F5F5F5; color: #717171; }
+        .status-cancelled { background: #FFDEDE; color: #E54343; }
+    </style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface">
+
+<!-- ── Top Nav ─────────────────────────────────────────────────────────── -->
+<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-8">
+            <button id="sidebar-toggle" class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center font-headline font-bold text-sm">
+                <a href="about.html" class="text-on-surface-variant hover:text-primary transition-colors">About</a>
+                <a href="pricing.html" class="text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+            </div>
+        </div>
+        <div id="nav-auth" class="flex items-center gap-4"></div>
+    </div>
+</nav>
+
+<!-- ── Mobile Sidebar Overlay ──────────────────────────────────────────── -->
+<div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<aside id="sidebar-panel" class="sidebar-panel fixed left-0 top-0 z-40 h-screen w-64 pt-20 bg-surface-container-lowest border-r border-outline-variant/20 flex-col gap-2 py-6 font-headline text-sm hidden md:flex">
+    <!-- User info -->
+    <div class="px-6 mb-6 flex items-center gap-3">
+        <div id="sidebar-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-primary shadow-md ring-2 ring-surface-container-low">
+            C
+        </div>
+        <div>
+            <p id="sidebar-name" class="font-bold text-on-surface leading-tight">Client</p>
+            <p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Fitness Enthusiast</p>
+        </div>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="client-dashboard.html">
+            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            <span>Dashboard</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#bookings-section">
+            <span class="material-symbols-outlined text-[20px]">calendar_today</span>
+            <span>My Bookings</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="onlifit.html#trainers">
+            <span class="material-symbols-outlined text-[20px]">search</span>
+            <span>Find Trainers</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#">
+            <span class="material-symbols-outlined text-[20px]">favorite</span>
+            <span>Saved Trainers</span>
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#">
+            <span class="material-symbols-outlined text-[20px]">settings</span>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <!-- Bottom CTA -->
+    <div class="px-6 mt-auto pb-10">
+        <a href="onlifit.html" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all text-sm">
+            <span class="material-symbols-outlined text-[18px]">explore</span> Explore Trainers
+        </a>
+    </div>
+</aside>
+
+<!-- ── Main Content ────────────────────────────────────────────────────── -->
+<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen">
+
+    <!-- Header -->
+    <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+        <div>
+            <h1 id="welcome-heading" class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">
+                Welcome back! 👋
+            </h1>
+            <p class="text-on-surface-variant mt-1.5 text-sm">Here's an overview of your fitness journey.</p>
+        </div>
+        <div class="flex gap-2 flex-shrink-0">
+            <span id="today-date" class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant"></span>
+        </div>
+    </header>
+
+    <!-- ── Stats Row ───────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <!-- Upcoming Sessions -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-1 booking-card">
+            <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">event_upcoming</span>
+                    </div>
+                    <span id="stat-upcoming-badge" class="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-tertiary-container text-tertiary rounded-full hidden">Next today</span>
+                </div>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Upcoming</p>
+                <h3 id="stat-upcoming" class="text-3xl font-black text-on-surface font-headline">0</h3>
+            </div>
+        </div>
+
+        <!-- Completed Sessions -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-2 booking-card">
+            <div class="absolute -top-6 -right-6 w-20 h-20 bg-tertiary/5 rounded-full blob-pulse" style="animation-delay: 1s;"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-tertiary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined text-tertiary text-xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    </div>
+                </div>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Completed</p>
+                <h3 id="stat-completed" class="text-3xl font-black text-on-surface font-headline">0</h3>
+            </div>
+        </div>
+
+        <!-- Active Trainers -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-3 booking-card">
+            <div class="absolute -top-6 -right-6 w-20 h-20 bg-secondary/5 rounded-full blob-pulse" style="animation-delay: 2s;"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center">
+                        <span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings: 'FILL' 1;">group</span>
+                    </div>
+                </div>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">My Trainers</p>
+                <h3 id="stat-trainers" class="text-3xl font-black text-on-surface font-headline">0</h3>
+            </div>
+        </div>
+
+        <!-- Total Spent -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-4 booking-card">
+            <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse" style="animation-delay: 3s;"></div>
+            <div class="relative">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-container/60 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">payments</span>
+                    </div>
+                </div>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Total Invested</p>
+                <h3 id="stat-spent" class="text-2xl font-black text-on-surface font-headline">₹0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Content Grid ────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-12 gap-6" id="bookings-section">
+
+        <!-- Upcoming Bookings (main) -->
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="font-headline text-xl font-bold text-on-surface">Upcoming Sessions</h2>
+                <div class="flex gap-2">
+                    <button id="filter-all" onclick="setFilter('all')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-secondary text-on-secondary transition-all">All</button>
+                    <button id="filter-confirmed" onclick="setFilter('confirmed')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all">Confirmed</button>
+                    <button id="filter-pending" onclick="setFilter('pending')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all">Pending</button>
+                </div>
+            </div>
+
+            <!-- Bookings List Container -->
+            <div id="bookings-list" class="space-y-4">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden">
+                <div class="bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
+                    <div class="w-28 h-28 bg-primary-container/40 rounded-full flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-primary/60 text-6xl">fitness_center</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No bookings yet</h3>
+                    <p class="text-on-surface-variant max-w-sm mb-6">Your fitness journey starts with one step. Find a trainer who matches your goals and book your first session today!</p>
+                    <a href="onlifit.html" class="px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                        Find a Trainer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+
+            <!-- Next Session Card -->
+            <div id="next-session-card" class="hidden">
+                <div class="bg-gradient-to-br from-secondary to-secondary/90 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/5 rounded-full"></div>
+                    <div class="absolute -top-4 -left-4 w-16 h-16 bg-primary/20 rounded-full blur-xl"></div>
+                    <div class="relative">
+                        <p class="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-3">Next Session</p>
+                        <h3 id="next-trainer-name" class="font-headline text-xl font-bold mb-1"></h3>
+                        <p id="next-specialty" class="text-white/70 text-sm mb-4"></p>
+                        <div class="flex items-center gap-4 text-sm mb-4">
+                            <span class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[16px]">calendar_today</span>
+                                <span id="next-date" class="font-medium"></span>
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-primary text-[16px]">schedule</span>
+                                <span id="next-time" class="font-medium"></span>
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <a id="next-profile-link" href="#" class="flex-1 py-2.5 bg-white/10 backdrop-blur border border-white/10 rounded-xl text-sm font-bold text-center hover:bg-white/20 transition-all">View Profile</a>
+                            <a id="next-chat-link" href="#" class="flex-1 py-2.5 bg-primary rounded-xl text-sm font-bold text-center hover:opacity-90 transition-all flex items-center justify-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span> Chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Ring -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-high">
+                <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Session Progress</h3>
+                <div class="flex items-center gap-6">
+                    <div class="relative w-20 h-20 flex-shrink-0">
+                        <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+                            <circle cx="40" cy="40" r="36" fill="none" stroke="#EBEBEB" stroke-width="6"/>
+                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#FF5A5F" stroke-width="6"
+                                stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" class="ring-animate"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="progress-pct" class="text-lg font-black font-headline text-on-surface">0%</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-on-surface mb-1">Monthly Goal</p>
+                        <p class="text-xs text-on-surface-variant"><span id="completed-this-month">0</span> of <span id="goal-this-month">8</span> sessions</p>
+                        <p class="text-[10px] text-tertiary font-bold mt-1 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[12px]">trending_up</span>
+                            Keep it up!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Trainers -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-high">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-headline text-sm font-bold text-on-surface">My Trainers</h3>
+                    <a href="onlifit.html" class="text-xs text-primary font-bold hover:underline">+ Add</a>
+                </div>
+                <div id="trainers-list" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+                <div id="no-trainers" class="hidden text-center py-4">
+                    <p class="text-xs text-on-surface-variant">No trainers yet. Book your first session!</p>
+                </div>
+            </div>
+
+            <!-- Motivation Quote -->
+            <div class="bg-primary-container/30 rounded-2xl p-6 border border-primary/10">
+                <span class="material-symbols-outlined text-primary text-2xl mb-3 block" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+                <p id="motivation-quote" class="text-sm text-on-surface font-medium italic leading-relaxed">"The only bad workout is the one that didn't happen."</p>
+                <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">— Unknown</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Past Sessions ───────────────────────────────────────────────── -->
+    <div class="mt-10" id="past-section">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-headline text-xl font-bold text-on-surface">Past Sessions</h2>
+            <button id="toggle-past" onclick="togglePast()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">expand_more</span> Show all
+            </button>
+        </div>
+        <div id="past-bookings-list" class="space-y-3">
+            <!-- Populated by JS -->
+        </div>
+        <div id="no-past" class="hidden">
+            <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
+                <p class="text-sm text-on-surface-variant">Completed sessions will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────── -->
+<footer class="md:ml-64 bg-surface-container-low w-full py-8 px-6 md:px-8">
+    <div class="flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-8 gap-4">
+        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">© 2024 Onlifit. All rights reserved.</p>
+        <div class="flex gap-6">
+            <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all font-bold" href="#">Privacy</a>
+            <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all font-bold" href="#">Terms</a>
+            <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all font-bold" href="#">Support</a>
+        </div>
+    </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+    // ── Auth Guard ─────────────────────────────────────────────────────
+    let user = null;
+
+    async function initDashboard() {
+        await renderAuthNav();
+        user = await requireAuth('client', 'client-dashboard.html');
+        if (!user) return; // requireAuth redirects
+
+        // Real-time subscription for notifications (updates nav bell)
+        subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
+            renderAuthNav();
+        });
+
+        // ── Sidebar user info ─────────────────────────────────────────────
+        const initial = user.name.charAt(0).toUpperCase();
+        document.getElementById('sidebar-avatar').textContent = initial;
+        document.getElementById('sidebar-name').textContent = user.name.split(' ')[0];
+        document.getElementById('welcome-heading').textContent = `Welcome back, ${user.name.split(' ')[0]}! 👋`;
+
+        await renderAll();
+    }
+
+    // ── Date ───────────────────────────────────────────────────────────
+    const today = new Date();
+    document.getElementById('today-date').textContent = today.toLocaleDateString('en-IN', { 
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' 
+    });
+
+    // ── Mobile Sidebar ────────────────────────────────────────────────
+    function openSidebar() {
+        document.getElementById('sidebar-panel').classList.add('open');
+        document.getElementById('sidebar-overlay').classList.add('open');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar-panel').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('open');
+    }
+    document.getElementById('sidebar-toggle').addEventListener('click', openSidebar);
+
+    // ── Data ───────────────────────────────────────────────────────────
+    let currentFilter = 'all';
+    let showAllPast = false;
+    let cachedBookings = [];
+
+    async function refreshData() {
+        cachedBookings = await getBookings();
+    }
+
+    function isUpcoming(booking) {
+        const bDate = new Date(booking.date + 'T23:59:59');
+        return bDate >= new Date() && booking.status !== 'completed' && booking.status !== 'cancelled' && booking.status !== 'rejected';
+    }
+
+    function isPast(booking) {
+        const bDate = new Date(booking.date + 'T23:59:59');
+        return bDate < new Date() || booking.status === 'completed';
+    }
+
+    // ── Render Stats ──────────────────────────────────────────────────
+    function renderStats() {
+        const upcoming = cachedBookings.filter(isUpcoming);
+        const completed = cachedBookings.filter(isPast);
+        const trainerIds = [...new Set(cachedBookings.map(b => b.trainer_id))];
+        const totalSpent = cachedBookings.reduce((sum, b) => sum + (b.price || 0), 0);
+
+        document.getElementById('stat-upcoming').textContent = upcoming.length;
+        document.getElementById('stat-completed').textContent = completed.length;
+        document.getElementById('stat-trainers').textContent = trainerIds.length;
+        document.getElementById('stat-spent').textContent = formatPrice(totalSpent);
+
+        // Check if next session is today
+        if (upcoming.length > 0) {
+            const sorted = upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
+            const next = sorted[0];
+            const nextDate = new Date(next.date);
+            if (nextDate.toDateString() === today.toDateString()) {
+                document.getElementById('stat-upcoming-badge').classList.remove('hidden');
+            }
+        }
+
+        // Progress ring
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const completedThisMonth = cachedBookings.filter(b => {
+            const d = new Date(b.date);
+            return (d >= monthStart && d <= today) || b.status === 'completed';
+        }).length;
+        const goal = 8;
+        const pct = Math.min(100, Math.round((completedThisMonth / goal) * 100));
+        const offset = 226 - (226 * pct / 100);
+
+        document.getElementById('completed-this-month').textContent = completedThisMonth;
+        document.getElementById('goal-this-month').textContent = goal;
+        document.getElementById('progress-pct').textContent = pct + '%';
+        document.getElementById('progress-ring').style.strokeDashoffset = offset;
+    }
+
+    // ── Render Next Session Card ──────────────────────────────────────
+    async function renderNextSession() {
+        const upcoming = cachedBookings.filter(isUpcoming).sort((a,b) => new Date(a.date) - new Date(b.date));
+        const card = document.getElementById('next-session-card');
+
+        if (upcoming.length === 0) {
+            card.classList.add('hidden');
+            return;
+        }
+
+        const next = upcoming[0];
+        const trainer = await getTrainerById(next.trainer_id);
+        card.classList.remove('hidden');
+
+        document.getElementById('next-trainer-name').textContent = trainer?.name || 'Trainer';
+        document.getElementById('next-specialty').textContent = trainer?.specialty || 'Personal Training';
+        document.getElementById('next-date').textContent = formatDate(next.date);
+        document.getElementById('next-time').textContent = next.time || '10:00 AM';
+        document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
+        document.getElementById('next-chat-link').href = 'messages.html?id=' + next.trainer_id;
+    }
+
+    // ── Render Bookings ───────────────────────────────────────────────
+    async function renderBookings() {
+        let upcoming = cachedBookings.filter(isUpcoming);
+
+        if (currentFilter !== 'all') {
+            upcoming = upcoming.filter(b => b.status === currentFilter);
+        }
+
+        upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        const container = document.getElementById('bookings-list');
+        const emptyState = document.getElementById('empty-state');
+
+        if (upcoming.length === 0 && cachedBookings.length === 0) {
+            container.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+
+        if (upcoming.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
+                    <p class="text-sm text-on-surface-variant">No upcoming sessions${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="onlifit.html" class="text-primary font-bold hover:underline">Book one now!</a></p>
+                </div>`;
+            return;
+        }
+
+        const bookingsHTML = await Promise.all(upcoming.map(async (b, i) => {
+            const trainer = await getTrainerById(b.trainer_id);
+            const statusClass = 'status-' + (b.status || 'confirmed');
+            const delayClass = `anim-delay-${Math.min(i + 1, 4)}`;
+
+            return `
+            <div class="booking-card bg-white rounded-2xl p-5 shadow-sm border border-outline-variant/20 anim-slide-up ${delayClass}">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <!-- Trainer Avatar -->
+                    <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center text-2xl shadow-sm">
+                        ${trainer?.avatar_url || '🏋️'}
+                    </div>
+                    <!-- Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                            <div>
+                                <h4 class="font-headline font-bold text-on-surface text-base">${trainer?.name || 'Trainer'}</h4>
+                                <p class="text-xs text-on-surface-variant">${trainer?.specialty || 'Personal Training'}</p>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${statusClass}">
+                                ${b.status || 'confirmed'}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-on-surface-variant">
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                ${formatDate(b.date)}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                ${b.time || '10:00 AM'}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">sell</span>
+                                ${b.plan_label || 'Session'}
+                            </span>
+                            <span class="font-bold text-primary">
+                                ${formatPrice(b.price || 0)}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Actions -->
+                    <div class="flex sm:flex-col gap-2 flex-shrink-0">
+                        <a href="trainer-profile.html?id=${b.trainer_id}" class="px-4 py-2 bg-surface-container-low rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all text-center">
+                            Profile
+                        </a>
+                        <button onclick="cancelBooking('${b.id}')" class="px-4 py-2 bg-surface-container-low rounded-lg text-xs font-bold text-on-surface-variant hover:bg-error-container hover:text-error transition-all">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }));
+        container.innerHTML = bookingsHTML.join('');
+    }
+
+    // ── Render Past Bookings ──────────────────────────────────────────
+    async function renderPastBookings() {
+        let past = cachedBookings.filter(isPast);
+        past.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        const container = document.getElementById('past-bookings-list');
+        const noPast = document.getElementById('no-past');
+
+        if (past.length === 0) {
+            container.innerHTML = '';
+            noPast.classList.remove('hidden');
+            document.getElementById('past-section').style.display = 'none';
+            return;
+        }
+
+        noPast.classList.add('hidden');
+        document.getElementById('past-section').style.display = 'block';
+
+        const display = showAllPast ? past : past.slice(0, 3);
+
+        const pastHTML = await Promise.all(display.map(async b => {
+            const trainer = await getTrainerById(b.trainer_id);
+            return `
+            <div class="bg-white rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity">
+                <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-lg flex-shrink-0">
+                    ${trainer?.avatar_url || '✅'}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-on-surface">${trainer?.name || 'Trainer'}</p>
+                    <p class="text-xs text-on-surface-variant">${formatDate(b.date)} · ${b.time || ''} · ${b.plan_label || 'Session'}</p>
+                </div>
+                <span class="text-sm font-bold text-on-surface-variant">${formatPrice(b.price || 0)}</span>
+                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider status-completed">Completed</span>
+            </div>`;
+        }));
+        container.innerHTML = pastHTML.join('');
+
+        // Toggle button text
+        document.getElementById('toggle-past').innerHTML = showAllPast 
+            ? '<span class="material-symbols-outlined text-[14px]">expand_less</span> Show less'
+            : `<span class="material-symbols-outlined text-[14px]">expand_more</span> Show all (${past.length})`;
+    }
+
+    // ── Render My Trainers ────────────────────────────────────────────
+    async function renderTrainers() {
+        const trainerIds = [...new Set(cachedBookings.map(b => b.trainer_id))];
+        const container = document.getElementById('trainers-list');
+        const noTrainers = document.getElementById('no-trainers');
+
+        if (trainerIds.length === 0) {
+            container.innerHTML = '';
+            noTrainers.classList.remove('hidden');
+            return;
+        }
+
+        noTrainers.classList.add('hidden');
+
+        const trainersHTML = await Promise.all(trainerIds.slice(0, 4).map(async tid => {
+            const trainer = await getTrainerById(tid);
+            if (!trainer) return '';
+            return `
+            <a href="trainer-profile.html?id=${tid}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-container-low transition-all group">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center text-lg flex-shrink-0">
+                    ${trainer.avatar_url || '🏋️'}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">${trainer.name}</p>
+                    <p class="text-[10px] text-on-surface-variant truncate">${trainer.specialty || 'Expert'}</p>
+                </div>
+                <span class="flex items-center gap-0.5 text-xs font-bold text-on-surface">
+                    <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
+                    ${trainer.rating || '5.0'}
+                </span>
+            </a>`;
+        }));
+        container.innerHTML = trainersHTML.join('');
+    }
+
+    // ── Actions ───────────────────────────────────────────────────────
+    async function cancelBooking(bookingId) {
+        if (!confirm('Are you sure you want to cancel this booking?')) return;
+        
+        const { error } = await supabaseClient
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('id', bookingId);
+        
+        if (error) {
+            alert('Failed to cancel booking: ' + error.message);
+        } else {
+            await renderAll();
+        }
+    }
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.className = 'filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all';
+        });
+        document.getElementById('filter-' + filter).className = 'filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-secondary text-on-secondary transition-all';
+        renderBookings();
+    }
+
+    function togglePast() {
+        showAllPast = !showAllPast;
+        renderPastBookings();
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    // ── Motivation Quotes ─────────────────────────────────────────────
+    const quotes = [
+        { text: "The only bad workout is the one that didn't happen.", author: "Unknown" },
+        { text: "Your body can stand almost anything. It's your mind that you have to convince.", author: "Andrew Murphy" },
+        { text: "Don't count the days, make the days count.", author: "Muhammad Ali" },
+        { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
+        { text: "The pain you feel today will be the strength you feel tomorrow.", author: "Arnold Schwarzenegger" },
+        { text: "Fitness is not about being better than someone else. It's about being better than you used to be.", author: "Khloe Kardashian" },
+        { text: "Strength does not come from the body. It comes from the will.", author: "Unknown" },
+        { text: "What seems impossible today will one day become your warm-up.", author: "Unknown" },
+    ];
+
+    function setRandomQuote() {
+        const q = quotes[Math.floor(Math.random() * quotes.length)];
+        document.getElementById('motivation-quote').textContent = '"' + q.text + '"';
+        document.getElementById('motivation-author').textContent = '— ' + q.author;
+    }
+
+    async function renderAll() {
+        await refreshData();
+        renderStats();
+        await renderNextSession();
+        await renderBookings();
+        await renderPastBookings();
+        await renderTrainers();
+        setRandomQuote();
+    }
+
+    initDashboard();
+</script>
+</body>
+</html>
