@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>FAQ | Onlifit - Frequently Asked Questions</title>
+    <meta name="description" content="Find answers to common questions about Onlifit. Learn how to book trainers, become a trainer, payments, and more.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary":"#000000","primary-container":"#F5F5F5","secondary":"#1A1A1A",
+                        "surface":"#FAFAFA","surface-container-low":"#FFFFFF","surface-container":"#F0F0F0",
+                        "surface-container-high":"#E0E0E0","on-surface":"#000000","on-surface-variant":"#666666",
+                        "on-primary":"#FFFFFF","outline":"#D0D0D0","outline-variant":"#E8E8E8",
+                    },
+                    fontFamily: { "headline":["Poppins","sans-serif"], "body":["Inter","sans-serif"] },
+                }
+            },
+        }
+    </script>
+    <style>
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-effect { background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="flex items-center justify-between px-6 md:px-8 py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-8">
+            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center">
+                <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                <a href="faq.html" class="text-sm font-bold text-primary">FAQ</a>
+            </div>
+        </div>
+        <div id="nav-auth" class="flex items-center gap-4"></div>
+    </div>
+</nav>
+
+<main class="pt-28 pb-20 px-6">
+    <!-- Header -->
+    <div class="max-w-4xl mx-auto text-center mb-16">
+        <span class="inline-block px-4 py-2 bg-primary/10 rounded-full text-sm font-bold text-primary mb-6">❓ Help Center</span>
+        <h1 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Frequently Asked Questions</h1>
+        <p class="text-on-surface-variant text-lg max-w-2xl mx-auto">Everything you need to know about using Onlifit</p>
+    </div>
+
+    <!-- FAQ Categories -->
+    <div class="max-w-3xl mx-auto">
+        <!-- For Clients -->
+        <div class="mb-12">
+            <h2 class="font-headline text-xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">person</span>
+                </span>
+                For Clients
+            </h2>
+            <div class="space-y-3">
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do I find a trainer?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Simply go to our homepage and use the search feature. You can filter trainers by specialty (yoga, weight training, nutrition, etc.), location, price range, and availability. Browse trainer profiles, read reviews, and book directly when you find the right match.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">Is Onlifit free for clients?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Yes! Browsing trainers, reading reviews, messaging, and booking sessions is completely free for clients. You only pay for the training sessions you book at the trainer's listed rates.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">Can I book online sessions?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Absolutely! Many trainers offer both in-person and online sessions. Look for the "Online" badge on trainer profiles. Online sessions are conducted via video call and are perfect if you prefer training from home.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">What if I'm not happy with a session?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Your satisfaction matters to us. If you're not happy with a session, contact our support team within 24 hours. We review cases individually and may offer refunds or credits depending on the situation. All trainers are reviewed and rated to ensure quality.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do I pay for sessions?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        All payments are processed securely through our platform using Razorpay. We accept UPI, credit/debit cards, net banking, and popular wallets. Payment is held securely until the session is completed.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- For Trainers -->
+        <div class="mb-12">
+            <h2 class="font-headline text-xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">fitness_center</span>
+                </span>
+                For Trainers
+            </h2>
+            <div class="space-y-3">
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do I become a trainer on Onlifit?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Click "Become a Trainer" and create your account. Fill out your profile with your qualifications, specialties, pricing, and availability. Once submitted, our team reviews your application (usually within 48 hours). You'll need to provide proof of certification.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">What certifications do I need?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        We accept certifications from recognized bodies like ACE, NASM, ISSA, K11 Fitness, and other accredited institutions. Yoga teachers should have 200-hour or higher certification. If you're unsure about your certification, contact us and we'll review it.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How much does Onlifit charge trainers?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Our Starter plan is completely free with limited features. Pro plan costs ₹999/month with full features. We also charge a small platform fee (10-15%) on each booking to cover payment processing and platform costs. See our <a href="pricing.html" class="text-primary font-bold">pricing page</a> for details.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">When do I get paid?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        After a session is marked as completed, payment is processed within 24-48 hours to your linked bank account. You can track all your earnings and pending payments in your trainer dashboard.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do I get more clients?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Complete your profile with a professional photo and detailed bio. Get verified for the Pro badge. Collect reviews from satisfied clients. Respond quickly to inquiries. Consider upgrading to Pro for priority search ranking and more visibility.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account & Safety -->
+        <div class="mb-12">
+            <h2 class="font-headline text-xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary">security</span>
+                </span>
+                Account & Safety
+            </h2>
+            <div class="space-y-3">
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do you verify trainers?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        All trainers go through our verification process which includes: ID verification, certification validation, and background checks for Pro trainers. We also monitor reviews and ratings to ensure ongoing quality.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">Is my payment information secure?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        Yes! We use Razorpay, India's leading payment gateway, which is PCI-DSS compliant. We never store your card details on our servers. All transactions are encrypted with bank-level security.
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                        <span class="font-bold">How do I delete my account?</span>
+                        <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                    </button>
+                    <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                        You can delete your account from your profile settings. All your data will be permanently removed within 30 days as per our privacy policy. If you have pending bookings or payments, those need to be resolved first.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Still have questions -->
+    <div class="max-w-3xl mx-auto mt-16 text-center">
+        <div class="bg-primary/5 rounded-2xl p-8">
+            <h2 class="font-headline text-2xl font-bold mb-4">Still have questions?</h2>
+            <p class="text-on-surface-variant mb-6">Can't find what you're looking for? Our support team is here to help.</p>
+            <a href="mailto:support@onlifit.in" class="inline-flex items-center gap-2 bg-primary text-white font-bold py-3 px-6 rounded-full hover:bg-secondary transition-colors">
+                <span class="material-symbols-outlined">mail</span>
+                Contact Support
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="w-full bg-on-surface text-white pt-16 pb-8 px-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+            <div>
+                <div class="text-2xl font-black tracking-tighter font-headline mb-4">Onlifit</div>
+                <p class="text-white/60 text-sm leading-relaxed">India's premier platform for fitness professionals and enthusiasts.</p>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm uppercase tracking-wider mb-4">Company</h4>
+                <div class="flex flex-col gap-3 text-sm text-white/60">
+                    <a href="about.html" class="hover:text-white transition-colors">About Us</a>
+                    <a href="pricing.html" class="hover:text-white transition-colors">Pricing</a>
+                    <a href="faq.html" class="hover:text-white transition-colors">FAQ</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm uppercase tracking-wider mb-4">Legal</h4>
+                <div class="flex flex-col gap-3 text-sm text-white/60">
+                    <a href="terms.html" class="hover:text-white transition-colors">Terms & Conditions</a>
+                    <a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm uppercase tracking-wider mb-4">Contact</h4>
+                <div class="flex flex-col gap-3 text-sm text-white/60">
+                    <p>support@onlifit.in</p>
+                    <p>Mumbai, India</p>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/10 pt-8 text-center text-xs text-white/40">
+            © 2024 Onlifit. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+    renderAuthNav();
+
+    function toggleFaq(btn) {
+        const content = btn.nextElementSibling;
+        const icon = btn.querySelector('.material-symbols-outlined');
+        content.classList.toggle('hidden');
+        icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+</script>
+</body>
+</html>
