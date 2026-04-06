@@ -3,29 +3,52 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Onlifit | Trainer Dashboard</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+<!-- Performance: Preconnect to external domains -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Performance: Optimized fonts - removed unused weights -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
     tailwind.config = {
         darkMode: "class",
         theme: {
+            fontSize: {
+                'xs': ['0.75rem', { lineHeight: '1rem' }],
+                'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                'base': ['1rem', { lineHeight: '1.5rem' }],
+                'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                '5xl': ['3rem', { lineHeight: '1' }],
+                '6xl': ['3.75rem', { lineHeight: '1' }],
+                '7xl': ['4.5rem', { lineHeight: '1' }],
+                '8xl': ['6rem', { lineHeight: '1' }],
+                '9xl': ['8rem', { lineHeight: '1' }],
+            },
             extend: {
                 colors: {
-                    "primary": "#FF5A5F",
-                    "primary-container": "#FFE8E9",
-                    "secondary": "#222222",
+                    "primary": "#000000",
+                    "primary-container": "#F5F5F5",
+                    "secondary": "#1A1A1A",
                     "secondary-container": "#F5F5F5",
-                    "tertiary": "#00A699",
-                    "tertiary-container": "#E0F5F4",
-                    "background": "#FFFFFF",
-                    "surface": "#FFFFFF",
+                    "tertiary": "#333333",
+                    "tertiary-container": "#EBEBEB",
+                    "background": "#F5F5F5",
+                    "surface": "#FAFAFA",
                     "surface-container-lowest": "#FFFFFF",
-                    "surface-container-low": "#F7F7F9",
-                    "surface-container": "#EBEBEB",
-                    "surface-container-high": "#DDDDDD",
-                    "on-surface": "#222222",
-                    "on-surface-variant": "#717171",
+                    "surface-container-low": "#FFFFFF",
+                    "surface-container": "#F0F0F0",
+                    "surface-container-high": "#E0E0E0",
+                    "on-surface": "#000000",
+                    "on-surface-variant": "#666666",
                     "on-primary": "#FFFFFF",
                 },
                 fontFamily: {
@@ -39,6 +62,10 @@
     }
 </script>
 <style>
+    /* Font Size Reset - Standard 16px base */
+    html { font-size: 16px; }
+    body { font-size: 1rem; line-height: 1.5; }
+    
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         vertical-align: middle;
@@ -54,7 +81,7 @@
 <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
     <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
         <div class="flex items-center gap-8">
-            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
             <div class="hidden md:flex gap-6 items-center">
                 <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
@@ -177,6 +204,8 @@
 </div>
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="auth.js"></script>
 <script>
     async function initDashboard() {
@@ -280,6 +309,5 @@
     // Update date
     const dateElem = document.querySelector('span.px-4.py-2.bg-white');
     if (dateElem) dateElem.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-</script>
 </script>
 </body></html>

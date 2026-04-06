@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/onlifit.html"
+    }
+  ],
+  "cleanUrls": true
+}

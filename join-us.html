@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Join Us | Become an Onlifit Personal Trainer</title>
+    
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Performance: Optimized fonts - removed unused weights -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                fontSize: {
+                    'xs': ['0.75rem', { lineHeight: '1rem' }],
+                    'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                    'base': ['1rem', { lineHeight: '1.5rem' }],
+                    'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                    'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                    '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                    '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                    '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                    '5xl': ['3rem', { lineHeight: '1' }],
+                    '6xl': ['3.75rem', { lineHeight: '1' }],
+                    '7xl': ['4.5rem', { lineHeight: '1' }],
+                    '8xl': ['6rem', { lineHeight: '1' }],
+                    '9xl': ['8rem', { lineHeight: '1' }],
+                },
+                extend: {
+                    colors: {
+                        "primary": "#000000",
+                        "primary-container": "#F5F5F5",
+                        "secondary": "#1A1A1A",
+                        "secondary-container": "#F5F5F5",
+                        "secondary-fixed-dim": "#D0D0D0",
+                        "tertiary": "#333333",
+                        "tertiary-container": "#EBEBEB",
+                        "tertiary-fixed-dim": "#666666",
+                        "background": "#F5F5F5",
+                        "surface": "#FAFAFA",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F0F0F0",
+                        "surface-container-high": "#E0E0E0",
+                        "surface-container-highest": "#CCCCCC",
+                        "surface-variant": "#F8F8F8",
+                        "surface-dim": "#EEEEEE",
+                        "on-surface": "#000000",
+                        "on-surface-variant": "#666666",
+                        "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF",
+                        "on-tertiary": "#FFFFFF",
+                        "outline": "#D0D0D0",
+                        "outline-variant": "#E8E8E8",
+                    },
+                    fontFamily: {
+                        "headline": ["Poppins", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Font Size Reset - Standard 16px base */
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-effect { background: rgba(250, 249, 251, 0.8); backdrop-filter: blur(20px); }
+    </style>
+</head>
+
+<body class="bg-surface font-body text-on-surface">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <div class="flex items-center gap-8">
+                <a href="onlifit.html"
+                    class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                    <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                    <a href="join-us.html" class="text-sm font-bold text-primary transition-colors">Join Us</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="login.html?role=trainer" class="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all">Login</a>
+                <a href="login.html?tab=signup&role=trainer&hideRole=true"
+                    class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-all">Become a Trainer</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24">
+        <!-- Recruitment Hero Section -->
+        <section class="relative px-6 py-12 lg:py-20 overflow-hidden bg-surface-container-low">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                <!-- Left Details -->
+                <div class="text-center lg:text-left space-y-4">
+                    <h1 class="font-headline text-3xl lg:text-4xl font-black text-on-surface leading-[1.1] tracking-tight">
+                        Online Personal Training Jobs in 3 clicks
+                    </h1>
+                    <div class="text-on-surface-variant text-lg font-medium leading-relaxed space-y-4">
+                        <p class="font-bold text-primary"><u>Become a Trainer on India's #1 Fitness Platform</u></p>
+                        <p>Your search for "<em>online personal training jobs</em>" ends with Onlifit! Whether you want to work from home online or earn full-time, you can become a certified trainer with us.</p>
+                        <ul class="space-y-2 mt-4 text-left inline-block lg:block">
+                            <li class="flex items-center gap-2"><span class="text-xl">🗓️</span> Plan at-home or online sessions</li>
+                            <li class="flex items-center gap-2"><span class="text-xl">💻</span> Teach over 50+ fitness disciplines</li>
+                            <li class="flex items-center gap-2"><span class="text-xl">💸</span> Earn ₹1000+ per hour on your terms</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Signup Action card -->
+                <div class="bg-white rounded-3xl p-8 shadow-2xl border border-outline-variant/50 max-w-md w-full mx-auto">
+                    <div class="text-center mb-6">
+                        <p class="text-2xl font-black font-headline text-on-surface">Create your profile</p>
+                        <p class="text-sm text-on-surface-variant mt-2">Sign up today, totally free. Zero commission fees taken from your earnings.</p>
+                    </div>
+                    
+                    <a href="login.html?tab=signup&role=trainer&hideRole=true" 
+                        class="w-full block text-center py-4 rounded-xl bg-primary text-on-primary font-bold text-lg hover:bg-primary/90 transition shadow-lg shadow-primary/20 mb-4">
+                        Sign up via Email
+                    </a>
+
+                    <div class="relative flex items-center justify-center my-6">
+                        <div class="absolute border-t border-outline-variant w-full"></div>
+                        <span class="bg-white px-4 text-xs font-bold text-on-surface-variant uppercase relative">or</span>
+                    </div>
+
+                    <a href="login.html?tab=signup&role=trainer&hideRole=true&provider=google" 
+                        class="w-full flex items-center justify-center gap-3 py-4 rounded-xl bg-surface border-2 border-outline-variant text-on-surface font-bold text-lg hover:bg-surface-container-low transition mb-4">
+                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5" />
+                        Sign up with Google
+                    </a>
+                    
+                    <p class="text-xs text-center text-on-surface-variant mt-6">
+                        Already have an account? <a href="login.html?role=trainer" class="text-primary font-bold underline">Login here</a>
+                    </p>
+                </div>
+            </div>
+            <!-- Decorative Elements -->
+            <div class="absolute -top-10 -right-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-0"></div>
+            <div class="absolute bottom-10 -left-10 w-96 h-96 bg-tertiary/10 rounded-full blur-3xl -z-0"></div>
+        </section>
+
+        <!-- Guarantee Strip -->
+        <div class="bg-secondary text-on-secondary py-12 px-6">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center text-sm font-medium">
+                <div class="flex-1 space-y-2">
+                    <span class="material-symbols-outlined text-3xl text-tertiary">currency_rupee</span>
+                    <h3 class="font-bold text-lg">Set your rates</h3>
+                    <p class="text-secondary-fixed-dim">You have 100% control over your session pricing and package rates.</p>
+                </div>
+                <div class="hidden md:block w-px h-16 bg-outline-variant/20"></div>
+                <div class="flex-1 space-y-2">
+                    <span class="material-symbols-outlined text-3xl text-primary">verified_user</span>
+                    <h3 class="font-bold text-lg">Risk free setup</h3>
+                    <p class="text-secondary-fixed-dim">Publishing your ad is completely free. We do not charge listing fees.</p>
+                </div>
+                <div class="hidden md:block w-px h-16 bg-outline-variant/20"></div>
+                <div class="flex-1 space-y-2">
+                    <span class="material-symbols-outlined text-3xl text-tertiary">public</span>
+                    <h3 class="font-bold text-lg">Train around the world</h3>
+                    <p class="text-secondary-fixed-dim">Connect online with clients not just locally, but globally.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <section class="py-20 px-6 max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-black font-headline text-on-surface mb-16">
+                <span class="block text-xl text-primary font-bold mb-2 uppercase tracking-wider">How to start</span>
+                How can I become an Onlifit Trainer?
+            </h2>
+
+            <div class="space-y-12 text-left">
+                <!-- Step 1 -->
+                <div class="flex flex-col md:flex-row items-center gap-8 bg-surface-container rounded-3xl p-8">
+                    <div class="w-16 h-16 shrink-0 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg">1</div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-2">Create your trainer profile</h3>
+                        <p class="text-on-surface-variant font-medium">At Onlifit, it is 100% free to create your training profile and to start sharing your fitness knowledge with clients seeking your expertise.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col md:flex-row items-center gap-8 bg-surface-container rounded-3xl p-8">
+                    <div class="w-16 h-16 shrink-0 bg-tertiary text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg">2</div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-2">Set your training conditions</h3>
+                        <p class="text-on-surface-variant font-medium">You have complete control over your schedule, fees, and teaching methodology. Decide whether you want to teach exclusively online via webcam, or do in-person sessions.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col md:flex-row items-center gap-8 bg-surface-container rounded-3xl p-8">
+                    <div class="w-16 h-16 shrink-0 bg-secondary text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg">3</div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-2">Share your passion!</h3>
+                        <p class="text-on-surface-variant font-medium">Once your listing is published, clients will start booking sessions. Use our built-in messenger to chat with clients beforehand to ensure a perfect fit.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16">
+                <a href="login.html?tab=signup&role=trainer&hideRole=true" class="inline-block px-10 py-5 bg-primary text-white rounded-full font-bold text-lg hover:scale-[1.02] shadow-xl hover:shadow-primary/30 transition">
+                    Start Your Application Now
+                </a>
+            </div>
+        </section>
+
+        <!-- Stats Band -->
+        <div class="bg-surface-container-low border-y border-outline-variant/30 py-12 px-6">
+            <div class="max-w-6xl mx-auto flex flex-wrap justify-around items-center gap-8 text-center">
+                <div>
+                    <p class="text-4xl font-black text-primary font-headline">10K+</p>
+                    <p class="text-sm uppercase tracking-widest font-bold text-on-surface-variant mt-2">Active Clients</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-black text-secondary font-headline">200K+</p>
+                    <p class="text-sm uppercase tracking-widest font-bold text-on-surface-variant mt-2">Sessions Booked</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-black text-tertiary font-headline">50+</p>
+                    <p class="text-sm uppercase tracking-widest font-bold text-on-surface-variant mt-2">Fitness Categories</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

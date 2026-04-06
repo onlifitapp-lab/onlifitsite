@@ -5,40 +5,63 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>My Dashboard | Onlifit</title>
     <meta name="description" content="Manage your fitness bookings, track progress, and connect with your trainers on Onlifit."/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Performance: Optimized fonts - removed unused weights -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
         tailwind.config = {
             theme: {
+                fontSize: {
+                    'xs': ['0.75rem', { lineHeight: '1rem' }],
+                    'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                    'base': ['1rem', { lineHeight: '1.5rem' }],
+                    'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                    'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                    '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                    '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                    '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                    '5xl': ['3rem', { lineHeight: '1' }],
+                    '6xl': ['3.75rem', { lineHeight: '1' }],
+                    '7xl': ['4.5rem', { lineHeight: '1' }],
+                    '8xl': ['6rem', { lineHeight: '1' }],
+                    '9xl': ['8rem', { lineHeight: '1' }],
+                },
                 extend: {
                     colors: {
-                        "primary": "#FF5A5F",
-                        "primary-container": "#FFE8E9",
-                        "secondary": "#222222",
+                        "primary": "#000000",
+                        "primary-container": "#F5F5F5",
+                        "secondary": "#1A1A1A",
                         "secondary-container": "#F5F5F5",
-                        "secondary-fixed-dim": "#D8D8D8",
-                        "tertiary": "#00A699",
-                        "tertiary-container": "#E0F5F4",
-                        "tertiary-fixed-dim": "#80D3CC",
-                        "background": "#FFFFFF",
-                        "surface": "#FFFFFF",
+                        "secondary-fixed-dim": "#D0D0D0",
+                        "tertiary": "#333333",
+                        "tertiary-container": "#EBEBEB",
+                        "tertiary-fixed-dim": "#666666",
+                        "background": "#F5F5F5",
+                        "surface": "#FAFAFA",
                         "surface-container-lowest": "#FFFFFF",
-                        "surface-container-low": "#F7F7F9",
-                        "surface-container": "#EBEBEB",
-                        "surface-container-high": "#DDDDDD",
-                        "surface-container-highest": "#B0B0B0",
-                        "surface-variant": "#F7F7F9",
-                        "surface-dim": "#EBEBEB",
-                        "on-surface": "#222222",
-                        "on-surface-variant": "#717171",
+                        "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F0F0F0",
+                        "surface-container-high": "#E0E0E0",
+                        "surface-container-highest": "#CCCCCC",
+                        "surface-variant": "#F8F8F8",
+                        "surface-dim": "#EEEEEE",
+                        "on-surface": "#000000",
+                        "on-surface-variant": "#666666",
                         "on-primary": "#FFFFFF",
                         "on-secondary": "#FFFFFF",
                         "on-tertiary": "#FFFFFF",
-                        "outline": "#DDDDDD",
-                        "outline-variant": "#EBEBEB",
-                        "error": "#E54343",
-                        "error-container": "#FFDEDE",
+                        "outline": "#D0D0D0",
+                        "outline-variant": "#E8E8E8",
+                        "error": "#1A1A1A",
+                        "error-container": "#F5F5F5",
                     },
                     fontFamily: {
                         "headline": ["Poppins", "sans-serif"],
@@ -51,6 +74,10 @@
         }
     </script>
     <style>
+        /* Font Size Reset - Standard 16px base */
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
@@ -130,7 +157,7 @@
             <button id="sidebar-toggle" class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
                 <span class="material-symbols-outlined">menu</span>
             </button>
-            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
             <div class="hidden md:flex gap-6 items-center font-headline font-bold text-sm">
                 <a href="about.html" class="text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
@@ -337,7 +364,7 @@
                     <div class="relative w-20 h-20 flex-shrink-0">
                         <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
                             <circle cx="40" cy="40" r="36" fill="none" stroke="#EBEBEB" stroke-width="6"/>
-                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#FF5A5F" stroke-width="6"
+                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#1E88E5" stroke-width="6"
                                 stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" class="ring-animate"/>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
@@ -410,28 +437,85 @@
     </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
 <script src="auth.js"></script>
 <script>
     // ── Auth Guard ─────────────────────────────────────────────────────
     let user = null;
+    let dashboardInitialized = false; // Prevent multiple initializations
 
     async function initDashboard() {
-        await renderAuthNav();
-        user = await requireAuth('client', 'client-dashboard.html');
-        if (!user) return; // requireAuth redirects
+        // Prevent re-initialization that could cause loops
+        if (dashboardInitialized) {
+            console.log('Dashboard already initialized, skipping');
+            return;
+        }
+        
+        console.log('=== STARTING DASHBOARD INIT ===');
+        
+        try {
+            // First check if user is authenticated
+            const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
+            
+            console.log('Auth check result:', { authUser, authError });
+            
+            if (authError || !authUser) {
+                console.log('Not authenticated, redirecting to login');
+                window.location.href = 'login.html?redirect=client-dashboard.html';
+                return;
+            }
 
-        // Real-time subscription for notifications (updates nav bell)
-        subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
-            renderAuthNav();
-        });
+            console.log('User authenticated, ID:', authUser.id);
 
-        // ── Sidebar user info ─────────────────────────────────────────────
-        const initial = user.name.charAt(0).toUpperCase();
-        document.getElementById('sidebar-avatar').textContent = initial;
-        document.getElementById('sidebar-name').textContent = user.name.split(' ')[0];
-        document.getElementById('welcome-heading').textContent = `Welcome back, ${user.name.split(' ')[0]}! 👋`;
+            await renderAuthNav();
+            user = await getCurrentUser();
+            
+            console.log('Got user profile:', user);
+            
+            if (!user) {
+                console.error('Failed to get user profile - this should not happen');
+                alert('Error loading profile. Please contact support.');
+                return; // Don't redirect, just stop
+            }
 
-        await renderAll();
+            // IMPORTANT: Only redirect to trainer.html if explicitly a trainer
+            // Default behavior: allow client dashboard access
+            console.log('User role:', user.role);
+            
+            if (user.role === 'trainer') {
+                console.log('User is trainer, redirecting to trainer dashboard');
+                window.location.href = 'trainer.html';
+                return;
+            }
+            
+            console.log('User is client or no role set, continuing with client dashboard');
+
+            // Mark as initialized to prevent loops
+            dashboardInitialized = true;
+
+            // Real-time subscription for notifications (updates nav bell)
+            subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
+                renderAuthNav();
+            });
+
+            // ── Sidebar user info ─────────────────────────────────────────────
+            // Get name from user object (handle different property names)
+            const userName = user.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+            const initial = userName.charAt(0).toUpperCase();
+            const firstName = userName.split(' ')[0];
+            
+            document.getElementById('sidebar-avatar').textContent = initial;
+            document.getElementById('sidebar-name').textContent = userName;
+            document.getElementById('welcome-heading').textContent = `Welcome back, ${firstName}! 👋`;
+
+            console.log('Dashboard UI updated, rendering content...');
+            await renderAll();
+            console.log('=== DASHBOARD INIT COMPLETE ===');
+        } catch (error) {
+            console.error('Error during dashboard initialization:', error);
+            alert('Error loading dashboard: ' + error.message);
+        }
     }
 
     // ── Date ───────────────────────────────────────────────────────────
@@ -468,6 +552,11 @@
     function isPast(booking) {
         const bDate = new Date(booking.date + 'T23:59:59');
         return bDate < new Date() || booking.status === 'completed';
+    }
+
+    // ── Helper Functions ──────────────────────────────────────────────
+    function formatPrice(amount) {
+        return '₹' + amount.toLocaleString('en-IN');
     }
 
     // ── Render Stats ──────────────────────────────────────────────────
@@ -758,7 +847,10 @@
         setRandomQuote();
     }
 
-    initDashboard();
+    // Wait for DOM and all scripts to load
+    window.addEventListener('load', () => {
+        initDashboard();
+    });
 </script>
 </body>
 </html>

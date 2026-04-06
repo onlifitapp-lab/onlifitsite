@@ -4,25 +4,45 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Trainer Profile | Onlifit</title>
+    <title>Tushar - Personal Trainer | Onlifit</title>
+    
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Performance: Optimized fonts - removed unused weights -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
     <script>
         tailwind.config = {
             theme: {
+                fontSize: {
+                    'xs': ['0.75rem', { lineHeight: '1rem' }],
+                    'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                    'base': ['1rem', { lineHeight: '1.5rem' }],
+                    'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                    'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                    '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                    '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                    '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                    '5xl': ['3rem', { lineHeight: '1' }],
+                    '6xl': ['3.75rem', { lineHeight: '1' }],
+                    '7xl': ['4.5rem', { lineHeight: '1' }],
+                    '8xl': ['6rem', { lineHeight: '1' }],
+                    '9xl': ['8rem', { lineHeight: '1' }],
+                },
                 extend: {
                     colors: {
-                        "primary": "#FF5A5F", "primary-container": "#FFE8E9", "secondary": "#222222",
-                        "secondary-container": "#F5F5F5", "tertiary": "#00A699", "tertiary-container": "#E0F5F4",
-                        "surface": "#FFFFFF", "surface-container-lowest": "#FFFFFF", "surface-container-low": "#F7F7F9",
-                        "surface-container": "#EBEBEB", "surface-container-high": "#DDDDDD",
-                        "on-surface": "#222222", "on-surface-variant": "#717171", "on-primary": "#FFFFFF",
-                        "on-secondary": "#FFFFFF", "on-tertiary": "#FFFFFF", "outline": "#DDDDDD",
-                        "outline-variant": "#EBEBEB", "error": "#E54343", "error-container": "#FFDEDE",
+                        "primary": "#000000", "primary-container": "#F5F5F5", "secondary": "#1A1A1A",
+                        "secondary-container": "#F5F5F5", "tertiary": "#333333", "tertiary-container": "#EBEBEB",
+                        "surface": "#FAFAFA", "surface-container-lowest": "#FFFFFF", "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F0F0F0", "surface-container-high": "#E0E0E0",
+                        "on-surface": "#000000", "on-surface-variant": "#666666", "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF", "on-tertiary": "#FFFFFF", "outline": "#D0D0D0",
+                        "outline-variant": "#E8E8E8", "error": "#1A1A1A", "error-container": "#F5F5F5",
                     },
                     fontFamily: { "headline": ["Poppins", "sans-serif"], "body": ["Inter", "sans-serif"] },
                     borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
@@ -31,6 +51,10 @@
         }
     </script>
     <style>
+        /* Font Size Reset - Standard 16px base */
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
@@ -52,7 +76,7 @@
     <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
         <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
-            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline">Onlifit</a>
+            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
             <div id="nav-auth" class="flex items-center gap-4"></div>
         </div>
     </nav>
@@ -168,7 +192,10 @@
         </div>
     </div>
 
-    <script src="auth.js"></script>
+    <!-- Performance: Defer scripts to prevent blocking -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase-client.js" defer></script>
+    <script src="auth.js" defer></script>
     <script>
         let trainer = null;
         let selectedPlan = null;

@@ -12,50 +12,64 @@
  */
 async function signUp(name, email, password, role, trainerData, phone) {
     try {
-        // 1. Sign up with Supabase Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+        console.log('=== AUTH.JS SIGNUP DEBUG ===');
+        console.log('Received parameters:', { name, email, role, phone, trainerData });
+        
+        const signupData = {
             email,
             password,
             options: {
-                data: { name, role }
+                data: { 
+                    name, 
+                    role,
+                    phone,
+                    // Include trainer data if role is trainer
+                    ...(role === 'trainer' && trainerData ? {
+                        specialty: trainerData.specialty || "Personal Training",
+                        location: trainerData.location || "Online",
+                        experience: trainerData.experience || "1+ years"
+                    } : {})
+                }
             }
-        });
+        };
+        
+        console.log('Supabase signUp call with data:', signupData);
+        
+        // Sign up with Supabase Auth - profile will be created automatically by database trigger
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp(signupData);
 
         if (authError) throw authError;
+        
+        console.log('Auth signup successful, user ID:', authData.user?.id);
+        console.log('User metadata:', authData.user?.user_metadata);
 
-        const userId = authData.user.id;
-
-        // 2. Create the profile in the 'profiles' table
-        const profileData = {
-            id: userId,
-            name,
-            email,
-            role,
-            phone,
-            avatar_url: role === 'trainer' ? "🏋️" : null,
-            ...(role === 'trainer' ? {
-                specialty: trainerData?.specialty || "Personal Training",
-                location: trainerData?.location || "Online",
-                experience: trainerData?.experience || "1+ years",
-                plans: trainerData?.plans || {},
-                tags: trainerData?.tags || [],
-                certifications: trainerData?.certifications || [],
-            } : {
-                goal: null,
-                age: null,
-                gender: null
-            })
-        };
-
-        const { error: profileError } = await supabaseClient
-            .from('profiles')
-            .insert([profileData]);
-
-        if (profileError) throw profileError;
+        // Profile is automatically created by database trigger - no manual insert needed!
+        // Wait a moment for trigger to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         return { success: true, user: authData.user };
     } catch (error) {
         console.error("Signup error:", error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Sign in with Google
+ */
+async function signInWithGoogle() {
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + '/client-dashboard.html'
+            }
+        });
+        if (error) throw error;
+        // The redirect handles the rest. Profile creation must happen in an edge function 
+        // or a post-login check, but for now this works natively.
+    } catch (error) {
+        console.error("Google sign in error:", error.message);
         return { success: false, error: error.message };
     }
 }
@@ -72,14 +86,34 @@ async function login(email, password) {
 
         if (error) throw error;
 
-        // Fetch profile to get role
-        const { data: profile, error: profileError } = await supabaseClient
+        // Fetch profile to get role (handle multiple results or no results)
+        const { data: profiles, error: profileError } = await supabaseClient
             .from('profiles')
             .select('*')
-            .eq('id', data.user.id)
-            .single();
+            .eq('id', data.user.id);
 
         if (profileError) throw profileError;
+
+        // If no profile exists, create one (fallback)
+        if (!profiles || profiles.length === 0) {
+            console.warn("No profile found, creating one...");
+            const { data: newProfile } = await supabaseClient
+                .from('profiles')
+                .insert([{
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata?.name || 'User',
+                    role: data.user.user_metadata?.role || 'client',
+                    phone: data.user.user_metadata?.phone || null
+                }])
+                .select()
+                .single();
+            
+            return { success: true, user: { ...data.user, ...newProfile } };
+        }
+
+        // Use first profile if multiple exist
+        const profile = profiles[0];
 
         return { success: true, user: { ...data.user, ...profile } };
     } catch (error) {
@@ -103,11 +137,13 @@ async function getCurrentUser() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return null;
 
-    const { data: profile } = await supabaseClient
+    const { data: profiles } = await supabaseClient
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('id', user.id);
+
+    // Handle no profile or multiple profiles
+    const profile = profiles && profiles.length > 0 ? profiles[0] : null;
 
     return profile ? { ...user, ...profile } : user;
 }
@@ -154,12 +190,23 @@ async function requireAuth(requiredRole, redirectUrl) {
 
 // ─── DATA ACCESS ──────────────────────────────────────────────────────────────
 
+const DUMMY_TRAINERS = [
+    { id: 'd1', name: 'Arjun Sharma', specialty: 'Strength & Conditioning', experience: '8+ years', rating: 4.9, review_count: 124, location: 'Mumbai', avatar_url: '🏋️', plans: { basic: {price: 999, label: '1 Session'}, standard: {price: 3499, label: '4 Sessions'} }, tags: ['Weight Loss', 'Hypertrophy'] },
+    { id: 'd2', name: 'Priya Patel', specialty: 'Yoga & Flexibility', experience: '5+ years', rating: 4.8, review_count: 98, location: 'Online', avatar_url: '🧘‍♀️', plans: { basic: {price: 799, label: '1 Session'}, standard: {price: 2999, label: '4 Sessions'} }, tags: ['Mobility', 'Mindfulness'] },
+    { id: 'd3', name: 'Vikram Singh', specialty: 'Athletic Performance', experience: '12+ years', rating: 5.0, review_count: 210, location: 'Delhi', avatar_url: '🏃', plans: { basic: {price: 1499, label: '1 Session'}, standard: {price: 4999, label: '4 Sessions'} }, tags: ['Explosive Power', 'Agility'] },
+    { id: 'd4', name: 'Neha Gupta', specialty: 'HIIT & Fat Loss', experience: '4+ years', rating: 4.7, review_count: 85, location: 'Online', avatar_url: '🔥', plans: { basic: {price: 899, label: '1 Session'}, standard: {price: 3199, label: '4 Sessions'} }, tags: ['Cardio', 'Endurance'] }
+];
+
 async function getTrainers() {
     const { data, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('role', 'trainer');
-    return data || [];
+    
+    if (!data || data.length === 0) {
+        return DUMMY_TRAINERS;
+    }
+    return data;
 }
 
 async function getTrainerById(id) {
@@ -170,7 +217,12 @@ async function getTrainerById(id) {
         .eq('role', 'trainer')
         .single();
 
-    if (error || !trainer) return null;
+    if (error || !trainer) {
+        // Fallback to dummy data mapping
+        const dummy = DUMMY_TRAINERS.find(t => t.id === id);
+        if (dummy) return { ...dummy, reviews: [] };
+        return null;
+    }
 
     // Fetch reviews for this trainer
     const { data: reviews } = await supabaseClient
@@ -200,7 +252,18 @@ async function searchTrainers(query, location) {
     }
 
     const { data, error } = await q;
-    return data || [];
+    if (!data || data.length === 0) {
+        // Fallback to dummy data
+        let filtered = [...DUMMY_TRAINERS];
+        if (query) {
+            filtered = filtered.filter(t => t.name.toLowerCase().includes(query.toLowerCase()) || t.specialty.toLowerCase().includes(query.toLowerCase()));
+        }
+        if (location) {
+            filtered = filtered.filter(t => t.location.toLowerCase().includes(location.toLowerCase()));
+        }
+        return filtered;
+    }
+    return data;
 }
 
 async function getReviews(trainerId) {
