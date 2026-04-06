@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Browse All Trainers | Onlifit</title>
+    
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Performance: Optimized fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                fontSize: {
+                    'xs': ['0.75rem', { lineHeight: '1rem' }],
+                    'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+                    'base': ['1rem', { lineHeight: '1.5rem' }],
+                    'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+                    'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+                    '2xl': ['1.5rem', { lineHeight: '2rem' }],
+                    '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+                    '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+                    '5xl': ['3rem', { lineHeight: '1' }],
+                    '6xl': ['3.75rem', { lineHeight: '1' }],
+                    '7xl': ['4.5rem', { lineHeight: '1' }],
+                    '8xl': ['6rem', { lineHeight: '1' }],
+                    '9xl': ['8rem', { lineHeight: '1' }],
+                },
+                extend: {
+                    colors: {
+                        "primary": "#000000",
+                        "primary-container": "#F5F5F5",
+                        "secondary": "#1A1A1A",
+                        "secondary-container": "#F5F5F5",
+                        "tertiary": "#333333",
+                        "tertiary-container": "#EBEBEB",
+                        "background": "#F5F5F5",
+                        "surface": "#FAFAFA",
+                        "surface-container-lowest": "#FFFFFF",
+                        "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F0F0F0",
+                        "surface-container-high": "#E0E0E0",
+                        "on-surface": "#000000",
+                        "on-surface-variant": "#666666",
+                        "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF",
+                        "on-tertiary": "#FFFFFF",
+                        "outline": "#D0D0D0",
+                        "outline-variant": "#E8E8E8",
+                    },
+                    fontFamily: {
+                        "headline": ["Poppins", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Font Size Reset - Standard 16px base */
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+            <div class="flex items-center gap-8">
+                <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                    <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                    <a href="join-us.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Join Us</a>
+                </div>
+            </div>
+            <div id="auth-nav"></div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16 px-6 bg-gradient-to-b from-surface to-background">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Browse All Trainers</h1>
+            <p class="text-on-surface-variant text-lg mb-8 max-w-2xl mx-auto">Discover India's largest community of certified personal trainers</p>
+            
+            <!-- Search Bar -->
+            <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-2 border border-outline-variant/50 flex flex-col md:flex-row gap-2 mb-8">
+                <div class="flex-1 flex items-center gap-3 px-5 py-4 md:border-r border-outline-variant/30">
+                    <input id="search-query" type="text" placeholder="Try 'Yoga' or 'Weight Loss'" 
+                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                </div>
+                <div class="flex-1 flex items-center gap-3 px-5 py-4">
+                    <select id="search-mode" onchange="toggleLocationInput()" 
+                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer">
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                    </select>
+                    <input id="search-location" type="text" placeholder="Pincode or City" 
+                        style="display: none;"
+                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                </div>
+                <button onclick="performSearch()" 
+                    class="bg-primary text-on-primary px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-all">
+                    Search
+                </button>
+            </div>
+
+            <!-- Filter Tags -->
+            <div class="flex flex-wrap gap-3 justify-center">
+                <button onclick="filterBySpecialty('all')" class="filter-tag active px-4 py-2 rounded-full border-2 border-primary bg-primary text-on-primary font-bold text-sm transition-all">All</button>
+                <button onclick="filterBySpecialty('Weight Loss')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Weight Loss</button>
+                <button onclick="filterBySpecialty('Yoga')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Yoga</button>
+                <button onclick="filterBySpecialty('Strength')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Strength</button>
+                <button onclick="filterBySpecialty('Cardio')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Cardio</button>
+                <button onclick="filterBySpecialty('Sports')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Sports</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trainers Grid -->
+    <section class="py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <p class="text-on-surface-variant"><span id="trainer-count" class="font-bold text-on-surface">0</span> trainers found</p>
+                <select id="sort-by" onchange="sortTrainers()" class="px-4 py-2 rounded-lg border border-outline-variant bg-white text-on-surface font-medium">
+                    <option value="rating">Top Rated</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="experience">Most Experienced</option>
+                </select>
+            </div>
+
+            <div id="trainers-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Trainers will be loaded here -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-16">
+                <p class="text-on-surface-variant">Loading trainers...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="text-center py-16 hidden">
+                <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4">search_off</span>
+                <p class="text-on-surface font-bold text-xl mb-2">No trainers found</p>
+                <p class="text-on-surface-variant mb-6">Try adjusting your search or filters</p>
+                <button onclick="resetFilters()" class="px-6 py-3 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 transition-all">Reset Filters</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supabase and Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        renderAuthNav();
+
+        let allTrainers = [];
+        let currentFilter = 'all';
+        let currentSort = 'rating';
+
+        function toggleLocationInput() {
+            const mode = document.getElementById('search-mode').value;
+            const locationInput = document.getElementById('search-location');
+            locationInput.style.display = mode === 'offline' ? 'block' : 'none';
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
+        }
+
+        async function loadTrainers() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('role', 'trainer')
+                    .order('rating', { ascending: false });
+
+                if (error) throw error;
+
+                allTrainers = data || [];
+                renderTrainers(allTrainers);
+            } catch (error) {
+                console.error('Error loading trainers:', error);
+                // Show empty state on error
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+            }
+        }
+
+        function renderTrainers(trainers) {
+            const grid = document.getElementById('trainers-grid');
+            const loading = document.getElementById('loading');
+            const emptyState = document.getElementById('empty-state');
+            const count = document.getElementById('trainer-count');
+
+            loading.classList.add('hidden');
+
+            if (!trainers || trainers.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                count.textContent = '0';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            count.textContent = trainers.length;
+
+            grid.innerHTML = trainers.map(t => `
+                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
+                    <div class="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
+                        <div class="text-7xl">${t.avatar_url || '🏋️'}</div>
+                        <div class="absolute top-4 left-4 flex gap-2">
+                            <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Verified
+                            </span>
+                        </div>
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <span class="text-on-surface font-headline font-bold text-xl">${t.name || 'Trainer'}</span>
+                                <div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">
+                                    ${t.rating || '5.0'} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4 pt-4">
+                        <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">location_on</span>
+                            ${t.location || 'Online'}
+                        </p>
+                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">${t.specialty || 'Personal Trainer'}</h3>
+                        <p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${t.bio || 'Professional fitness coach'}</p>
+                        <div class="mb-4">
+                            <span class="text-primary font-bold text-xl">${formatPrice(t.plans?.hourly?.price || 2000)}</span>
+                            <span class="text-on-surface-variant text-sm">/hour</span>
+                        </div>
+                        <button class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
+                            View Profile
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterBySpecialty(specialty) {
+            currentFilter = specialty;
+            
+            // Update active button
+            document.querySelectorAll('.filter-tag').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-on-primary');
+                btn.classList.add('border-outline', 'text-on-surface-variant');
+            });
+            event.target.classList.add('active', 'bg-primary', 'text-on-primary', 'border-primary');
+            event.target.classList.remove('border-outline', 'text-on-surface-variant');
+
+            let filtered = allTrainers;
+            if (specialty !== 'all') {
+                filtered = allTrainers.filter(t => 
+                    t.specialty?.includes(specialty) || 
+                    t.tags?.includes(specialty)
+                );
+            }
+            
+            sortAndRender(filtered);
+        }
+
+        function sortTrainers() {
+            currentSort = document.getElementById('sort-by').value;
+            let filtered = currentFilter === 'all' ? allTrainers : allTrainers.filter(t => 
+                t.specialty?.includes(currentFilter) || t.tags?.includes(currentFilter)
+            );
+            sortAndRender(filtered);
+        }
+
+        function sortAndRender(trainers) {
+            let sorted = [...trainers];
+            
+            switch(currentSort) {
+                case 'rating':
+                    sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    break;
+                case 'price-low':
+                    sorted.sort((a, b) => (a.plans?.hourly?.price || 2000) - (b.plans?.hourly?.price || 2000));
+                    break;
+                case 'price-high':
+                    sorted.sort((a, b) => (b.plans?.hourly?.price || 2000) - (a.plans?.hourly?.price || 2000));
+                    break;
+                case 'experience':
+                    sorted.sort((a, b) => (b.experience || 0) - (a.experience || 0));
+                    break;
+            }
+            
+            renderTrainers(sorted);
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('search-query').value.toLowerCase();
+            const mode = document.getElementById('search-mode').value;
+            const location = mode === 'offline' ? document.getElementById('search-location').value : '';
+
+            let filtered = allTrainers;
+
+            if (query) {
+                filtered = filtered.filter(t => 
+                    t.name?.toLowerCase().includes(query) ||
+                    t.specialty?.toLowerCase().includes(query) ||
+                    t.bio?.toLowerCase().includes(query) ||
+                    t.tags?.some(tag => tag.toLowerCase().includes(query))
+                );
+            }
+
+            if (location) {
+                filtered = filtered.filter(t => 
+                    t.location?.toLowerCase().includes(location.toLowerCase())
+                );
+            }
+
+            sortAndRender(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-query').value = '';
+            document.getElementById('search-mode').value = 'online';
+            document.getElementById('search-location').style.display = 'none';
+            currentFilter = 'all';
+            currentSort = 'rating';
+            
+            document.querySelectorAll('.filter-tag').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-on-primary');
+                btn.classList.add('border-outline', 'text-on-surface-variant');
+            });
+            document.querySelector('.filter-tag').classList.add('active', 'bg-primary', 'text-on-primary', 'border-primary');
+            
+            renderTrainers(allTrainers);
+        }
+
+        // Load trainers on page load
+        loadTrainers();
+    </script>
+</body>
+</html>
