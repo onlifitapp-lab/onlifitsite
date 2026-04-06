@@ -311,80 +311,10 @@
 
                 <!-- See More Button -->
                 <div class="text-center">
-                    <button
+                    <button onclick="document.getElementById('trainer-list').scrollIntoView({ behavior: 'smooth' })"
                         class="px-8 py-4 font-bold text-lg border-2 border-primary text-primary rounded-full hover:bg-primary hover:text-on-primary transition-all duration-300">
                         Explore 5,000+ Trainers
                     </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section class="py-16 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
-                    <div class="max-w-2xl">
-                        <h2 class="font-headline text-3xl lg:text-4xl font-black text-on-surface mb-3">Success Stories
-                        </h2>
-                        <p class="text-on-surface-variant text-base">Hear from real clients who achieved their fitness
-                            goals with Onlifit's community of trainers.</p>
-                    </div>
-                    <div class="hidden md:flex gap-2 mt-8 md:mt-0">
-                        <button onclick="scrollTestimonials(-1)"
-                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                            <span class="material-symbols-outlined">west</span>
-                        </button>
-                        <button onclick="scrollTestimonials(1)"
-                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                            <span class="material-symbols-outlined">east</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div id="testimonial-carousel" class="flex gap-6 overflow-x-auto testimonial-carousel hide-scrollbar snap-x snap-mandatory pb-8">
-                    <!-- Hardcoded Success Stories -->
-                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                        <div class="flex gap-1 text-tertiary mb-4">
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                        </div>
-                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"I've struggled with consistency for years. Finding a curated expert on Onlifit who understood my schedule completely changed the game. I lost 8kg in 3 months!"</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Rahul Desai</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Vikram Singh</p>
-                        </div>
-                    </div>
-                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                        <div class="flex gap-1 text-tertiary mb-4">
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                        </div>
-                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"The flexibility of online sessions combined with the accountability of a real human coach is unbeatable. My mobility has never been better."</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Pooja Sharma</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Priya Patel</p>
-                        </div>
-                    </div>
-                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                        <div class="flex gap-1 text-tertiary mb-4">
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                            <span class="material-symbols-outlined font-bold text-sm">star</span>
-                        </div>
-                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"Premium experience from start to finish. My trainer created a custom performance plan that helped me clear my first half-marathon comfortably."</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Sunil Kumar</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Arjun Sharma</p>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -494,6 +424,76 @@
                         <h3 class="font-headline text-xl font-bold mb-3">Guaranteed Results</h3>
                         <p class="text-on-surface-variant text-sm">Our trainers use data-driven approaches to track and
                             ensure your fitness transformation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="py-16 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-16">
+                    <div class="max-w-2xl">
+                        <h2 class="font-headline text-3xl lg:text-4xl font-black text-on-surface mb-3">Success Stories
+                        </h2>
+                        <p class="text-on-surface-variant text-base">Hear from real clients who achieved their fitness
+                            goals with Onlifit's community of trainers.</p>
+                    </div>
+                    <div class="hidden md:flex gap-2 mt-8 md:mt-0">
+                        <button onclick="scrollTestimonials(-1)"
+                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <span class="material-symbols-outlined">west</span>
+                        </button>
+                        <button onclick="scrollTestimonials(1)"
+                            class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <span class="material-symbols-outlined">east</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="testimonial-carousel" class="flex gap-6 overflow-x-auto testimonial-carousel hide-scrollbar snap-x snap-mandatory pb-8">
+                    <!-- Hardcoded Success Stories -->
+                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                        <div class="flex gap-1 text-tertiary mb-4">
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                        </div>
+                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"I've struggled with consistency for years. Finding a curated expert on Onlifit who understood my schedule completely changed the game. I lost 8kg in 3 months!"</p>
+                        <div class="flex flex-col">
+                            <p class="font-bold text-sm text-on-surface">Rahul Desai</p>
+                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Vikram Singh</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                        <div class="flex gap-1 text-tertiary mb-4">
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                        </div>
+                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"The flexibility of online sessions combined with the accountability of a real human coach is unbeatable. My mobility has never been better."</p>
+                        <div class="flex flex-col">
+                            <p class="font-bold text-sm text-on-surface">Pooja Sharma</p>
+                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Priya Patel</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                        <div class="flex gap-1 text-tertiary mb-4">
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                            <span class="material-symbols-outlined font-bold text-sm">star</span>
+                        </div>
+                        <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"Premium experience from start to finish. My trainer created a custom performance plan that helped me clear my first half-marathon comfortably."</p>
+                        <div class="flex flex-col">
+                            <p class="font-bold text-sm text-on-surface">Sunil Kumar</p>
+                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Arjun Sharma</p>
+                        </div>
                     </div>
                 </div>
             </div>
