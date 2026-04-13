@@ -1306,9 +1306,11 @@
                     .select(`
                         id,
                         created_at,
-                        amount,
+                        date,
+                        price,
+                        commission,
                         status,
-                        booking_type,
+                        plan_label,
                         client:client_id(name, email),
                         trainer:trainer_id(name)
                     `)
@@ -1327,7 +1329,7 @@
                     const filtered = allRevenue.filter(r => 
                         r.client?.name?.toLowerCase().includes(searchTerm) ||
                         r.trainer?.name?.toLowerCase().includes(searchTerm) ||
-                        r.booking_type?.toLowerCase().includes(searchTerm)
+                        r.plan_label?.toLowerCase().includes(searchTerm)
                     );
                     renderRevenueTable(filtered);
                 });
@@ -1354,11 +1356,13 @@
                 return;
             }
 
-            const totalRevenue = revenue.reduce((sum, r) => sum + (r.amount || 0), 0);
+            const totalRevenue = revenue.reduce((sum, r) => sum + (r.price || 0), 0);
+            const totalCommission = revenue.reduce((sum, r) => sum + (Number(r.commission) || 0), 0);
 
             let html = `
-                <div style="padding: 20px; border-bottom: 1px solid #E8E8E8;">
-                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Total Revenue: <span style="color: #000000;">₹${totalRevenue.toLocaleString('en-IN')}</span></h3>
+                <div style="padding: 20px; border-bottom: 1px solid #E8E8E8; display: flex; gap: 40px;">
+                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Total GMV: <span style="color: #000000;">₹${totalRevenue.toLocaleString('en-IN')}</span></h3>
+                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Net Platform Commission: <span style="color: green;">₹${totalCommission.toLocaleString('en-IN')}</span></h3>
                 </div>
                 <table>
                     <thead>
@@ -1368,6 +1372,7 @@
                             <th>Trainer</th>
                             <th>Type</th>
                             <th>Amount</th>
+                            <th style="color: green;">Commission</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -1376,14 +1381,17 @@
 
             revenue.forEach(transaction => {
                 const date = new Date(transaction.created_at).toLocaleDateString('en-IN');
-                const badgeClass = transaction.status === 'completed' ? 'badge-verified' : 'badge-pending';
+                const badgeClass = transaction.status === 'completed' || transaction.status === 'confirmed' ? 'badge-verified' : 'badge-pending';
+                const commissionVal = transaction.commission ? `₹${Number(transaction.commission).toLocaleString('en-IN')}` : '₹0';
+                
                 html += `
                     <tr>
                         <td>${date}</td>
                         <td>${transaction.client?.name || 'N/A'}</td>
                         <td>${transaction.trainer?.name || 'N/A'}</td>
-                        <td>${transaction.booking_type || 'N/A'}</td>
-                        <td><strong>₹${(transaction.amount || 0).toLocaleString('en-IN')}</strong></td>
+                        <td>${transaction.plan_label || 'N/A'}</td>
+                        <td><strong>₹${(transaction.price || 0).toLocaleString('en-IN')}</strong></td>
+                        <td style="color: green; font-weight: bold;">${commissionVal}</td>
                         <td><span class="badge ${badgeClass}">${transaction.status}</span></td>
                     </tr>
                 `;
@@ -1403,9 +1411,10 @@
                     .select(`
                         id,
                         created_at,
-                        booking_date,
-                        booking_time,
-                        amount,
+                        date,
+                        time,
+                        price,
+                        commission,
                         status,
                         client:client_id(name, email),
                         trainer:trainer_id(name)
@@ -1462,24 +1471,28 @@
                             <th>Trainer</th>
                             <th>Status</th>
                             <th>Amount</th>
+                            <th style="color:#000;">Platform Commission</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
             bookings.forEach(booking => {
-                const date = booking.booking_date ? new Date(booking.booking_date).toLocaleDateString('en-IN') : 'N/A';
-                const time = booking.booking_time || 'N/A';
+                const dateVal = booking.date ? new Date(booking.date).toLocaleDateString('en-IN') : 'N/A';
+                const timeVal = booking.time || 'N/A';
                 const badgeClass = booking.status === 'completed' ? 'badge-verified' : 
                                  booking.status === 'cancelled' ? 'badge-rejected' : 'badge-pending';
+                const commissionVal = booking.commission ? `₹${Number(booking.commission).toLocaleString('en-IN')}` : '₹0';
+                
                 html += `
                     <tr>
                         <td><code>${booking.id.substring(0, 8)}...</code></td>
-                        <td>${date} ${time}</td>
+                        <td>${dateVal} ${timeVal}</td>
                         <td>${booking.client?.name || 'N/A'}</td>
                         <td>${booking.trainer?.name || 'N/A'}</td>
                         <td><span class="badge ${badgeClass}">${booking.status}</span></td>
-                        <td><strong>₹${(booking.amount || 0).toLocaleString('en-IN')}</strong></td>
+                        <td><strong>₹${(booking.price || 0).toLocaleString('en-IN')}</strong></td>
+                        <td style="color: green; font-weight: bold;">${commissionVal}</td>
                     </tr>
                 `;
             });
