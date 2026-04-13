@@ -196,6 +196,15 @@
             document.getElementById('empty-state').classList.add('hidden');
             
             try {
+                // Return immediately if cached
+                const cached = sessionStorage.getItem('onlifit_trainers_cache');
+                const cacheTime = sessionStorage.getItem('onlifit_trainers_time');
+                if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < 300000)) {
+                    allTrainers = JSON.parse(cached);
+                    renderTrainers(allTrainers);
+                    return; // Loaded from cache
+                }
+
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('id, name, avatar_url, rating, location, specialty, bio, plans, tags')
@@ -205,6 +214,11 @@
                 if (error) throw error;
 
                 allTrainers = data || [];
+                
+                // Save to cache for 5 minutes
+                sessionStorage.setItem('onlifit_trainers_cache', JSON.stringify(allTrainers));
+                sessionStorage.setItem('onlifit_trainers_time', Date.now().toString());
+
                 renderTrainers(allTrainers);
             } catch (error) {
                 console.error('Error loading trainers:', error);

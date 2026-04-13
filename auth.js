@@ -401,15 +401,27 @@ const DUMMY_TRAINERS = [
     { id: 'd4', name: 'Neha Gupta', specialty: 'HIIT & Fat Loss', experience: '4+ years', rating: 4.7, review_count: 85, location: 'Online', avatar_url: '🔥', plans: { basic: {price: 899, label: '1 Session'}, standard: {price: 3199, label: '4 Sessions'} }, tags: ['Cardio', 'Endurance'] }
 ];
 
+let _cachedTrainers = null;
+let _cachedTrainersTime = 0;
+
 async function getTrainers() {
+    // Use memory cache if available and less than 5 minutes old
+    if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
+        return _cachedTrainers;
+    }
+
     const { data, error } = await supabaseClient
         .from('profiles')
         .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
         .eq('role', 'trainer');
-    
+
     if (!data || data.length === 0) {
         return DUMMY_TRAINERS;
     }
+    
+    // Save to cache
+    _cachedTrainers = data;
+    _cachedTrainersTime = Date.now();
     return data;
 }
 
@@ -501,6 +513,23 @@ async function submitReview(trainerId, rating, text) {
 }
 
 async function searchTrainers(query, location) {
+    // If we have cached trainers, pre-filter them locally for instant rendering
+    if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
+        let filtered = _cachedTrainers;
+        if (query) {
+            const lowQ = query.toLowerCase();
+            filtered = filtered.filter(t => 
+                (t.name && t.name.toLowerCase().includes(lowQ)) || 
+                (t.specialty && t.specialty.toLowerCase().includes(lowQ)) || 
+                (t.bio && t.bio.toLowerCase().includes(lowQ))
+            );
+        }
+        if (location) {
+            filtered = filtered.filter(t => t.location && t.location.toLowerCase().includes(location.toLowerCase()));
+        }
+        return filtered;
+    }
+
     let q = supabaseClient
         .from('profiles')
         .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
