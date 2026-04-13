@@ -461,6 +461,10 @@ async function getTrainers() {
     } catch (err) {
         return DUMMY_TRAINERS;
     }
+}
+
+async function getTrainerById(id) {
+    const { data: trainer, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', id)
