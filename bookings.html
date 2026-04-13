@@ -112,13 +112,13 @@
 <span class="material-symbols-outlined">calendar_today</span>
 <span>Bookings</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="#">
-<span class="material-symbols-outlined">group</span>
-<span>My Trainees</span>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="messages.html">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span>Messages</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="#">
-<span class="material-symbols-outlined">payments</span>
-<span>Earnings</span>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="settings.html">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
 </a>
 </nav>
 <div class="px-6 mt-auto pb-10">
@@ -133,10 +133,10 @@
 <header class="mb-10 flex justify-between items-end">
 <div>
 <h1 class="text-3xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
-<p class="text-on-surface-variant mt-1">Welcome back, Alex. You have 1 new booking allocation to review.</p>
+<p class="text-on-surface-variant mt-1" id="welcome-message">Welcome back! Loading your bookings...</p>
 </div>
 <div class="flex gap-2">
-<span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant">October 24, 2024</span>
+<span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant" id="current-date">Loading...</span>
 </div>
 </header>
 <div class="grid grid-cols-12 gap-6">
@@ -224,12 +224,22 @@
         if (avatarElem) avatarElem.textContent = user.name.charAt(0).toUpperCase();
         if (nameElem) nameElem.textContent = user.name;
         
+        // ── Update date ──────────────────────────────────────────
+        const dateElem = document.getElementById('current-date');
+        if (dateElem) {
+            dateElem.textContent = new Date().toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+        
         const bookings = await getBookings();
-        updateStats(bookings);
+        updateStats(bookings, user);
         await renderAllocation(bookings);
     }
 
-    function updateStats(bookings) {
+    function updateStats(bookings, user) {
         const totalBookings = bookings.length;
         const thisMonth = bookings.filter(b => {
             const d = new Date(b.date);
@@ -237,7 +247,19 @@
             return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
         }).length;
 
-        // Update UI
+        // Update welcome message
+        const firstName = user.name.split(' ')[0];
+        const pendingCount = bookings.filter(b => b.status === 'pending').length;
+        const welcomeMsg = document.getElementById('welcome-message');
+        if (welcomeMsg) {
+            if (pendingCount > 0) {
+                welcomeMsg.textContent = `Welcome back, ${firstName}! You have ${pendingCount} new booking ${pendingCount === 1 ? 'allocation' : 'allocations'} to review.`;
+            } else {
+                welcomeMsg.textContent = `Welcome back, ${firstName}! You're all caught up.`;
+            }
+        }
+
+        // Update UI stats
         document.querySelectorAll('h3.font-headline')[1].textContent = totalBookings;
         document.querySelector('.text-green-500.font-bold').innerHTML = `<span class="material-symbols-outlined text-sm">trending_up</span> +${thisMonth} this month`;
     }
@@ -305,9 +327,5 @@
     }
 
     initDashboard();
-    
-    // Update date
-    const dateElem = document.querySelector('span.px-4.py-2.bg-white');
-    if (dateElem) dateElem.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 </script>
 </body></html>

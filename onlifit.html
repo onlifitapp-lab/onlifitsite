@@ -164,6 +164,8 @@
                         class="text-sm font-bold text-on-surface hover:text-primary transition-colors">About</a>
                     <a href="pricing.html"
                         class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Pricing</a>
+                    <a href="calculators.html"
+                        class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Free Tools</a>
                     <a href="join-us.html"
                         class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Join Us</a>
                 </div>
@@ -204,23 +206,55 @@
                         </h2>
 
                         <!-- Search Bar -->
-                        <div class="bg-white rounded-2xl shadow-xl w-full p-2 border border-outline-variant/50 flex flex-col md:flex-row gap-2 mb-8 transform transition-all hover:shadow-2xl">
-                    <div class="flex-1 flex items-center gap-3 px-5 py-4 md:border-r border-outline-variant/30">
-                        <input id="search-query" type="text" placeholder="Try “Yoga” or “Weight Loss”"
-                            class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                        <div class="bg-white rounded-2xl shadow-xl w-full p-2 border border-outline-variant/50 flex flex-col md:flex-row gap-2 mb-8 transform transition-all hover:shadow-2xl relative z-50">
+                    <div class="flex-1 flex items-center relative px-5 py-4 md:border-r border-outline-variant/30">
+                        <div class="relative w-full h-full flex items-center">
+                            <span class="material-symbols-outlined absolute left-0 text-on-surface-variant pointer-events-none">search</span>
+                            <div class="relative w-full h-full flex items-center overflow-hidden pl-8">
+                                <input id="search-query" type="text" 
+                                    class="w-full h-full border-none focus:ring-0 text-on-surface text-base outline-none p-0 bg-transparent z-10 relative bg-white mix-blend-multiply placeholder-transparent focus:placeholder-transparent" 
+                                    autocomplete="off" />
+                                <div id="dynamic-placeholder" class="absolute left-8 top-0 h-full flex flex-col justify-center transition-transform duration-500 pointer-events-none text-on-surface-variant/70 text-base select-none z-0">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Autocomplete Dropdown -->
+                        <div id="autocomplete-dropdown" class="absolute top-[120%] left-0 w-[calc(100vw-3rem)] md:w-[400px] bg-white rounded-xl shadow-elevated border border-outline-variant/30 overflow-hidden hidden transform transition-all duration-300 opacity-0 translate-y-2 z-50">
+                            <!-- Categories -->
+                            <div class="p-2">
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 mt-1 px-3">Filter by Goal</p>
+                                <ul class="space-y-0.5">
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-primary">self_improvement</span> Yoga</button></li>
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-tertiary">monitor_weight</span> Weight Loss</button></li>
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-secondary">fitness_center</span> Gym & Strength</button></li>
+                                </ul>
+                            </div>
+                            <div class="h-[1px] bg-outline-variant/30 w-full"></div>
+                            <!-- Locations -->
+                            <div class="p-2">
+                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 mt-1 px-3">Popular Locations</p>
+                                <ul class="space-y-0.5">
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Hyderabad</button></li>
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Kondapur</button></li>
+                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Bengaluru</button></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 flex items-center gap-3 px-5 py-4">
+                    <div class="flex-none flex items-center gap-3 px-5 py-4 relative z-40 border-t md:border-t-0 md:border-l border-outline-variant/30">
                         <select id="search-mode" onchange="toggleLocationInput()" 
-                            class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer">
+                            class="w-28 md:w-32 border-none focus:ring-0 text-on-surface text-base font-semibold outline-none py-0 pl-0 pr-8 bg-transparent cursor-pointer">
                             <option value="online">Online</option>
                             <option value="offline">Offline</option>
                         </select>
                         <input id="search-location" type="text" placeholder="Pincode or City" 
                             style="display: none;"
-                            class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                            class="w-32 md:w-40 border-none focus:ring-0 text-on-surface text-base font-semibold placeholder:text-on-surface-variant/70 outline-none p-0 bg-transparent" />
                     </div>
                     <button onclick="performSearch()"
-                        class="bg-secondary text-on-secondary px-10 py-4 rounded-xl text-lg font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-secondary/10">
+                        class="bg-secondary text-on-secondary px-8 py-3 rounded-xl text-base font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-secondary/10 w-full md:w-auto">
                         Search
                     </button>
                 </div>
@@ -320,48 +354,75 @@
         </section>
 
         <!-- How It Works Section -->
-        <section class="py-16 px-6 bg-surface-container-low" id="how-it-works">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-16">
-                    <h2 class="font-headline text-3xl lg:text-4xl font-black text-on-surface mb-4">Your Transformation
+        <section class="py-24 px-6 bg-surface-container-lowest relative overflow-hidden" id="how-it-works">
+            <!-- Decorative Background Elements -->
+            <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="text-center mb-20">
+                    <span class="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-sm font-bold uppercase tracking-wider mb-4 border border-primary/20">Simple Process</span>
+                    <h2 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Your Transformation
                         Path</h2>
-                    <p class="text-on-surface-variant text-base max-w-2xl mx-auto">Three simple steps to connect with
+                    <p class="text-on-surface-variant text-lg max-w-2xl mx-auto font-medium">Three simple steps to connect with
                         professional expertise and achieve your physical goals.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 relative">
+                    <!-- Connector Line (Desktop Only) -->
+                    <div class="hidden md:block absolute top-[5.5rem] left-[15%] right-[15%] h-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-tertiary/20 rounded-full z-0">
+                        <!-- Animated moving dot -->
+                        <div class="absolute top-0 left-0 w-full h-full overflow-hidden rounded-full">
+                            <div class="w-1/3 h-full bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-[shimmer_3s_infinite]"></div>
+                        </div>
+                    </div>
+
                     <!-- Step 1 -->
-                    <div class="relative z-10 flex flex-col items-center text-center group">
-                        <div
-                            class="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 group-hover:rotate-6 transition-transform duration-500">
-                            <span class="material-symbols-outlined text-primary text-4xl">track_changes</span>
+                    <div class="relative z-10 flex flex-col items-center group">
+                        <div class="w-44 h-44 relative mb-4 flex justify-center items-center">
+                            <div class="absolute inset-0 bg-primary/10 rounded-full group-hover:scale-110 transition-transform duration-700 ease-out border border-primary/20"></div>
+                            <div class="absolute -top-1 -right-1 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-primary/30 z-20 group-hover:scale-110 transition-transform duration-300">1</div>
+                            <div class="w-28 h-28 bg-white rounded-full shadow-elevated flex justify-center items-center overflow-hidden z-10 relative">
+                                <div class="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                                <span class="material-symbols-outlined text-primary text-[3rem] relative z-10 group-hover:scale-110 transition-transform duration-300">track_changes</span>
+                            </div>
                         </div>
-                        <h3 class="font-headline text-2xl font-bold mb-4">Define Your Goal</h3>
-                        <p class="text-on-surface-variant px-4">Whether it's weight loss, strength, or flexibility, we
-                            tailor the search to your specific needs.</p>
+                        <div class="bg-white w-full rounded-3xl p-8 border border-outline-variant/30 shadow-sm group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 text-center h-full relative overflow-hidden">
+                            <h3 class="font-headline text-2xl font-bold mb-4 text-on-surface group-hover:text-primary transition-colors relative z-10">Define Your Goal</h3>
+                            <p class="text-on-surface-variant font-medium leading-relaxed relative z-10">Whether it's weight loss, strength, or flexibility, we tailor the search to your specific needs.</p>
+                        </div>
                     </div>
+
                     <!-- Step 2 -->
-                    <div class="relative z-10 flex flex-col items-center text-center group">
-                        <div
-                            class="w-24 h-24 rounded-3xl bg-secondary/10 flex items-center justify-center mb-8 group-hover:-rotate-6 transition-transform duration-500">
-                            <span class="material-symbols-outlined text-secondary text-4xl">handshake</span>
+                    <div class="relative z-10 flex flex-col items-center group mt-8 md:mt-0">
+                        <div class="w-44 h-44 relative mb-4 flex justify-center items-center">
+                            <div class="absolute inset-0 bg-secondary/10 rounded-full group-hover:scale-110 transition-transform duration-700 ease-out border border-secondary/20"></div>
+                            <div class="absolute -top-1 -right-1 w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-secondary/30 z-20 group-hover:scale-110 transition-transform duration-300">2</div>
+                            <div class="w-28 h-28 bg-white rounded-full shadow-elevated flex justify-center items-center overflow-hidden z-10 relative">
+                                <div class="absolute inset-0 bg-secondary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                                <span class="material-symbols-outlined text-secondary text-[3rem] relative z-10 group-hover:scale-110 transition-transform duration-300">handshake</span>
+                            </div>
                         </div>
-                        <h3 class="font-headline text-2xl font-bold mb-4">Instant Matching</h3>
-                        <p class="text-on-surface-variant px-4">Our algorithm suggests the best local or online trainers
-                            based on your schedule and goals.</p>
+                        <div class="bg-white w-full rounded-3xl p-8 border border-outline-variant/30 shadow-sm group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 text-center h-full relative overflow-hidden">
+                            <h3 class="font-headline text-2xl font-bold mb-4 text-on-surface group-hover:text-secondary transition-colors relative z-10">Instant Matching</h3>
+                            <p class="text-on-surface-variant font-medium leading-relaxed relative z-10">Our algorithm suggests the best local or online trainers based on your schedule and goals.</p>
+                        </div>
                     </div>
+
                     <!-- Step 3 -->
-                    <div class="relative z-10 flex flex-col items-center text-center group">
-                        <div
-                            class="w-24 h-24 rounded-3xl bg-tertiary/10 flex items-center justify-center mb-8 group-hover:rotate-6 transition-transform duration-500">
-                            <span class="material-symbols-outlined text-tertiary text-4xl">forum</span>
+                    <div class="relative z-10 flex flex-col items-center group mt-8 md:mt-0">
+                        <div class="w-44 h-44 relative mb-4 flex justify-center items-center">
+                            <div class="absolute inset-0 bg-tertiary/10 rounded-full group-hover:scale-110 transition-transform duration-700 ease-out border border-tertiary/20"></div>
+                            <div class="absolute -top-1 -right-1 w-12 h-12 bg-tertiary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg shadow-tertiary/30 z-20 group-hover:scale-110 transition-transform duration-300">3</div>
+                            <div class="w-28 h-28 bg-white rounded-full shadow-elevated flex justify-center items-center overflow-hidden z-10 relative">
+                                <div class="absolute inset-0 bg-tertiary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+                                <span class="material-symbols-outlined text-tertiary text-[3rem] relative z-10 group-hover:scale-110 transition-transform duration-300">forum</span>
+                            </div>
                         </div>
-                        <h3 class="font-headline text-2xl font-bold mb-4">Start Training</h3>
-                        <p class="text-on-surface-variant px-4">Connect instantly via our secure messenger to book your
-                            first session and discuss your plan.</p>
-                    </div>
-                    <!-- Connector Line -->
-                    <div
-                        class="hidden md:block absolute top-12 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-primary/20 via-secondary/20 to-tertiary/20 -z-0">
+                        <div class="bg-white w-full rounded-3xl p-8 border border-outline-variant/30 shadow-sm group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2 text-center h-full relative overflow-hidden">
+                            <h3 class="font-headline text-2xl font-bold mb-4 text-on-surface group-hover:text-tertiary transition-colors relative z-10">Start Training</h3>
+                            <p class="text-on-surface-variant font-medium leading-relaxed relative z-10">Connect instantly via our secure messenger to book your first session and discuss your plan.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -462,9 +523,14 @@
                             <span class="material-symbols-outlined font-bold text-sm">star</span>
                         </div>
                         <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"I've struggled with consistency for years. Finding a curated expert on Onlifit who understood my schedule completely changed the game. I lost 8kg in 3 months!"</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Rahul Desai</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Vikram Singh</p>
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-lg flex-shrink-0">
+                                👨🏽
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="font-bold text-sm text-on-surface">Rahul Desai</p>
+                                <p class="text-xs font-semibold text-on-surface-variant">Trained with Vikram Singh</p>
+                            </div>
                         </div>
                     </div>
                     <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
@@ -476,9 +542,14 @@
                             <span class="material-symbols-outlined font-bold text-sm">star</span>
                         </div>
                         <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"The flexibility of online sessions combined with the accountability of a real human coach is unbeatable. My mobility has never been better."</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Pooja Sharma</p>
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary text-lg flex-shrink-0">
+                                👩🏽
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="font-bold text-sm text-on-surface">Pooja Sharma</p>
                             <p class="text-xs font-semibold text-on-surface-variant">Trained with Priya Patel</p>
+                            </div>
                         </div>
                     </div>
                     <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
@@ -490,9 +561,14 @@
                             <span class="material-symbols-outlined font-bold text-sm">star</span>
                         </div>
                         <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"Premium experience from start to finish. My trainer created a custom performance plan that helped me clear my first half-marathon comfortably."</p>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Sunil Kumar</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Trained with Arjun Sharma</p>
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary text-lg flex-shrink-0">
+                                🧔🏽‍♂️
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="font-bold text-sm text-on-surface">Sunil Kumar</p>
+                                <p class="text-xs font-semibold text-on-surface-variant">Trained with Arjun Sharma</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -559,20 +635,20 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
                 <!-- Brand -->
                 <div class="lg:col-span-1">
-                    <div class="text-3xl font-black tracking-tighter text-white font-headline mb-6">Onlifit</div>
+                    <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-white font-headline font-semibold mb-6 block">Onlifit</a>
                     <p class="text-surface-container-highest/60 text-sm mb-8 leading-relaxed">Connecting people with
                         expert trainers to achieve life-changing physical transformations through personalized coaching
                         and modern technology.</p>
                     <div class="flex gap-4">
-                        <a href="#"
-                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><span
-                                class="material-symbols-outlined text-base">facebook</span></a>
-                        <a href="#"
-                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><span
-                                class="material-symbols-outlined text-base">terminal</span></a>
-                        <a href="#"
-                            class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors"><span
-                                class="material-symbols-outlined text-base">forum</span></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="Facebook">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="Instagram">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd" /></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="WhatsApp">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.399 0 .015 5.385.015 12.016c0 2.12.553 4.195 1.602 6.014L.037 24l6.126-1.605c1.768.956 3.766 1.464 5.868 1.464 6.633 0 12.016-5.385 12.016-12.018 0-6.63-5.383-12.016-12.016-12.016zm.006 21.848c-1.787 0-3.52-.486-5.042-1.402l-.362-.215-3.743.98 1.002-3.648-.236-.376C2.605 15.653 2.04 13.87 2.04 12.02c0-5.515 4.49-10 10.007-10 5.516 0 10.006 4.485 10.006 10s-4.49 10-10.016 10zM17.5 14.536c-.302-.152-1.792-.885-2.07-.986-.277-.101-.48-.152-.68.152-.2.302-.782.986-.957 1.187-.176.202-.352.227-.655.076-2.02-.996-3.486-2.463-4.32-4.14-.15-.302.2-.284.496-.867.075-.152.038-.284-.038-.436-.076-.152-.68-1.64-.932-2.247-.245-.589-.495-.508-.68-.518-.176-.01-.377-.01-.58-.01-.2 0-.528.076-.804.378-.277.302-1.055 1.03-1.055 2.516 0 1.485 1.08 2.922 1.23 3.123.15.202 2.128 3.262 5.155 4.566 1.95 2.215 2.808 2.176 3.313 2.076.536-.104 1.792-.733 2.045-1.442.253-.708.253-1.314.177-1.44-.076-.126-.277-.202-.58-.354z" /></svg>
+                        </a>
                     </div>
                 </div>
                 <!-- Quick Links -->
@@ -581,8 +657,7 @@
                     <div class="flex flex-col gap-4 text-sm text-surface-container-highest/60">
                         <a href="about.html" class="hover:text-white transition-colors">About Us</a>
                         <a href="pricing.html" class="hover:text-white transition-colors">Pricing Plans</a>
-                        <a href="#" class="hover:text-white transition-colors">Success Stories</a>
-                        <a href="#" class="hover:text-white transition-colors">Careers</a>
+                        <a href="join-us.html" class="hover:text-white transition-colors">Join Us</a>
                     </div>
                 </div>
                 <!-- Support -->
@@ -592,7 +667,6 @@
                         <a href="faq.html" class="hover:text-white transition-colors">FAQ</a>
                         <a href="terms.html" class="hover:text-white transition-colors">Terms & Conditions</a>
                         <a href="privacy.html" class="hover:text-white transition-colors">Privacy Policy</a>
-                        <a href="mailto:support@onlifit.in" class="hover:text-white transition-colors">Contact Us</a>
                     </div>
                 </div>
                 <!-- Newsletter -->
@@ -621,6 +695,98 @@
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
+        // Rotating Placeholder Logic
+        const searchInput = document.getElementById('search-query');
+        const dynamicPlaceholder = document.getElementById('dynamic-placeholder');
+        const placeholders = [
+            "Try “Yoga Trainer”",
+            "Search “Weight Loss Coach”",
+            "Find “Personal Trainer near me”",
+            "Try “Zumba Expert”"
+        ];
+        
+        let placeholderIndex = 0;
+        let isAnimating = false;
+
+        function rotatePlaceholder() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Slide out up
+            dynamicPlaceholder.style.transform = 'translateY(-100%)';
+            dynamicPlaceholder.style.opacity = '0';
+            
+            setTimeout(() => {
+                placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+                dynamicPlaceholder.innerText = placeholders[placeholderIndex];
+                
+                // Snap to bottom, then slide in
+                dynamicPlaceholder.style.transition = 'none';
+                dynamicPlaceholder.style.transform = 'translateY(100%)';
+                
+                // Force reflow
+                void dynamicPlaceholder.offsetWidth;
+                
+                // Slide in up
+                dynamicPlaceholder.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease';
+                dynamicPlaceholder.style.transform = 'translateY(0)';
+                dynamicPlaceholder.style.opacity = '1';
+                
+                isAnimating = false;
+            }, 500);
+        }
+
+        // Initialize placeholder
+        dynamicPlaceholder.innerText = placeholders[0];
+        const placeholderInterval = setInterval(rotatePlaceholder, 3000);
+
+        // Hide/Show placeholder based on input value
+        searchInput.addEventListener('input', (e) => {
+            if (e.target.value.length > 0) {
+                dynamicPlaceholder.style.display = 'none';
+                clearInterval(placeholderInterval);
+            } else {
+                dynamicPlaceholder.style.display = 'flex';
+            }
+        });
+
+        // Autocomplete Logic
+        const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
+        
+        searchInput.addEventListener('focus', () => {
+            autocompleteDropdown.classList.remove('hidden');
+            setTimeout(() => {
+                autocompleteDropdown.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+        });
+
+        // Handle clicks outside to close dropdown
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
+                autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    autocompleteDropdown.classList.add('hidden');
+                }, 300);
+            }
+        });
+
+        // Handle suggestion clicking
+        document.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // Extract just the text, ignoring icons
+                const text = item.innerText.trim();
+                searchInput.value = text;
+                dynamicPlaceholder.style.display = 'none';
+                autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    autocompleteDropdown.classList.add('hidden');
+                }, 300);
+                
+                // Optional: Automatically trigger search
+                // performSearch(); 
+            });
+        });
+
         renderAuthNav();
 
         // Testimonials are hardcoded in HTML so JS rendering is no longer needed
@@ -674,44 +840,53 @@
             }
 
             container.innerHTML = trainers.map(t => `
-            <div class="flex-none snap-start group animate-count">
-                <div class="bg-surface-container-lowest rounded-lg p-3 shadow-ambient-medium hover:shadow-elevated transition-all duration-500 ghost-border">
-                    <div class="relative h-96 rounded-lg overflow-hidden mb-4 bg-gradient-to-br from-primary/10 to-primary-container/10 flex items-center justify-center">
-                        <div class="text-7xl">${t.avatar_url || '🏋️'}</div>
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                Verified
-                            </span>
+            <div class="col-span-1">
+                <a href="trainer-profile.html?id=${t.id}" class="block group h-full transition-transform duration-300 hover:-translate-y-1">
+                    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-elevated transition-shadow border border-outline-variant/30 flex flex-col h-full">
+                        
+                        <!-- Image Container -->
+                        <div class="relative h-60 w-full bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center overflow-hidden">
+                            <div class="text-[5rem] group-hover:scale-110 transition-transform duration-500">${t.avatar_url || '🧘‍♀️'}</div>
                         </div>
-                        <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg ghost-border">
-                            <div class="flex items-center justify-between">
-                                <span class="text-white font-headline font-bold text-xl">${t.name}</span>
-                                <div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">
-                                    ${t.rating || '5.0'} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                                </div>
+
+                        <!-- Content Container -->
+                        <div class="p-5 flex flex-col flex-grow">
+                            <!-- Name -->
+                            <h3 class="font-headline font-bold text-xl text-on-surface mb-1 group-hover:text-primary transition-colors">${t.name}</h3>
+                            
+                            <!-- Location -->
+                            <p class="text-sm text-on-surface-variant mb-2 font-medium">
+                                ${t.location || 'Bengaluru'} (online)
+                            </p>
+
+                            <!-- Rating & Reviews -->
+                            <div class="flex items-center gap-1.5 mb-3">
+                                <span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings: 'FILL' 1;">star</span>
+                                <span class="font-bold text-on-surface">${t.rating ? (typeof t.rating === 'number' ? t.rating.toFixed(1) : parseFloat(t.rating).toFixed(1)) : '5.0'}</span>
+                                <span class="text-sm text-on-surface-variant font-medium underline-offset-2 hover:underline">(${t.review_count || 0} reviews)</span>
+                            </div>
+
+                            <!-- Ambassador Badge -->
+                            <div class="mb-3">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-wider">
+                                    <span class="material-symbols-outlined text-[14px]">workspace_premium</span>
+                                    Ambassador
+                                </span>
+                            </div>
+
+                            <!-- Bio/Tagline -->
+                            <p class="text-sm text-on-surface mb-4 line-clamp-2 flex-grow">
+                                <span class="font-bold">${t.specialty || 'Yoga'}</span> - <span class="text-on-surface-variant">${t.bio || 'Yoga cultivates self-worth and peace, transforming your life once you start practicing.'}</span>
+                            </p>
+
+                            <!-- Price -->
+                            <div class="mt-auto pt-3">
+                                <span class="font-headline font-black text-xl text-on-surface">${formatPrice(t.plans?.hourly?.price || 2500)}</span>
+                                <span class="text-sm text-on-surface-variant font-medium">/hr</span>
                             </div>
                         </div>
                     </div>
-                    <div class="px-4 pb-4">
-                        <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[18px]">location_on</span>
-                            ${t.location || 'Online'}
-                        </p>
-                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">${t.specialty || 'Personal Trainer'}</h3>
-                        <p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${t.bio || 'Professional fitness coach dedicated to your transformation.'}</p>
-                        <div class="flex gap-2 mb-4 overflow-x-auto hide-scrollbar">
-                            ${(t.tags || ['Fitness', 'Health']).map(tag => `<span class="text-[10px] uppercase tracking-widest font-bold px-2 py-1 bg-surface-container-high text-on-surface-variant rounded whitespace-nowrap">${tag}</span>`).join('')}
-                        </div>
-                        <div class="mb-4">
-                            <span class="text-primary font-bold text-xl">${formatPrice(t.plans?.hourly?.price || 2000)}</span>
-                            <span class="text-on-surface-variant text-sm">/hour</span>
-                        </div>
-                        <button onclick="window.location.href='trainer-profile.html?id=${t.id}'" class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
-                            Get Allocated
-                        </button>
-                    </div>
-                </div>
+                </a>
             </div>
         `).join('');
         }
@@ -752,7 +927,56 @@
                 maximumFractionDigits: 0
             }).format(price);
         }
+
+        // Live Activity Ticker Logic
+        const activities = [
+            { user: "Priya", action: "booked a session with", trainer: "Vikram" },
+            { user: "Arjun", action: "just scheduled a consultation with", trainer: "Neha" },
+            { user: "Sneha", action: "started a weight loss plan with", trainer: "Ravi" },
+            { user: "Rahul", action: "renewed his yoga package with", trainer: "Kavya" },
+            { user: "Ananya", action: "rated 5 stars for", trainer: "Vikesh" }
+        ];
+
+        function showNextActivity() {
+            const ticker = document.getElementById('live-activity-ticker');
+            const data = activities[Math.floor(Math.random() * activities.length)];
+            
+            ticker.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="h-8 w-8 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                        ${data.user.charAt(0)}
+                    </div>
+                    <div>
+                        <p class="text-sm text-on-surface">
+                            <span class="font-bold">${data.user}</span> ${data.action} <span class="font-bold text-primary">${data.trainer}</span>
+                        </p>
+                        <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mt-0.5">Just now</p>
+                    </div>
+                </div>
+            `;
+            
+            // Slide up and fade in
+            ticker.style.transform = 'translateY(0)';
+            ticker.style.opacity = '1';
+            
+            // Wait 5 seconds, then slide down and fade out
+            setTimeout(() => {
+                ticker.style.transform = 'translateY(100%)';
+                ticker.style.opacity = '0';
+            }, 5000);
+        }
+
+        // Start ticker loop after 3 seconds
+        setTimeout(() => {
+            showNextActivity();
+            setInterval(showNextActivity, 12000); // Trigger every 12 seconds
+        }, 3000);
     </script>
+    
+    <!-- Live Activity Ticker Popup Component -->
+    <div id="live-activity-ticker" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 bg-surface-container-lowest border border-outline-variant/30 px-4 py-3 rounded-2xl shadow-elevated z-50 max-w-[300px] transform translate-y-[150%] opacity-0 transition-all duration-700 pointer-events-none">
+        <!-- Content injected by JS -->
+    </div>
 
 </body>
 

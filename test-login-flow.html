@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login Flow - Onlifit</title>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { color: #1e40af; margin-top: 0; }
+        h2 { color: #334155; font-size: 1.2em; margin-top: 0; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .danger { background: #ef4444; }
+        .danger:hover { background: #dc2626; }
+        .success { background: #10b981; }
+        .success:hover { background: #059669; }
+        .info {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .user-info {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .error {
+            background: #fee;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔐 Login Flow Tester</h1>
+        <p>This page tests the automatic role detection and redirect system.</p>
+        
+        <div id="status" class="info">
+            <strong>Loading...</strong> Checking authentication status...
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Current User Status</h2>
+        <div id="user-info"></div>
+    </div>
+
+    <div class="card">
+        <h2>Test Login Scenarios</h2>
+        
+        <div class="info">
+            <strong>How the system works:</strong>
+            <ul>
+                <li><strong>Email/Password Login:</strong> Fetches role from database → redirects to correct dashboard</li>
+                <li><strong>Google OAuth Login:</strong> Checks localStorage (for signup) OR fetches from database (for returning users) → redirects accordingly</li>
+            </ul>
+        </div>
+
+        <div class="test-grid">
+            <div>
+                <h3>Email Login Tests</h3>
+                <button onclick="testEmailLogin('client')">Test Client Login</button>
+                <button onclick="testEmailLogin('trainer')">Test Trainer Login</button>
+            </div>
+            
+            <div>
+                <h3>Google OAuth Tests</h3>
+                <button onclick="testGoogleSignup('client')">New Client (Google)</button>
+                <button onclick="testGoogleSignup('trainer')">New Trainer (Google)</button>
+                <button onclick="testGoogleLogin()">Returning User (Google)</button>
+            </div>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+        <div>
+            <h3>Actions</h3>
+            <button class="success" onclick="checkCurrentUser()">Refresh User Info</button>
+            <button class="danger" onclick="performLogout()">Logout</button>
+        </div>
+
+        <div id="test-results"></div>
+    </div>
+
+    <div class="card">
+        <h2>Expected Redirects</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f5f9; text-align: left;">
+                    <th style="padding: 10px; border: 1px solid #e5e7eb;">Scenario</th>
+                    <th style="padding: 10px; border: 1px solid #e5e7eb;">Expected Redirect</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">New Trainer Signup</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>trainer-onboarding.html</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">New Client Signup</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>onboarding.html</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">Trainer Login (Email)</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>bookings.html</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">Client Login (Email)</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>client-dashboard.html</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">Trainer Login (Google)</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>bookings.html</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;">Client Login (Google)</td>
+                    <td style="padding: 10px; border: 1px solid #e5e7eb;"><code>client-dashboard.html</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Check current user on load
+        window.onload = async () => {
+            await checkCurrentUser();
+        };
+
+        async function checkCurrentUser() {
+            const statusDiv = document.getElementById('status');
+            const userInfoDiv = document.getElementById('user-info');
+
+            try {
+                const user = await getCurrentUser();
+                
+                if (user) {
+                    statusDiv.className = 'user-info';
+                    statusDiv.innerHTML = `<strong>✅ Logged In</strong> as ${user.email}`;
+                    
+                    userInfoDiv.innerHTML = `
+                        <strong>User Details:</strong><br>
+                        <strong>Name:</strong> ${user.name || 'Not set'}<br>
+                        <strong>Email:</strong> ${user.email}<br>
+                        <strong>Role:</strong> <code>${user.role || 'Not set'}</code><br>
+                        <strong>User ID:</strong> <code>${user.id}</code><br>
+                        <strong>Phone:</strong> ${user.phone || 'Not set'}<br>
+                        <strong>Onboarding:</strong> ${user.onboarding_completed ? '✅ Completed' : '⏳ Pending'}
+                    `;
+                } else {
+                    statusDiv.className = 'info';
+                    statusDiv.innerHTML = '<strong>👤 Not Logged In</strong> - You can test login flows below';
+                    userInfoDiv.innerHTML = '<p style="color: #64748b;">No user logged in. Sign up or login to test the system.</p>';
+                }
+            } catch (error) {
+                statusDiv.className = 'error';
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
+            }
+        }
+
+        function testEmailLogin(role) {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <div class="info" style="margin-top: 20px;">
+                    <strong>📧 Testing Email Login (${role}):</strong><br><br>
+                    1. Go to <code>login.html</code><br>
+                    2. Enter credentials for a ${role} account<br>
+                    3. Click "Login"<br>
+                    4. System will:<br>
+                    &nbsp;&nbsp;&nbsp;→ Fetch user from database<br>
+                    &nbsp;&nbsp;&nbsp;→ Read <code>role</code> field<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect to <code>${role === 'trainer' ? 'bookings.html' : 'client-dashboard.html'}</code><br><br>
+                    <button onclick="window.location.href='login.html'">Go to Login Page</button>
+                </div>
+            `;
+        }
+
+        function testGoogleSignup(role) {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <div class="info" style="margin-top: 20px;">
+                    <strong>🔐 Testing Google Signup (${role}):</strong><br><br>
+                    1. Will open <code>login.html?tab=signup&role=${role}</code><br>
+                    2. Click "Sign up with Google"<br>
+                    3. Complete Google authentication<br>
+                    4. System will:<br>
+                    &nbsp;&nbsp;&nbsp;→ Save <code>role=${role}</code> to localStorage<br>
+                    &nbsp;&nbsp;&nbsp;→ Create account with OAuth<br>
+                    &nbsp;&nbsp;&nbsp;→ Update profile with correct role<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect to <code>${role === 'trainer' ? 'trainer-onboarding.html' : 'onboarding.html'}</code><br><br>
+                    <button onclick="window.location.href='login.html?tab=signup&role=${role}'">Start Test</button>
+                </div>
+            `;
+        }
+
+        function testGoogleLogin() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `
+                <div class="info" style="margin-top: 20px;">
+                    <strong>🔐 Testing Google Login (Returning User):</strong><br><br>
+                    1. Will open <code>login.html</code><br>
+                    2. Click "Login with Google"<br>
+                    3. Select your existing Google account<br>
+                    4. System will:<br>
+                    &nbsp;&nbsp;&nbsp;→ Authenticate user<br>
+                    &nbsp;&nbsp;&nbsp;→ Fetch role from database<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect based on role:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Trainer → <code>bookings.html</code><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Client → <code>client-dashboard.html</code><br><br>
+                    <button onclick="window.location.href='login.html'">Start Test</button>
+                </div>
+            `;
+        }
+
+        async function performLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                await logout();
+            }
+        }
+    </script>
+</body>
+</html>

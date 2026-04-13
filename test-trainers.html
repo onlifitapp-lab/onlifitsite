@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Trainers Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Database Trainer Test</h1>
+    <div id="results" class="space-y-4"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        async function testTrainers() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test 1: Check if supabase is initialized
+                results.innerHTML += `<p>✅ Supabase client initialized</p>`;
+                
+                // Test 2: Fetch all trainers
+                const { data: trainers, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('role', 'trainer')
+                    .limit(5);
+                
+                if (error) {
+                    results.innerHTML += `<p class="text-red-600">❌ Error: ${error.message}</p>`;
+                    return;
+                }
+                
+                results.innerHTML += `<p>✅ Found ${trainers.length} trainers</p>`;
+                
+                if (trainers.length === 0) {
+                    results.innerHTML += `<p class="text-yellow-600">⚠️ No trainers in database. You need to create trainer profiles first.</p>`;
+                    results.innerHTML += `<p class="mt-4"><a href="join-us.html" class="px-4 py-2 bg-black text-white rounded">Create Trainer Profile</a></p>`;
+                } else {
+                    results.innerHTML += `<div class="mt-4"><h2 class="font-bold mb-2">Trainers in database:</h2>`;
+                    trainers.forEach(t => {
+                        results.innerHTML += `
+                            <div class="p-4 border rounded mb-2">
+                                <p><strong>Name:</strong> ${t.name || 'No name'}</p>
+                                <p><strong>ID:</strong> ${t.id}</p>
+                                <p><strong>Email:</strong> ${t.email || 'No email'}</p>
+                                <p class="mt-2">
+                                    <a href="trainer-profile.html?id=${t.id}" class="px-3 py-1 bg-blue-600 text-white rounded text-sm">View Profile</a>
+                                </p>
+                            </div>
+                        `;
+                    });
+                    results.innerHTML += `</div>`;
+                }
+                
+            } catch (err) {
+                results.innerHTML += `<p class="text-red-600">❌ Exception: ${err.message}</p>`;
+            }
+        }
+        
+        window.onload = testTrainers;
+    </script>
+</body>
+</html>

@@ -200,7 +200,7 @@
             <span class="material-symbols-outlined text-[20px]">favorite</span>
             <span>Saved Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="settings.html">
             <span class="material-symbols-outlined text-[20px]">settings</span>
             <span>Settings</span>
         </a>
@@ -425,6 +425,60 @@
 
 </main>
 
+<!-- ── Review Modal ────────────────────────────────────────────────────── -->
+<div id="review-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-surface/80 backdrop-blur-sm" onclick="closeReviewModal()"></div>
+    
+    <!-- Modal Content -->
+    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl border border-outline-variant/30 p-6 md:p-8 anim-slide-up mx-4">
+        <button onclick="closeReviewModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+        
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">star</span>
+            </div>
+            <h2 class="text-2xl font-black font-headline text-on-surface">Rate your session</h2>
+            <p class="text-sm text-on-surface-variant mt-1" id="review-trainer-name">Leave a review for</p>
+        </div>
+
+        <!-- Star Rating -->
+        <div class="flex justify-center gap-2 mb-6" id="star-rating-container">
+            <button type="button" class="star-btn cursor-pointer transition-transform hover:scale-110 active:scale-95" data-val="1">
+                <span class="material-symbols-outlined text-4xl text-outline-variant hover:text-yellow-400 transition-colors">star</span>
+            </button>
+            <button type="button" class="star-btn cursor-pointer transition-transform hover:scale-110 active:scale-95" data-val="2">
+                <span class="material-symbols-outlined text-4xl text-outline-variant hover:text-yellow-400 transition-colors">star</span>
+            </button>
+            <button type="button" class="star-btn cursor-pointer transition-transform hover:scale-110 active:scale-95" data-val="3">
+                <span class="material-symbols-outlined text-4xl text-outline-variant hover:text-yellow-400 transition-colors">star</span>
+            </button>
+            <button type="button" class="star-btn cursor-pointer transition-transform hover:scale-110 active:scale-95" data-val="4">
+                <span class="material-symbols-outlined text-4xl text-outline-variant hover:text-yellow-400 transition-colors">star</span>
+            </button>
+            <button type="button" class="star-btn cursor-pointer transition-transform hover:scale-110 active:scale-95" data-val="5">
+                <span class="material-symbols-outlined text-4xl text-outline-variant hover:text-yellow-400 transition-colors">star</span>
+            </button>
+        </div>
+        
+        <input type="hidden" id="review-trainer-id" value="">
+        <input type="hidden" id="review-rating-value" value="0">
+
+        <!-- Textarea -->
+        <div class="mb-6">
+            <label class="block text-sm font-bold text-on-surface mb-2">Share your experience (Optional)</label>
+            <textarea id="review-text" rows="3" placeholder="How was the trainer? Did they communicate well? How did you feel after the session?" class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/50 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm font-medium resize-none transition-all"></textarea>
+        </div>
+
+        <!-- Submit -->
+        <button id="submit-review-btn" onclick="handleReviewSubmit()" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+            Submit Review
+        </button>
+    </div>
+</div>
+
 <!-- ── Footer ──────────────────────────────────────────────────────────── -->
 <footer class="md:ml-64 bg-surface-container-low w-full py-8 px-6 md:px-8">
     <div class="flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-8 gap-4">
@@ -479,13 +533,13 @@
                 return; // Don't redirect, just stop
             }
 
-            // IMPORTANT: Only redirect to trainer.html if explicitly a trainer
+            // IMPORTANT: Only redirect to bookings.html if explicitly a trainer
             // Default behavior: allow client dashboard access
             console.log('User role:', user.role);
             
             if (user.role === 'trainer') {
                 console.log('User is trainer, redirecting to trainer dashboard');
-                window.location.href = 'trainer.html';
+                window.location.href = 'bookings.html';
                 return;
             }
             
@@ -727,7 +781,7 @@
         const pastHTML = await Promise.all(display.map(async b => {
             const trainer = await getTrainerById(b.trainer_id);
             return `
-            <div class="bg-white rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity">
+            <div class="bg-white rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity flex-wrap sm:flex-nowrap">
                 <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-lg flex-shrink-0">
                     ${trainer?.avatar_url || '✅'}
                 </div>
@@ -735,8 +789,15 @@
                     <p class="text-sm font-semibold text-on-surface">${trainer?.name || 'Trainer'}</p>
                     <p class="text-xs text-on-surface-variant">${formatDate(b.date)} · ${b.time || ''} · ${b.plan_label || 'Session'}</p>
                 </div>
-                <span class="text-sm font-bold text-on-surface-variant">${formatPrice(b.price || 0)}</span>
-                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider status-completed">Completed</span>
+                <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 justify-between sm:justify-end">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-bold text-on-surface-variant">${formatPrice(b.price || 0)}</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider status-completed hidden sm:inline-block">Completed</span>
+                    </div>
+                    <button onclick="openReviewModal('${b.trainer_id}', '${trainer?.name.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-primary/10 text-primary font-bold text-xs rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 whitespace-nowrap">
+                        <span class="material-symbols-outlined text-[14px]">star</span> Rate Trainer
+                    </button>
+                </div>
             </div>`;
         }));
         container.innerHTML = pastHTML.join('');
@@ -835,6 +896,88 @@
         const q = quotes[Math.floor(Math.random() * quotes.length)];
         document.getElementById('motivation-quote').textContent = '"' + q.text + '"';
         document.getElementById('motivation-author').textContent = '— ' + q.author;
+    }
+
+    // ── Reviews Logic ────────────────────────────────────────────────
+    let currentRating = 0;
+
+    function openReviewModal(trainerId, trainerName) {
+        document.getElementById('review-modal').classList.remove('hidden');
+        document.getElementById('review-trainer-name').innerText = `Leave a review for ${trainerName}`;
+        document.getElementById('review-trainer-id').value = trainerId;
+        
+        // Reset stars
+        currentRating = 0;
+        updateStars(0);
+        document.getElementById('review-text').value = '';
+        document.getElementById('submit-review-btn').disabled = false;
+        document.getElementById('submit-review-btn').innerText = 'Submit Review';
+    }
+
+    function closeReviewModal() {
+        document.getElementById('review-modal').classList.add('hidden');
+    }
+
+    function updateStars(val) {
+        const stars = document.querySelectorAll('#star-rating-container .star-btn span');
+        stars.forEach((star, index) => {
+            if (index < val) {
+                star.classList.replace('text-outline-variant', 'text-yellow-400');
+                star.style.fontVariationSettings = "'FILL' 1";
+            } else {
+                star.classList.replace('text-yellow-400', 'text-outline-variant');
+                star.style.fontVariationSettings = "'FILL' 0";
+            }
+        });
+        currentRating = val;
+    }
+
+    document.querySelectorAll('#star-rating-container .star-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const val = parseInt(e.currentTarget.getAttribute('data-val'));
+            updateStars(val);
+        });
+        
+        // Hover visual feedback
+        btn.addEventListener('mouseenter', (e) => {
+            const val = parseInt(e.currentTarget.getAttribute('data-val'));
+            const stars = document.querySelectorAll('#star-rating-container .star-btn span');
+            stars.forEach((star, index) => {
+                if (index < val) star.classList.add('text-yellow-300');
+                else star.classList.remove('text-yellow-300');
+            });
+        });
+        btn.addEventListener('mouseleave', () => {
+            const stars = document.querySelectorAll('#star-rating-container .star-btn span');
+            stars.forEach(star => star.classList.remove('text-yellow-300'));
+            updateStars(currentRating); // Restore original
+        });
+    });
+
+    async function handleReviewSubmit() {
+        const trainerId = document.getElementById('review-trainer-id').value;
+        const text = document.getElementById('review-text').value;
+
+        if (currentRating === 0) {
+            alert('Please select a star rating first!');
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-review-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Submitting...';
+
+        const result = await submitReview(trainerId, currentRating, text);
+        
+        if (result.success) {
+            alert('Review submitted successfully! Thank you for your feedback.');
+            closeReviewModal();
+            renderAll(); // Refresh data to show updated trainer info
+        } else {
+            alert('Error submitting review: ' + result.error);
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Submit Review';
+        }
     }
 
     async function renderAll() {

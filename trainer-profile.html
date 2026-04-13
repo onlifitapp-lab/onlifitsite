@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Performance: Optimized fonts - removed unused weights -->
+    <!-- Performance: Optimized fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     
@@ -97,14 +97,26 @@
                     <!-- Populated by JS -->
                 </div>
 
-                <!-- About -->
+                <!-- About the Trainer -->
                 <div id="trainer-about"
+                    class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- About the Training -->
+                <div id="trainer-training"
                     class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
                     <!-- Populated by JS -->
                 </div>
 
                 <!-- Reviews -->
                 <div id="trainer-reviews"
+                    class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Similar Trainers -->
+                <div id="similar-trainers"
                     class="bg-surface rounded-2xl p-8 shadow-ambient border border-outline-variant/20">
                     <!-- Populated by JS -->
                 </div>
@@ -192,23 +204,42 @@
         </div>
     </div>
 
-    <!-- Performance: Defer scripts to prevent blocking -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js" defer></script>
-    <script src="auth.js" defer></script>
+    <!-- Performance: Load critical scripts immediately -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
     <script>
         let trainer = null;
         let selectedPlan = null;
 
+        // Show loading skeleton
+        function showLoadingSkeleton() {
+            document.getElementById('trainer-header').innerHTML = `
+                <div class="animate-pulse flex gap-6">
+                    <div class="w-28 h-28 bg-surface-container rounded-2xl"></div>
+                    <div class="flex-1 space-y-3">
+                        <div class="h-8 bg-surface-container rounded w-1/3"></div>
+                        <div class="h-4 bg-surface-container rounded w-2/3"></div>
+                        <div class="h-4 bg-surface-container rounded w-1/2"></div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Initialize Page Content
         window.onload = async function () {
-            await renderAuthNav();
+            showLoadingSkeleton();
+            
+            // Run auth nav and trainer fetch in parallel
             const params = new URLSearchParams(window.location.search);
             const trainerId = params.get('id');
 
-            if (trainerId) {
-                trainer = await getTrainerById(trainerId);
-            }
+            const [_, trainerData] = await Promise.all([
+                renderAuthNav(),
+                trainerId ? getTrainerById(trainerId) : null
+            ]);
+
+            trainer = trainerData;
 
             if (!trainer) {
                 // Show error or redirect
@@ -232,6 +263,18 @@
             document.title = trainer.name + ' | Onlifit';
 
             // Render header
+            // Smart location display logic
+            const hasOnline = trainer.session_mode === 'online' || trainer.session_mode === 'both';
+            const hasOffline = trainer.session_mode === 'offline' || trainer.session_mode === 'both';
+            let locationDisplay = '';
+            if (hasOnline && hasOffline) {
+                locationDisplay = `${trainer.location || 'Location'} + Online`;
+            } else if (hasOnline) {
+                locationDisplay = 'Online Only';
+            } else {
+                locationDisplay = trainer.location || 'Location';
+            }
+            
             document.getElementById('trainer-header').innerHTML = `
             <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center text-5xl shadow-lg ring-4 ring-surface-container-low">
@@ -242,19 +285,30 @@
                         <h1 class="font-headline text-2xl font-bold text-on-surface">${trainer.name}</h1>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary text-on-primary">Verified</span>
                     </div>
-                    <p class="font-headline text-lg text-primary font-semibold mb-2">${trainer.specialty || 'Fitness Expert'}</p>
-                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-on-surface-variant">
-                        <span class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[16px]">location_on</span> ${trainer.location || 'Online'}
-                        </span>
+                    
+                    <!-- Specialization Tags -->
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
+                        ${(trainer.tags || ['Personal Trainer', 'Fitness']).map(tag => `
+                            <span class="px-3 py-1 bg-primary text-on-primary text-xs font-semibold rounded-full">${tag}</span>
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Rating, Response Time, Location -->
+                    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-on-surface-variant mb-2">
                         <span class="flex items-center gap-1">
                             <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
-                            <strong class="text-on-surface">${trainer.rating || '5.0'}</strong> (${trainer.review_count || 0} reviews)
+                            <strong class="text-on-surface">${trainer.rating || '5.0'}</strong> (${trainer.review_count || 0} Reviews)
                         </span>
                         <span class="flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[16px]">schedule</span> ${trainer.experience || 'Professional'}
+                            <span class="material-symbols-outlined text-[16px]">schedule</span> 
+                            <strong class="text-on-surface">${trainer.response_time || '< 3h'}</strong> response time
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px]">location_on</span> 
+                            <strong class="text-on-surface">${locationDisplay}</strong>
                         </span>
                     </div>
+                    
                     <div class="flex flex-wrap items-center mt-4 gap-3 text-center sm:text-left justify-center sm:justify-start">
                         <a href="messages.html?id=${trainer.id}" class="px-6 py-2 bg-white border border-outline-variant text-sm font-bold text-on-surface hover:border-primary hover:text-primary rounded-xl transition-all flex items-center gap-2">
                             <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Message
@@ -264,17 +318,36 @@
             </div>
         `;
 
-            // Render about
+            // Render about the trainer
             document.getElementById('trainer-about').innerHTML = `
             <h2 class="font-headline text-lg font-bold mb-4">About ${trainer.name.split(' ')[0]}</h2>
             <p class="text-on-surface-variant leading-relaxed mb-6">${trainer.bio || 'Highly motivated professional dedicated to client success.'}</p>
-            <div class="flex flex-wrap gap-2 mb-6">
-                ${(trainer.tags || ['Fitness', 'Health']).map(t => `<span class="px-3 py-1 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant uppercase tracking-wider">${t}</span>`).join('')}
-            </div>
             <div>
                 <h3 class="text-sm font-bold text-on-surface mb-3">Certifications</h3>
                 <div class="flex flex-wrap gap-2">
                     ${(trainer.certifications || ['Professional Certification']).map(c => `<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-container/30 rounded-lg text-xs font-semibold text-tertiary"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>${c}</span>`).join('')}
+                </div>
+            </div>
+        `;
+
+            // Render about the training approach
+            document.getElementById('trainer-training').innerHTML = `
+            <h2 class="font-headline text-lg font-bold mb-4">About the Training</h2>
+            <p class="text-on-surface-variant leading-relaxed mb-4">${trainer.training_approach || 'I believe in personalized training that adapts to your unique goals and fitness level. My approach combines proven techniques with modern fitness science to help you achieve sustainable results.'}</p>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="p-4 bg-surface-container-low rounded-xl">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-primary">school</span>
+                        <span class="text-sm font-bold">Teaching Style</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant">${trainer.teaching_style || 'Patient, motivating, and results-focused with clear guidance at every step.'}</p>
+                </div>
+                <div class="p-4 bg-surface-container-low rounded-xl">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-primary">target</span>
+                        <span class="text-sm font-bold">Training Focus</span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant">${trainer.training_focus || 'Goal-oriented programs with emphasis on proper form, progression, and injury prevention.'}</p>
                 </div>
             </div>
         `;
@@ -306,6 +379,19 @@
                 `).join('') : '<p class="text-on-surface-variant italic py-4 text-center">No reviews yet. Be the first to book and leave feedback!</p>'}
             </div>
         `;
+
+            // Show loading state for similar trainers
+            document.getElementById('similar-trainers').innerHTML = `
+                <h2 class="font-headline text-lg font-bold mb-4">Similar Trainers You May Like</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
+                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
+                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
+                </div>
+            `;
+            
+            // Load similar trainers lazily (don't block main content)
+            setTimeout(() => renderSimilarTrainers(), 100);
 
             // Render plans
             const p = trainer.plans || {};
@@ -416,6 +502,84 @@
                 alert('Booking failed: ' + error.message);
                 bookingBtn.disabled = false;
                 bookingBtn.innerHTML = originalBtnContent;
+            }
+        }
+
+        async function renderSimilarTrainers() {
+            try {
+                // Find trainers with similar tags/goals - fetch only needed fields
+                const trainerTags = trainer.tags || [];
+                const { data: similarTrainers, error } = await supabase
+                    .from('profiles')
+                    .select('id, name, avatar_url, tags, rating, review_count, location, plans')
+                    .eq('role', 'trainer')
+                    .neq('id', trainer.id)
+                    .limit(3);
+
+                if (error) throw error;
+
+                // Filter trainers that share at least one tag with current trainer
+                let filteredTrainers = similarTrainers || [];
+                if (trainerTags.length > 0 && filteredTrainers.length > 0) {
+                    const matchingTrainers = filteredTrainers.filter(t => 
+                        (t.tags || []).some(tag => trainerTags.includes(tag))
+                    );
+                    // Use matching trainers if found, otherwise use all
+                    if (matchingTrainers.length > 0) {
+                        filteredTrainers = matchingTrainers;
+                    }
+                }
+
+                const trainersToShow = filteredTrainers.slice(0, 3);
+
+                document.getElementById('similar-trainers').innerHTML = `
+                    <h2 class="font-headline text-lg font-bold mb-4">Similar Trainers You May Like</h2>
+                    <p class="text-sm text-on-surface-variant mb-6">Trainers with similar expertise and goals</p>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        ${trainersToShow.map(t => `
+                            <a href="trainer-profile.html?id=${t.id}" class="block p-4 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:border-primary/50 hover:shadow-lg transition-all">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center text-2xl">
+                                        ${t.avatar_url || '🏋️'}
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-sm mb-1">${t.name}</h3>
+                                        <div class="flex items-center gap-1 text-xs">
+                                            <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
+                                            <span class="font-bold">${t.rating || '5.0'}</span>
+                                            <span class="text-on-surface-variant">(${t.review_count || 0})</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-3">
+                                    ${(t.tags || ['Fitness']).slice(0, 2).map(tag => `
+                                        <span class="px-2 py-0.5 bg-primary text-on-primary text-[10px] font-semibold rounded-full">${tag}</span>
+                                    `).join('')}
+                                </div>
+                                <div class="text-xs text-on-surface-variant mb-2">
+                                    <span class="material-symbols-outlined text-[12px]">location_on</span>
+                                    ${t.location || 'Online'}
+                                </div>
+                                <div class="flex items-center justify-between pt-3 border-t border-outline-variant/20">
+                                    <span class="text-xs text-on-surface-variant">Starting at</span>
+                                    <span class="text-sm font-black text-primary">${formatPrice(t.plans?.hourly?.price || 2000)}</span>
+                                </div>
+                            </a>
+                        `).join('')}
+                    </div>
+                    <div class="mt-6 text-center">
+                        <a href="trainers.html" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-outline-variant rounded-xl font-bold text-sm hover:border-primary hover:text-primary transition-all">
+                            View All Trainers
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                        </a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading similar trainers:', error);
+                document.getElementById('similar-trainers').innerHTML = `
+                    <h2 class="font-headline text-lg font-bold mb-4">Similar Trainers You May Like</h2>
+                    <p class="text-sm text-on-surface-variant italic">Unable to load similar trainers at this time.</p>
+                `;
             }
         }
 

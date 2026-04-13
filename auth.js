@@ -57,17 +57,37 @@ async function signUp(name, email, password, role, trainerData, phone) {
 /**
  * Sign in with Google
  */
-async function signInWithGoogle() {
+async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
+        console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
+        
+        // Determine redirect based on role and whether it's signup or login
+        let redirectTo = window.location.origin;
+        if (isSignup && role === 'trainer') {
+            redirectTo += '/trainer-onboarding.html';
+        } else if (isSignup && role === 'client') {
+            redirectTo += '/onboarding.html';
+        } else if (role === 'trainer') {
+            redirectTo += '/bookings.html';
+        } else {
+            redirectTo += '/client-dashboard.html';
+        }
+        
+        // Store role in localStorage so we can use it after OAuth redirect
+        localStorage.setItem('oauth_role', role);
+        localStorage.setItem('oauth_is_signup', isSignup ? 'true' : 'false');
+        
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + '/client-dashboard.html'
+                redirectTo: redirectTo,
+                data: {
+                    role: role
+                }
             }
         });
         if (error) throw error;
-        // The redirect handles the rest. Profile creation must happen in an edge function 
-        // or a post-login check, but for now this works natively.
+        // The redirect handles the rest
     } catch (error) {
         console.error("Google sign in error:", error.message);
         return { success: false, error: error.message };
@@ -149,7 +169,98 @@ async function getCurrentUser() {
 }
 
 /**
- * Update user profile (e.g., during onboarding)
+ * Handle OAuth callback - Check and set role from localStorage, then redirect
+ */
+async function handleOAuthCallback() {
+    const oauthRole = localStorage.getItem('oauth_role');
+    const oauthIsSignup = localStorage.getItem('oauth_is_signup');
+    
+    // Get current user
+    const user = await getCurrentUser();
+    
+    if (!user) {
+        return; // No user logged in, nothing to do
+    }
+    
+    // CASE 1: OAuth Signup (has localStorage data)
+    if (oauthRole && oauthIsSignup === 'true') {
+        console.log('OAuth SIGNUP detected. Role:', oauthRole);
+        
+        // Update profile with correct role
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, onboarding_completed')
+            .eq('id', user.id)
+            .single();
+        
+        if (!profile || !profile.role || profile.role !== oauthRole) {
+            console.log('Updating OAuth user role to:', oauthRole);
+            await supabaseClient
+                .from('profiles')
+                .update({ role: oauthRole })
+                .eq('id', user.id);
+        }
+        
+        // Clear OAuth data
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+        
+        // Redirect new user to onboarding
+        if (oauthRole === 'trainer') {
+            console.log('Redirecting new trainer to onboarding');
+            window.location.href = 'trainer-onboarding.html';
+        } else {
+            console.log('Redirecting new client to onboarding');
+            window.location.href = 'onboarding.html';
+        }
+        return;
+    }
+    
+    // CASE 2: OAuth Login (returning user, no localStorage or isSignup is false)
+    // Check if we just came back from OAuth (user is logged in but we're on login page)
+    if (window.location.pathname.includes('login.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // If no specific mode/role in URL, this is a returning user login
+        if (!urlParams.get('tab') && !oauthRole) {
+            console.log('OAuth LOGIN detected for returning user');
+            
+            // Fetch user's role from database
+            const { data: profile } = await supabaseClient
+                .from('profiles')
+                .select('role, onboarding_completed')
+                .eq('id', user.id)
+                .single();
+            
+            if (profile && profile.role) {
+                console.log('User role:', profile.role);
+                
+                // Clear any leftover OAuth data
+                localStorage.removeItem('oauth_role');
+                localStorage.removeItem('oauth_is_signup');
+                
+                // Redirect based on actual role in database
+                if (profile.role === 'trainer') {
+                    console.log('Redirecting trainer to bookings dashboard');
+                    window.location.href = 'bookings.html';
+                } else {
+                    console.log('Redirecting client to dashboard');
+                    window.location.href = 'client-dashboard.html';
+                }
+                return;
+            }
+        }
+    }
+    
+    // Clear OAuth data if present (cleanup)
+    if (oauthRole) {
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+    }
+}
+
+/**
+ * Update user profile (e.g., during onboarding or settings)
  */
 async function updateUserProfile(userId, data) {
     try {
@@ -163,6 +274,99 @@ async function updateUserProfile(userId, data) {
     } catch (error) {
         console.error("Update profile error:", error.message);
         return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Upload avatar to Supabase Storage
+ */
+async function uploadAvatar(userId, file) {
+    try {
+        // Create unique filename
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}-${Date.now()}.${fileExt}`;
+        const filePath = `${userId}/${fileName}`;
+
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from('avatars')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabaseClient.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        const publicUrl = urlData.publicUrl;
+
+        // Update profile with avatar URL
+        const { error: updateError } = await supabaseClient
+            .from('profiles')
+            .update({ avatar_url: publicUrl })
+            .eq('id', userId);
+
+        if (updateError) throw updateError;
+
+        return publicUrl;
+    } catch (error) {
+        console.error("Avatar upload error:", error.message);
+        return null;
+    }
+}
+
+/**
+ * Get avatar public URL from storage path
+ */
+async function getAvatarUrl(path) {
+    try {
+        if (!path) return null;
+        
+        // If already a full URL, return it
+        if (path.startsWith('http')) return path;
+
+        // Get public URL from storage
+        const { data } = supabaseClient.storage
+            .from('avatars')
+            .getPublicUrl(path);
+
+        return data?.publicUrl || null;
+    } catch (error) {
+        console.error("Get avatar URL error:", error.message);
+        return null;
+    }
+}
+
+/**
+ * Delete old avatar from storage
+ */
+async function deleteAvatar(userId) {
+    try {
+        // List all files for this user
+        const { data: files, error: listError } = await supabaseClient.storage
+            .from('avatars')
+            .list(userId);
+
+        if (listError) throw listError;
+
+        if (files && files.length > 0) {
+            // Delete all files in user folder
+            const filesToDelete = files.map(file => `${userId}/${file.name}`);
+            const { error: deleteError } = await supabaseClient.storage
+                .from('avatars')
+                .remove(filesToDelete);
+
+            if (deleteError) throw deleteError;
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Delete avatar error:", error.message);
+        return false;
     }
 }
 
@@ -224,17 +428,76 @@ async function getTrainerById(id) {
         return null;
     }
 
-    // Fetch reviews for this trainer
-    const { data: reviews } = await supabaseClient
-        .from('reviews')
-        .select(`
-            *,
-            client:profiles!reviews_client_id_fkey(name)
-        `)
-        .eq('trainer_id', id)
-        .order('created_at', { ascending: false });
+// Fetch reviews for this trainer
+    let reviews = [];
+    try {
+        const { data } = await supabaseClient
+            .from('reviews')
+            .select(`
+                *,
+                client:profiles!reviews_client_id_fkey(name)
+            `)
+            .eq('trainer_id', id)
+            .order('created_at', { ascending: false });
+        // Fallback for missing foreign key reference relationship name in some setups
+        if (!data) {
+             const fallbackSearch = await supabaseClient
+                 .from('reviews')
+                 .select('*')
+                 .eq('trainer_id', id)
+                 .order('created_at', { ascending: false });
+             reviews = fallbackSearch.data || [];
+        } else {
+             reviews = data;
+        }
+    } catch(e) {
+         console.warn("Failed fetching reviews:", e);
+    }
 
     return { ...trainer, reviews: reviews || [] };
+}
+
+// ─── REVIEW FUNCTIONS ──────────────────────────────────────────────────────────
+
+/**
+ * Submit a review for a trainer
+ */
+async function submitReview(trainerId, rating, text) {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: "Must be logged in to leave a review." };
+
+    try {
+        // Insert review
+        const { data: reviewData, error: reviewError } = await supabaseClient.from('reviews').insert([{
+            trainer_id: trainerId,
+            client_id: user.id,
+            rating: parseInt(rating),
+            text: text
+        }]);
+
+        if (reviewError) throw reviewError;
+
+        // Recalculate average rating for trainer
+        const { data: allReviews } = await supabaseClient
+            .from('reviews')
+            .select('rating')
+            .eq('trainer_id', trainerId);
+        
+        if (allReviews && allReviews.length > 0) {
+            const sum = allReviews.reduce((acc, curr) => acc + curr.rating, 0);
+            const avg = (sum / allReviews.length).toFixed(1);
+            
+            await supabaseClient.from('profiles').update({
+                rating: parseFloat(avg),
+                review_count: allReviews.length
+            }).eq('id', trainerId);
+        }
+
+        return { success: true };
+    } catch (e) {
+        console.error("Failed to submit review:", e);
+        return { success: false, error: e.message };
+    }
 }
 
 async function searchTrainers(query, location) {
@@ -303,39 +566,36 @@ async function getBookingsForUser(userId) {
 
 async function createBooking(clientId, trainerId, planType, details) {
     try {
-        const trainer = await getTrainerById(trainerId);
-        const user = await getCurrentUser();
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        
+        // Let's call our newly created secure API endpoint on Vercel
+        const response = await fetch('/api/create-booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                clientId: clientId,
+                trainerId: trainerId,
+                planType: planType,
+                details: details,
+                authHeader: `Bearer ${token}` // Pass the token to verify the user
+            })
+        });
 
-        const bookingData = {
-            client_id: clientId,
-            trainer_id: trainerId,
-            plan_type: planType,
-            plan_label: trainer?.plans?.[planType]?.label || planType,
-            price: trainer?.plans?.[planType]?.price || 0,
-            date: details?.date || new Date().toISOString().split('T')[0],
-            time: details?.time || '10:00 AM',
-            status: 'confirmed'
-        };
+        const result = await response.json();
 
-        const { data, error } = await supabaseClient
-            .from('bookings')
-            .insert([bookingData])
-            .select()
-            .single();
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to create secure booking');
+        }
 
-        if (error) throw error;
-
-        // Create Notification for trainer
-        await supabaseClient.from('notifications').insert([{
-            user_id: trainerId,
-            type: 'booking',
-            title: 'New Booking Request',
-            message: `${user?.name || 'A client'} has requested a ${bookingData.plan_label} for ${bookingData.date}.`
-        }]);
-
-        return data;
+        return result.data;
     } catch (error) {
         console.error("Create booking error:", error.message);
+        throw error;
+    }
+}
         return null;
     }
 }
@@ -385,7 +645,13 @@ async function sendMessage(senderId, receiverId, text) {
     try {
         const { data, error } = await supabaseClient
             .from('messages')
-            .insert([{ sender_id: senderId, receiver_id: receiverId, text }])
+            .insert([{ 
+                sender_id: senderId, 
+                receiver_id: receiverId, 
+                text,
+                status: 'sent',
+                read: false
+            }])
             .select()
             .single();
 
@@ -404,6 +670,270 @@ async function sendMessage(senderId, receiverId, text) {
     } catch (error) {
         console.error("Send message error:", error.message);
         return null;
+    }
+}
+
+/**
+ * Mark messages as read/delivered/seen
+ */
+async function updateMessageStatus(messageIds, status, read) {
+    try {
+        const updates = {};
+        if (status) updates.status = status;
+        if (read !== undefined) updates.read = read;
+
+        const { error } = await supabaseClient
+            .from('messages')
+            .update(updates)
+            .in('id', Array.isArray(messageIds) ? messageIds : [messageIds]);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error("Update message status error:", error.message);
+        return false;
+    }
+}
+
+/**
+ * Mark all messages from a sender as read
+ */
+async function markMessagesAsRead(senderId, receiverId) {
+    try {
+        const { error } = await supabaseClient
+            .from('messages')
+            .update({ read: true, status: 'seen' })
+            .eq('sender_id', senderId)
+            .eq('receiver_id', receiverId)
+            .eq('read', false);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error("Mark messages as read error:", error.message);
+        return false;
+    }
+}
+
+/**
+ * Get unread message count
+ */
+async function getUnreadCount(userId) {
+    try {
+        const { count, error } = await supabaseClient
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('receiver_id', userId)
+            .eq('read', false);
+
+        if (error) throw error;
+        return count || 0;
+    } catch (error) {
+        console.error("Get unread count error:", error.message);
+        return 0;
+    }
+}
+
+// ─── CERTIFICATION MANAGEMENT ────────────────────────────────────────────────
+
+/**
+ * Upload trainer certification with metadata
+ */
+async function uploadCertification(trainerId, trainerName, file) {
+    try {
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('File too large (max 5MB)');
+        }
+
+        // Create unique filename
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const fileName = `cert-${Date.now()}.${fileExt}`;
+        const filePath = `${trainerId}/${fileName}`;
+
+        // Upload to trainer_certifications bucket
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from('trainer_certifications')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabaseClient.storage
+            .from('trainer_certifications')
+            .getPublicUrl(filePath);
+
+        const publicUrl = urlData.publicUrl;
+
+        // Insert certification metadata into database
+        const { data: certData, error: insertError } = await supabaseClient
+            .from('certifications')
+            .insert({
+                trainer_id: trainerId,
+                trainer_name: trainerName,
+                file_name: file.name,
+                file_url: publicUrl,
+                file_type: fileExt,
+                file_size: file.size
+            })
+            .select()
+            .single();
+
+        if (insertError) throw insertError;
+
+        return { success: true, certification: certData };
+    } catch (error) {
+        console.error('Upload certification error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Get trainer certifications
+ */
+async function getTrainerCertifications(trainerId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('certifications')
+            .select('*')
+            .eq('trainer_id', trainerId)
+            .order('uploaded_at', { ascending: false });
+
+        if (error) throw error;
+        return data || [];
+    } catch (error) {
+        console.error('Get certifications error:', error);
+        return [];
+    }
+}
+
+/**
+ * Delete certification
+ */
+async function deleteCertification(certId, trainerId) {
+    try {
+        // Get certification details first
+        const { data: cert, error: fetchError } = await supabaseClient
+            .from('certifications')
+            .select('file_url, trainer_id')
+            .eq('id', certId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        // Verify ownership
+        if (cert.trainer_id !== trainerId) {
+            throw new Error('Unauthorized');
+        }
+
+        // Extract file path from URL
+        const urlParts = cert.file_url.split('/');
+        const filePath = `${cert.trainer_id}/${urlParts[urlParts.length - 1]}`;
+
+        // Delete from storage
+        const { error: storageError } = await supabaseClient.storage
+            .from('trainer_certifications')
+            .remove([filePath]);
+
+        if (storageError) console.warn('Storage deletion warning:', storageError);
+
+        // Delete from database
+        const { error: dbError } = await supabaseClient
+            .from('certifications')
+            .delete()
+            .eq('id', certId);
+
+        if (dbError) throw dbError;
+
+        return { success: true };
+    } catch (error) {
+        console.error('Delete certification error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Set typing status
+ */
+async function setTypingStatus(userId, chatWithId, isTyping) {
+    try {
+        const { error } = await supabaseClient
+            .from('typing_status')
+            .upsert({
+                user_id: userId,
+                chat_with: chatWithId,
+                is_typing: isTyping,
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'user_id,chat_with'
+            });
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error("Set typing status error:", error.message);
+        return false;
+    }
+}
+
+/**
+ * Subscribe to typing status
+ */
+function subscribeToTyping(userId, contactId, callback) {
+    return supabaseClient
+        .channel(`typing:${contactId}`)
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'typing_status',
+            filter: `user_id=eq.${contactId},chat_with=eq.${userId}`
+        }, payload => {
+            callback(payload.new?.is_typing || false);
+        })
+        .subscribe();
+}
+
+/**
+ * Get last message for contacts
+ */
+async function getLastMessagesForContacts(userId, contactIds) {
+    try {
+        const lastMessages = {};
+        
+        for (const contactId of contactIds) {
+            const { data, error } = await supabaseClient
+                .from('messages')
+                .select('*')
+                .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (data && !error) {
+                // Get unread count for this contact
+                const { count } = await supabaseClient
+                    .from('messages')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('sender_id', contactId)
+                    .eq('receiver_id', userId)
+                    .eq('read', false);
+
+                lastMessages[contactId] = {
+                    text: data.text,
+                    timestamp: data.created_at,
+                    unreadCount: count || 0,
+                    isSender: data.sender_id === userId
+                };
+            }
+        }
+
+        return lastMessages;
+    } catch (error) {
+        console.error("Get last messages error:", error.message);
+        return {};
     }
 }
 

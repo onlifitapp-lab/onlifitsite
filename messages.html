@@ -59,6 +59,54 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .chat-bubble-received { border-top-left-radius: 0.25rem; }
         .chat-bubble-sent { border-top-right-radius: 0.25rem; }
+        
+        /* Typing indicator animation */
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        .typing-dot {
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        /* Message status icons */
+        .msg-status { font-size: 14px; opacity: 0.6; }
+        .msg-status.seen { color: #4CAF50; opacity: 1; }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1A1A1A;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Unread badge */
+        .unread-badge {
+            min-width: 20px;
+            height: 20px;
+            background: #000;
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
     </style>
 </head>
 <body class="bg-surface h-full font-body text-on-surface overflow-hidden">
@@ -104,6 +152,12 @@
                     <div>
                         <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
                         <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
+                        <div id="typing-indicator" class="hidden flex gap-1 mt-1">
+                            <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                            <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                            <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                            <span class="text-[9px] text-primary font-bold ml-1">typing</span>
+                        </div>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -140,6 +194,9 @@
 <script>
     let user = null;
     let currentContactId = null;
+    let typingTimeout = null;
+    let typingChannel = null;
+    let messagesChannel = null;
 
     async function init() {
         user = await requireAuth();
@@ -162,16 +219,47 @@
                 }
             }
 
-            // Real-time subscription for new messages
-            subscribeToTable('messages', `receiver_id=eq.${user.id}`, (payload) => {
-                if (payload.eventType === 'INSERT') {
+            // Real-time subscription for ALL messages (sent and received)
+            messagesChannel = supabaseClient
+                .channel('messages-all')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `receiver_id=eq.${user.id}`
+                }, (payload) => {
                     const newMessage = payload.new;
                     if (newMessage.sender_id === currentContactId) {
                         loadMessages(); // Refresh if active chat
+                        // Mark as read immediately
+                        markMessagesAsRead(currentContactId, user.id);
                     }
-                    loadContacts(); // Refresh list to show last message/timer
-                }
-            });
+                    loadContacts(); // Refresh list
+                })
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `sender_id=eq.${user.id}`
+                }, (payload) => {
+                    const newMessage = payload.new;
+                    if (newMessage.receiver_id === currentContactId) {
+                        loadMessages(); // Show own message instantly
+                    }
+                    loadContacts(); // Refresh list
+                })
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'messages'
+                }, (payload) => {
+                    // Update message status in real-time (read receipts)
+                    if (currentContactId && 
+                        (payload.new.sender_id === currentContactId || payload.new.receiver_id === currentContactId)) {
+                        loadMessages();
+                    }
+                })
+                .subscribe();
         }
     }
 
@@ -196,20 +284,53 @@
             contacts = allTrainers.slice(0, 3);
         }
 
-        list.innerHTML = contacts.map(c => `
+        // Get last messages for all contacts
+        const lastMessages = await getLastMessagesForContacts(user.id, contacts.map(c => c.id));
+
+        // Sort by most recent message
+        contacts.sort((a, b) => {
+            const aTime = lastMessages[a.id]?.timestamp || 0;
+            const bTime = lastMessages[b.id]?.timestamp || 0;
+            return new Date(bTime) - new Date(aTime);
+        });
+
+        list.innerHTML = contacts.map(c => {
+            const lastMsg = lastMessages[c.id];
+            const unreadCount = lastMsg?.unreadCount || 0;
+            const lastMsgText = lastMsg?.text || 'No messages yet';
+            const lastMsgTime = lastMsg?.timestamp ? formatTimestamp(lastMsg.timestamp) : '';
+            
+            return `
             <div onclick="selectChat('${c.id}', '${c.name}', '${c.avatar_url}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
-                <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform">
+                <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform relative">
                     ${c.avatar_url || '👤'}
+                    ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 unread-badge">${unreadCount}</span>` : ''}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-start mb-0.5">
                         <h4 class="font-bold text-sm truncate group-hover:text-primary transition-colors">${c.name}</h4>
-                        <span class="text-[9px] uppercase font-bold text-on-surface-variant opacity-40">Recent</span>
+                        <span class="text-[9px] uppercase font-bold text-on-surface-variant opacity-40">${lastMsgTime}</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant truncate opacity-70">${c.specialty || (c.role === 'trainer' ? 'Trainer' : 'Client')}</p>
+                    <p class="text-xs text-on-surface-variant truncate ${unreadCount > 0 ? 'font-semibold' : 'opacity-70'}">${lastMsgText}</p>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 1) return 'Now';
+        if (minutes < 60) return `${minutes}m`;
+        if (hours < 24) return `${hours}h`;
+        if (days < 7) return `${days}d`;
+        return date.toLocaleDateString();
     }
 
     async function selectChat(id, name, avatar) {
@@ -221,8 +342,29 @@
         document.getElementById('active-name').textContent = name;
         document.getElementById('active-avatar').textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : '👤';
         
+        // Unsubscribe from previous typing channel
+        if (typingChannel) {
+            typingChannel.unsubscribe();
+        }
+
+        // Subscribe to typing status for this contact
+        typingChannel = subscribeToTyping(user.id, id, (isTyping) => {
+            const indicator = document.getElementById('typing-indicator');
+            const status = document.getElementById('active-status');
+            if (isTyping) {
+                indicator.classList.remove('hidden');
+                status.classList.add('hidden');
+            } else {
+                indicator.classList.add('hidden');
+                status.classList.remove('hidden');
+            }
+        });
+        
         await loadContacts(); 
         await loadMessages();
+        
+        // Mark all messages from this contact as read
+        await markMessagesAsRead(id, user.id);
     }
 
     async function loadMessages() {
@@ -232,14 +374,30 @@
         
         history.innerHTML = messages.map(m => {
             const isMe = m.sender_id === user.id;
+            const status = m.status || 'sent';
+            const isRead = m.read;
+            
+            // Status icons: ✓ = sent, ✓✓ = delivered, ✓✓ (blue) = seen
+            let statusIcon = '';
+            if (isMe) {
+                if (status === 'seen' || isRead) {
+                    statusIcon = '<span class="msg-status seen">✓✓</span>';
+                } else if (status === 'delivered') {
+                    statusIcon = '<span class="msg-status">✓✓</span>';
+                } else {
+                    statusIcon = '<span class="msg-status">✓</span>';
+                }
+            }
+            
             return `
                 <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
                     <div class="max-w-[80%]">
                         <div class="px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white chat-bubble-sent shadow-lg shadow-primary/10' : 'bg-surface-container-low text-on-surface chat-bubble-received border border-outline-variant/30'}">
                             ${m.text}
                         </div>
-                        <p class="text-[9px] font-bold text-on-surface-variant opacity-40 mt-1 uppercase tracking-tighter ${isMe ? 'text-right' : 'text-left'}">
+                        <p class="text-[9px] font-bold text-on-surface-variant opacity-40 mt-1 uppercase tracking-tighter ${isMe ? 'text-right' : 'text-left'} flex ${isMe ? 'justify-end' : 'justify-start'} items-center gap-1">
                             ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            ${statusIcon}
                         </p>
                     </div>
                 </div>
@@ -254,20 +412,77 @@
         const text = input.value.trim();
         if (!text || !currentContactId) return;
 
-        const sent = await sendMessage(user.id, currentContactId, text);
-        if (sent) {
-            input.value = '';
-            await loadMessages();
+        // Clear input and stop typing indicator
+        input.value = '';
+        await setTypingStatus(user.id, currentContactId, false);
+
+        // Send message with error handling
+        try {
+            const sent = await sendMessage(user.id, currentContactId, text);
+            if (sent) {
+                // Message will appear via real-time subscription
+                // Optionally scroll to bottom immediately
+                const history = document.getElementById('chat-history');
+                setTimeout(() => history.scrollTop = history.scrollHeight, 100);
+            } else {
+                showToast('Failed to send message. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Send error:', error);
+            showToast('Failed to send message. Please try again.', 'error');
         }
     }
 
-    // Enter to send
-    document.getElementById('msg-input').onkeydown = (e) => {
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined">${type === 'error' ? 'error' : 'info'}</span>
+                <span>${message}</span>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Handle typing indicator with debounce
+    let isTyping = false;
+    function handleTyping() {
+        if (!currentContactId) return;
+
+        // Clear existing timeout
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+        }
+
+        // Set typing status if not already typing
+        if (!isTyping) {
+            isTyping = true;
+            setTypingStatus(user.id, currentContactId, true);
+        }
+
+        // Clear typing status after 2 seconds of inactivity
+        typingTimeout = setTimeout(async () => {
+            isTyping = false;
+            await setTypingStatus(user.id, currentContactId, false);
+        }, 2000);
+    }
+
+    // Enter to send, input event for typing indicator
+    const msgInput = document.getElementById('msg-input');
+    msgInput.onkeydown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();
         }
     };
+    msgInput.oninput = handleTyping;
 
     init();
 </script>

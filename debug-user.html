@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug User Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        pre { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; }
+        h1 { color: #333; }
+        .label { font-weight: bold; color: #666; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug User Data</h1>
+    <div class="label">Loading user data...</div>
+    <pre id="output">Please wait...</pre>
+
+    <script>
+        async function debugUser() {
+            try {
+                const user = await getCurrentUser();
+                
+                if (!user) {
+                    document.getElementById('output').textContent = 'No user logged in';
+                    return;
+                }
+
+                const output = {
+                    'User ID': user.id,
+                    'Email': user.email,
+                    'Name': user.name,
+                    'Role': user.role,
+                    'Phone': user.phone,
+                    'Address': user.address,
+                    'Avatar URL': user.avatar_url,
+                    'Specialty': user.specialty,
+                    'Experience': user.experience,
+                    'Bio': user.bio,
+                    'Plans': user.plans,
+                    'Certifications': user.certifications,
+                    '---FULL OBJECT---': user
+                };
+
+                document.getElementById('output').textContent = JSON.stringify(output, null, 2);
+                
+                console.log('=== USER DEBUG ===');
+                console.log('Role:', user.role);
+                console.log('Role type:', typeof user.role);
+                console.log('Is trainer (===):', user.role === 'trainer');
+                console.log('Is trainer (toLowerCase):', user.role && user.role.toLowerCase() === 'trainer');
+                console.log('Full user object:', user);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+                console.error('Debug error:', error);
+            }
+        }
+
+        // Run on page load
+        debugUser();
+    </script>
+</body>
+</html>

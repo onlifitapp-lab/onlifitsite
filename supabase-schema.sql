@@ -8,6 +8,7 @@ CREATE TABLE profiles (
   email TEXT,
   role TEXT DEFAULT 'client', -- 'client' or 'trainer'
   phone TEXT,
+  address TEXT,
   avatar_url TEXT,
   
   -- Trainer-specific fields
@@ -50,7 +51,18 @@ CREATE TABLE messages (
   sender_id UUID REFERENCES profiles(id),
   receiver_id UUID REFERENCES profiles(id),
   text TEXT NOT NULL,
+  status TEXT DEFAULT 'sent', -- 'sent', 'delivered', 'seen'
+  read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3a. Create Typing Status Table
+CREATE TABLE typing_status (
+  user_id UUID REFERENCES profiles(id),
+  chat_with UUID REFERENCES profiles(id),
+  is_typing BOOLEAN DEFAULT FALSE,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id, chat_with)
 );
 
 -- 4. Create Notifications Table
@@ -78,6 +90,7 @@ CREATE TABLE reviews (
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE typing_status ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
@@ -93,6 +106,13 @@ CREATE POLICY "Clients can create bookings" ON bookings FOR INSERT WITH CHECK (a
 CREATE POLICY "Messages are viewable by participants" ON messages FOR SELECT 
 USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 CREATE POLICY "Users can send messages" ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "Users can update own messages" ON messages FOR UPDATE 
+USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+
+CREATE POLICY "Typing status viewable by participants" ON typing_status FOR SELECT 
+USING (auth.uid() = user_id OR auth.uid() = chat_with);
+CREATE POLICY "Users can manage own typing status" ON typing_status FOR ALL 
+USING (auth.uid() = user_id);
 
 CREATE POLICY "Notifications are viewable by owner" ON notifications FOR SELECT 
 USING (auth.uid() = user_id);
@@ -108,11 +128,18 @@ BEGIN;
   -- Remove existing if any
   DROP PUBLICATION IF EXISTS supabase_realtime;
   -- Create publication for the tables we need real-time on
-  CREATE PUBLICATION supabase_realtime FOR TABLE messages, notifications, bookings;
+  CREATE PUBLICATION supabase_realtime FOR TABLE messages, typing_status, notifications, bookings;
 COMMIT;
 
+-- 9. Performance Indexes
+CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(sender_id, receiver_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_typing_status_chat ON typing_status(chat_with, is_typing);
+
 /**
- * 9. STORAGE (Optional - Run if you want to support avatar uploads)
+ * 10. STORAGE (Optional - Run if you want to support avatar uploads)
  * Create a public bucket named 'avatars' in the Supabase Storage dashboard.
  * Then run the following to allow users to upload their own avatars:
  

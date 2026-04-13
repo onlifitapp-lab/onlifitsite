@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Complete Your Trainer Profile | Onlifit</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#000000", "primary-container": "#F5F5F5", "secondary": "#1A1A1A",
+                        "secondary-container": "#F5F5F5", "tertiary": "#333333", "tertiary-container": "#EBEBEB",
+                        "surface": "#FAFAFA", "surface-container-lowest": "#FFFFFF", "surface-container-low": "#FFFFFF",
+                        "surface-container": "#F0F0F0", "surface-container-high": "#E0E0E0",
+                        "on-surface": "#000000", "on-surface-variant": "#666666", "on-primary": "#FFFFFF",
+                        "on-secondary": "#FFFFFF", "on-tertiary": "#FFFFFF", "outline": "#D0D0D0",
+                        "outline-variant": "#E8E8E8"
+                    },
+                    fontFamily: { "headline": ["Poppins", "sans-serif"], "body": ["Inter", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .step-hidden { display: none; }
+        .step-active { display: block; }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 right-0 bg-surface-container-lowest border-b border-outline-variant z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-bold">Complete Your Profile</span>
+                <span class="text-sm text-on-surface-variant">Step <span id="current-step">1</span> of 5</span>
+            </div>
+            <div class="h-2 bg-outline-variant rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Container -->
+    <div class="max-w-4xl mx-auto px-4 py-24">
+        <form id="onboarding-form" class="space-y-8" novalidate>
+            
+            <!-- STEP 1: Basic Information -->
+            <div id="step-1" class="step-active bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Let's get to know you</h2>
+                    <p class="text-on-surface-variant">Tell us about yourself and your expertise</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Full Name *</label>
+                        <input type="text" id="name" required 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="Enter your full name">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Phone Number *</label>
+                        <input type="tel" id="phone" required 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="+91 98765 43210">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Location (City) *</label>
+                        <input type="text" id="location" required 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="e.g., Mumbai, Delhi, Bangalore">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Training Mode *</label>
+                        <select id="session_mode" required 
+                                class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20">
+                            <option value="">Select training mode</option>
+                            <option value="both">Both Online & Offline</option>
+                            <option value="online">Online Only</option>
+                            <option value="offline">Offline Only</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Years of Experience *</label>
+                        <select id="experience" required 
+                                class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20">
+                            <option value="">Select experience</option>
+                            <option value="1-2 Years">1-2 Years</option>
+                            <option value="3-5 Years">3-5 Years</option>
+                            <option value="5-8 Years">5-8 Years</option>
+                            <option value="8+ Years">8+ Years</option>
+                            <option value="10+ Years">10+ Years</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button type="button" onclick="nextStep(1)" 
+                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Next Step →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Specialization & Bio -->
+            <div id="step-2" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Your Expertise</h2>
+                    <p class="text-on-surface-variant">What do you specialize in?</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Primary Specialty *</label>
+                        <input type="text" id="specialty" required 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="e.g., Strength Training, Yoga, HIIT">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-3">Training Areas (Select all that apply) *</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Personal Trainer" class="rounded">
+                                <span class="text-sm">Personal Trainer</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Weight Loss" class="rounded">
+                                <span class="text-sm">Weight Loss</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Muscle Gain" class="rounded">
+                                <span class="text-sm">Muscle Gain</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Yoga" class="rounded">
+                                <span class="text-sm">Yoga</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Strength Training" class="rounded">
+                                <span class="text-sm">Strength Training</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="HIIT" class="rounded">
+                                <span class="text-sm">HIIT</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Cross Training" class="rounded">
+                                <span class="text-sm">Cross Training</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Postnatal Fitness" class="rounded">
+                                <span class="text-sm">Postnatal Fitness</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Nutrition" class="rounded">
+                                <span class="text-sm">Nutrition</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Athletic Performance" class="rounded">
+                                <span class="text-sm">Athletic Performance</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Flexibility" class="rounded">
+                                <span class="text-sm">Flexibility</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-3 border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
+                                <input type="checkbox" name="tags" value="Cardio" class="rounded">
+                                <span class="text-sm">Cardio</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">About You (Bio) *</label>
+                        <textarea id="bio" required rows="5"
+                                  class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                  placeholder="Tell clients about your background, experience, and what makes you unique as a trainer..."></textarea>
+                        <p class="text-xs text-on-surface-variant mt-1">This will appear on your profile page</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Training Approach *</label>
+                        <textarea id="training_approach" required rows="4"
+                                  class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                  placeholder="Describe your training philosophy and methodology..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between">
+                    <button type="button" onclick="prevStep(2)" 
+                            class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back
+                    </button>
+                    <button type="button" onclick="nextStep(2)" 
+                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Next Step →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Certifications & KYC -->
+            <div id="step-3" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Certifications & Verification</h2>
+                    <p class="text-on-surface-variant">Upload your credentials and complete KYC</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- KYC VERIFICATION (MANDATORY) -->
+                    <div class="p-6 bg-red-50 border-2 border-red-200 rounded-xl">
+                        <h3 class="font-bold mb-2 flex items-center gap-2 text-red-800">
+                            <span class="material-symbols-outlined">verified_user</span>
+                            KYC Verification (Required)
+                        </h3>
+                        <p class="text-sm text-gray-700 mb-4">Upload both front and back of a government-issued ID (Aadhaar, PAN, Driver's License, Passport)</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold mb-2">Government ID Type *</label>
+                                <select id="id_type" required 
+                                        class="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                    <option value="">Select ID type</option>
+                                    <option value="aadhaar">Aadhaar Card</option>
+                                    <option value="pan">PAN Card</option>
+                                    <option value="driving_license">Driving License</option>
+                                    <option value="passport">Passport</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold mb-2">ID Number *</label>
+                                <input type="text" id="id_number" required 
+                                       class="w-full px-4 py-3 rounded-xl bg-white border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                       placeholder="Enter ID number">
+                            </div>
+
+                            <!-- KYC Front Upload -->
+                            <div>
+                                <label class="block text-sm font-bold mb-2">
+                                    Upload ID Front *
+                                    <span class="text-xs font-normal text-gray-600">(JPG, PNG, PDF - Max 5MB)</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="file" id="kyc_front" accept="image/*,.pdf" required
+                                           class="hidden" onchange="handleKYCUpload(this, 'front')">
+                                    <label for="kyc_front" 
+                                           class="w-full px-4 py-6 rounded-xl bg-white border-2 border-dashed border-gray-300 hover:border-primary cursor-pointer transition-colors flex flex-col items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-4xl text-gray-400">cloud_upload</span>
+                                        <span class="text-sm font-semibold">Click to upload front of ID</span>
+                                        <span class="text-xs text-gray-500">JPG, PNG or PDF (max. 5MB)</span>
+                                    </label>
+                                </div>
+                                <div id="kyc-front-preview" class="mt-2 hidden">
+                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <span class="material-symbols-outlined text-green-600">check_circle</span>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-green-800" id="kyc-front-name"></p>
+                                            <p class="text-xs text-green-600" id="kyc-front-size"></p>
+                                        </div>
+                                        <button type="button" onclick="clearKYCUpload('front')" 
+                                                class="text-red-600 hover:text-red-800">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- KYC Back Upload -->
+                            <div>
+                                <label class="block text-sm font-bold mb-2">
+                                    Upload ID Back *
+                                    <span class="text-xs font-normal text-gray-600">(JPG, PNG, PDF - Max 5MB)</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="file" id="kyc_back" accept="image/*,.pdf" required
+                                           class="hidden" onchange="handleKYCUpload(this, 'back')">
+                                    <label for="kyc_back" 
+                                           class="w-full px-4 py-6 rounded-xl bg-white border-2 border-dashed border-gray-300 hover:border-primary cursor-pointer transition-colors flex flex-col items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-4xl text-gray-400">cloud_upload</span>
+                                        <span class="text-sm font-semibold">Click to upload back of ID</span>
+                                        <span class="text-xs text-gray-500">JPG, PNG or PDF (max. 5MB)</span>
+                                    </label>
+                                </div>
+                                <div id="kyc-back-preview" class="mt-2 hidden">
+                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                        <span class="material-symbols-outlined text-green-600">check_circle</span>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-green-800" id="kyc-back-name"></p>
+                                            <p class="text-xs text-green-600" id="kyc-back-size"></p>
+                                        </div>
+                                        <button type="button" onclick="clearKYCUpload('back')" 
+                                                class="text-red-600 hover:text-red-800">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CERTIFICATIONS (OPTIONAL) -->
+                    <div class="p-6 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                        <h3 class="font-bold mb-2 flex items-center gap-2 text-blue-800">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            Professional Certifications (Optional)
+                        </h3>
+                        <p class="text-sm text-gray-700 mb-4">Add your fitness certifications to boost credibility. Upload file first, then enter certification name.</p>
+                        
+                        <div id="certifications-container" class="space-y-4">
+                            <!-- Certificates will be added here dynamically -->
+                        </div>
+
+                        <button type="button" onclick="addCertificationField()" 
+                                class="mt-4 w-full py-3 border-2 border-dashed border-blue-300 rounded-xl font-semibold text-blue-800 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            Add Another Certification
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Response Time *</label>
+                        <select id="response_time" required 
+                                class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20">
+                            <option value="">How quickly do you respond?</option>
+                            <option value="< 1h">Within 1 hour</option>
+                            <option value="< 2h">Within 2 hours</option>
+                            <option value="< 3h">Within 3 hours</option>
+                            <option value="< 6h">Within 6 hours</option>
+                            <option value="< 12h">Within 12 hours</option>
+                            <option value="< 24h">Within 24 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between">
+                    <button type="button" onclick="prevStep(3)" 
+                            class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back
+                    </button>
+                    <button type="button" onclick="validateAndNextStep3()" 
+                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Next Step →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Pricing -->
+            <div id="step-4" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Set Your Pricing</h2>
+                    <p class="text-on-surface-variant">How much do you charge for your services?</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Single Session (Per Hour) *</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <input type="number" id="price_hourly" required min="500" step="100"
+                                   class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   placeholder="999">
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-1">Pay-per-session pricing</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Package Pricing (10 Sessions)</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <input type="number" id="price_package" min="0" step="100"
+                                   class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   placeholder="7999">
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-1">Optional: Discounted rate for 10-session package</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Monthly Unlimited</label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <input type="number" id="price_monthly" min="0" step="100"
+                                   class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   placeholder="14999">
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-1">Optional: Unlimited sessions for 1 month</p>
+                    </div>
+
+                    <div class="p-4 bg-tertiary-container rounded-xl">
+                        <h3 class="font-bold mb-2">💡 Pricing Tips</h3>
+                        <ul class="text-sm text-on-surface-variant space-y-1">
+                            <li>• Average single session rates: ₹800 - ₹1,500</li>
+                            <li>• Offer 10-15% discount on packages to attract more clients</li>
+                            <li>• Monthly plans work great for serious fitness goals</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between">
+                    <button type="button" onclick="prevStep(4)" 
+                            class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back
+                    </button>
+                    <button type="button" onclick="nextStep(4)" 
+                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Next Step →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 5: Final Details & Submit -->
+            <div id="step-5" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Almost Done!</h2>
+                    <p class="text-on-surface-variant">Add final touches to your profile</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Teaching Style</label>
+                        <input type="text" id="teaching_style" 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="e.g., Patient, motivating, results-focused">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold mb-2">Training Focus</label>
+                        <input type="text" id="training_focus" 
+                               class="w-full px-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                               placeholder="e.g., Proper form, injury prevention, sustainable progress">
+                    </div>
+
+                    <div class="p-6 bg-tertiary-container rounded-xl">
+                        <h3 class="font-bold mb-3">📋 Profile Summary</h3>
+                        <div id="profile-summary" class="text-sm space-y-2 text-on-surface-variant">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-3 p-4 bg-surface border border-outline-variant rounded-xl">
+                        <input type="checkbox" id="terms" required class="mt-1">
+                        <label for="terms" class="text-sm">
+                            I agree to Onlifit's <a href="terms.html" class="underline">Terms & Conditions</a> and <a href="privacy.html" class="underline">Privacy Policy</a>. I confirm that all information provided is accurate and I have the necessary certifications to provide training services.
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between">
+                    <button type="button" onclick="prevStep(5)" 
+                            class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back
+                    </button>
+                    <button type="button" id="submit-btn" onclick="submitTrainerProfile()"
+                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Create Profile & Go Live ✓
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+        <!-- Success Message -->
+        <div id="success-message" class="hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant text-center">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-green-600 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+            </div>
+            <h2 class="text-3xl font-black font-headline mb-2">🎉 Your Profile is Live!</h2>
+            <p class="text-on-surface-variant mb-2">Congratulations! Your trainer profile has been created successfully.</p>
+            <p class="text-sm text-on-surface-variant mb-6">Clients can now find and book sessions with you. Our team will verify your KYC documents within 24-48 hours.</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="bookings.html" class="inline-block px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                    Go to Dashboard →
+                </a>
+                <a href="trainer-profile.html" class="inline-block px-8 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-on-primary transition-all">
+                    View My Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('current-step').textContent = currentStep;
+        }
+
+        function nextStep(step) {
+            // Validate current step
+            const currentStepEl = document.getElementById(`step-${step}`);
+            const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+            let valid = true;
+
+            inputs.forEach(input => {
+                if (!input.value) {
+                    input.classList.add('border-red-500');
+                    valid = false;
+                } else {
+                    input.classList.remove('border-red-500');
+                }
+            });
+
+            // Check if at least one tag is selected in step 2
+            if (step === 2) {
+                const tags = document.querySelectorAll('input[name="tags"]:checked');
+                if (tags.length === 0) {
+                    alert('Please select at least one training area');
+                    valid = false;
+                }
+            }
+
+            if (!valid) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Hide current step
+            document.getElementById(`step-${step}`).classList.remove('step-active');
+            document.getElementById(`step-${step}`).classList.add('step-hidden');
+
+            // Show next step
+            currentStep = step + 1;
+            document.getElementById(`step-${currentStep}`).classList.remove('step-hidden');
+            document.getElementById(`step-${currentStep}`).classList.add('step-active');
+            
+            updateProgress();
+            
+            // Update summary on final step
+            if (currentStep === 5) {
+                updateProfileSummary();
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        function prevStep(step) {
+            // Hide current step
+            document.getElementById(`step-${step}`).classList.remove('step-active');
+            document.getElementById(`step-${step}`).classList.add('step-hidden');
+
+            // Show previous step
+            currentStep = step - 1;
+            document.getElementById(`step-${currentStep}`).classList.remove('step-hidden');
+            document.getElementById(`step-${currentStep}`).classList.add('step-active');
+            
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        function updateProfileSummary() {
+            const name = document.getElementById('name').value;
+            const location = document.getElementById('location').value;
+            const specialty = document.getElementById('specialty').value;
+            const experience = document.getElementById('experience').value;
+            const priceHourly = document.getElementById('price_hourly').value;
+            const tags = Array.from(document.querySelectorAll('input[name="tags"]:checked')).map(cb => cb.value);
+
+            const summary = `
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Location:</strong> ${location}</p>
+                <p><strong>Specialty:</strong> ${specialty}</p>
+                <p><strong>Experience:</strong> ${experience}</p>
+                <p><strong>Training Areas:</strong> ${tags.join(', ')}</p>
+                <p><strong>Starting Price:</strong> ₹${priceHourly}/hour</p>
+            `;
+            
+            document.getElementById('profile-summary').innerHTML = summary;
+        }
+
+        // Main submit function - called when "Create Profile & Go Live" is clicked
+        async function submitTrainerProfile() {
+            console.log('=== SUBMIT TRAINER PROFILE TRIGGERED ===');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            
+            // Validate terms checkbox first
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                alert('Please accept the Terms & Conditions to continue');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Saving... ⏳';
+
+            try {
+                const user = await getCurrentUser();
+                console.log('Current user:', user);
+                
+                if (!user) {
+                    alert('Please log in first');
+                    window.location.href = 'login.html?role=trainer';
+                    return;
+                }
+
+                // Collect all form data
+                const tags = Array.from(document.querySelectorAll('input[name="tags"]:checked')).map(cb => cb.value);
+                
+                // Upload KYC documents first
+                const kycFront = document.getElementById('kyc_front').files[0];
+                const kycBack = document.getElementById('kyc_back').files[0];
+                
+                let kycFrontUrl = null;
+                let kycBackUrl = null;
+                
+                if (kycFront) {
+                    submitBtn.innerHTML = 'Uploading KYC Front... ⏳';
+                    const frontExt = kycFront.name.split('.').pop();
+                    const frontResult = await uploadToStorage(kycFront, user.id, 'kyc', `id_front.${frontExt}`);
+                    if (!frontResult.success) {
+                        throw new Error(`KYC Front upload failed: ${frontResult.error}`);
+                    }
+                    kycFrontUrl = frontResult.url;
+                }
+                
+                if (kycBack) {
+                    submitBtn.innerHTML = 'Uploading KYC Back... ⏳';
+                    const backExt = kycBack.name.split('.').pop();
+                    const backResult = await uploadToStorage(kycBack, user.id, 'kyc', `id_back.${backExt}`);
+                    if (!backResult.success) {
+                        throw new Error(`KYC Back upload failed: ${backResult.error}`);
+                    }
+                    kycBackUrl = backResult.url;
+                }
+                
+                // Upload certificates and collect data
+                const certificateData = [];
+                for (let i = 1; i <= certificationCount; i++) {
+                    const certDiv = document.getElementById(`cert-${i}`);
+                    if (!certDiv) continue;
+                    
+                    const fileInput = document.getElementById(`cert-file-${i}`);
+                    const nameInput = document.getElementById(`cert-name-${i}`);
+                    
+                    if (fileInput.files[0] && nameInput.value) {
+                        submitBtn.innerHTML = `Uploading Certificate ${i}... ⏳`;
+                        const file = fileInput.files[0];
+                        const ext = file.name.split('.').pop();
+                        const sanitizedName = nameInput.value.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                        const certResult = await uploadToStorage(file, user.id, 'certificates', `${sanitizedName}.${ext}`);
+                        
+                        if (certResult.success) {
+                            certificateData.push({
+                                name: nameInput.value,
+                                url: certResult.url,
+                                verified: false
+                            });
+                        }
+                    }
+                }
+
+                submitBtn.innerHTML = 'Creating Your Profile... ⏳';
+
+                const profileData = {
+                    name: document.getElementById('name').value,
+                    phone: document.getElementById('phone').value,
+                    location: document.getElementById('location').value,
+                    session_mode: document.getElementById('session_mode').value,
+                    experience: document.getElementById('experience').value,
+                    specialty: document.getElementById('specialty').value,
+                    tags: tags,
+                    bio: document.getElementById('bio').value,
+                    training_approach: document.getElementById('training_approach').value,
+                    kyc_id_type: document.getElementById('id_type').value,
+                    kyc_id_number: document.getElementById('id_number').value,
+                    kyc_front_url: kycFrontUrl,
+                    kyc_back_url: kycBackUrl,
+                    kyc_verified: false,
+                    certificate_urls: certificateData,
+                    certificates_verified: false,
+                    verification_status: 'pending',
+                    response_time: document.getElementById('response_time').value,
+                    teaching_style: document.getElementById('teaching_style').value || '',
+                    training_focus: document.getElementById('training_focus').value || '',
+                    plans: {
+                        hourly: {
+                            label: 'Single Session',
+                            price: parseInt(document.getElementById('price_hourly').value) || 999,
+                            description: '1 hour personalized training'
+                        }
+                    },
+                    onboarding_completed: true,
+                    profile_live: true,
+                    rating: 5.0,
+                    review_count: 0
+                };
+
+                // Add package pricing if provided
+                const pricePackage = document.getElementById('price_package').value;
+                if (pricePackage) {
+                    profileData.plans.monthly = {
+                        label: '10 Sessions',
+                        price: parseInt(pricePackage),
+                        description: '10 sessions package'
+                    };
+                }
+
+                // Add monthly pricing if provided
+                const priceMonthly = document.getElementById('price_monthly').value;
+                if (priceMonthly) {
+                    profileData.plans.premium = {
+                        label: 'Monthly Unlimited',
+                        price: parseInt(priceMonthly),
+                        description: 'Unlimited sessions for 1 month'
+                    };
+                }
+
+                console.log('Updating profile with data:', profileData);
+
+                // Update profile in database
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update(profileData)
+                    .eq('id', user.id)
+                    .select();
+
+                if (error) {
+                    console.error('Supabase error:', error);
+                    throw error;
+                }
+                
+                console.log('Profile updated successfully:', data);
+
+                // Show success message
+                document.getElementById('onboarding-form').classList.add('hidden');
+                document.getElementById('success-message').classList.remove('hidden');
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+            } catch (error) {
+                console.error('Error saving profile:', error);
+                alert('Error saving profile: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Create Profile & Go Live ✓';
+            }
+        }
+
+        // Check if user is logged in and pre-fill data
+        window.onload = async function() {
+            try {
+                const user = await getCurrentUser();
+                console.log('Onboarding page loaded, user:', user);
+                
+                if (!user) {
+                    alert('Please log in as a trainer first');
+                    window.location.href = 'login.html?tab=signup&role=trainer';
+                    return;
+                }
+                
+                if (user.role !== 'trainer') {
+                    alert('This page is for trainers only');
+                    window.location.href = 'client-dashboard.html';
+                    return;
+                }
+                
+                // If onboarding already completed, redirect to dashboard
+                if (user.onboarding_completed) {
+                    console.log('Onboarding already completed, redirecting to dashboard');
+                    window.location.href = 'bookings.html';
+                    return;
+                }
+                
+                // Pre-fill name and email if available from auth
+                if (user.name) {
+                    document.getElementById('name').value = user.name;
+                }
+                if (user.phone) {
+                    document.getElementById('phone').value = user.phone;
+                }
+                
+            } catch (error) {
+                console.error('Error checking user:', error);
+                alert('Error loading page. Please try logging in again.');
+                window.location.href = 'login.html?role=trainer';
+            }
+        };
+
+        // ====== FILE UPLOAD FUNCTIONS ======
+        
+        let certificationCount = 0;
+        let uploadedCertificates = [];
+        
+        // Handle KYC file upload
+        function handleKYCUpload(input, side) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                input.value = '';
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Only JPG, PNG, and PDF files are allowed');
+                input.value = '';
+                return;
+            }
+            
+            // Show preview
+            const previewDiv = document.getElementById(`kyc-${side}-preview`);
+            const nameSpan = document.getElementById(`kyc-${side}-name`);
+            const sizeSpan = document.getElementById(`kyc-${side}-size`);
+            
+            nameSpan.textContent = file.name;
+            sizeSpan.textContent = formatFileSize(file.size);
+            previewDiv.classList.remove('hidden');
+            
+            console.log(`KYC ${side} uploaded:`, file.name);
+        }
+        
+        // Clear KYC upload
+        function clearKYCUpload(side) {
+            const input = document.getElementById(`kyc_${side}`);
+            const preview = document.getElementById(`kyc-${side}-preview`);
+            
+            input.value = '';
+            preview.classList.add('hidden');
+        }
+        
+        // Add certification field
+        function addCertificationField() {
+            certificationCount++;
+            const container = document.getElementById('certifications-container');
+            
+            const certDiv = document.createElement('div');
+            certDiv.id = `cert-${certificationCount}`;
+            certDiv.className = 'p-4 bg-white border-2 border-blue-200 rounded-lg space-y-3';
+            certDiv.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-sm">Certification #${certificationCount}</h4>
+                    <button type="button" onclick="removeCertification(${certificationCount})" 
+                            class="text-red-600 hover:text-red-800">
+                        <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                </div>
+                
+                <!-- File Upload -->
+                <div>
+                    <input type="file" id="cert-file-${certificationCount}" accept="image/*,.pdf"
+                           class="hidden" onchange="handleCertUpload(this, ${certificationCount})">
+                    <label for="cert-file-${certificationCount}" 
+                           class="w-full px-4 py-4 rounded-lg bg-gray-50 border-2 border-dashed border-gray-300 hover:border-blue-500 cursor-pointer transition-colors flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-gray-400">upload_file</span>
+                        <span class="text-sm font-semibold">Upload Certificate</span>
+                    </label>
+                    <div id="cert-file-preview-${certificationCount}" class="mt-2 hidden">
+                        <div class="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+                            <span class="material-symbols-outlined text-green-600 text-sm">check_circle</span>
+                            <span class="flex-1 text-green-800" id="cert-file-name-${certificationCount}"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Certification Name (disabled until file uploaded) -->
+                <div>
+                    <label class="block text-xs font-bold mb-1">Certification Name</label>
+                    <input type="text" id="cert-name-${certificationCount}" 
+                           class="w-full px-3 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm" 
+                           placeholder="e.g., ACE Certified Personal Trainer"
+                           disabled>
+                    <p class="text-xs text-gray-500 mt-1">Upload file first to enable</p>
+                </div>
+            `;
+            
+            container.appendChild(certDiv);
+        }
+        
+        // Handle certificate file upload
+        function handleCertUpload(input, certId) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                input.value = '';
+                return;
+            }
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Only JPG, PNG, and PDF files are allowed');
+                input.value = '';
+                return;
+            }
+            
+            // Show file preview
+            const preview = document.getElementById(`cert-file-preview-${certId}`);
+            const fileName = document.getElementById(`cert-file-name-${certId}`);
+            preview.classList.remove('hidden');
+            fileName.textContent = file.name;
+            
+            // Enable name input
+            const nameInput = document.getElementById(`cert-name-${certId}`);
+            nameInput.disabled = false;
+            nameInput.classList.remove('bg-gray-100');
+            nameInput.classList.add('bg-white');
+            
+            console.log(`Certificate ${certId} file uploaded:`, file.name);
+        }
+        
+        // Remove certification field
+        function removeCertification(certId) {
+            const certDiv = document.getElementById(`cert-${certId}`);
+            if (certDiv) {
+                certDiv.remove();
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Upload file to Supabase Storage
+        async function uploadToStorage(file, userId, category, filename) {
+            try {
+                const filePath = `${userId}/${category}/${filename}`;
+                
+                const { data, error } = await supabaseClient.storage
+                    .from('trainer-documents')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+                
+                if (error) throw error;
+                
+                // Get public URL
+                const { data: urlData } = supabaseClient.storage
+                    .from('trainer-documents')
+                    .getPublicUrl(filePath);
+                
+                return { success: true, path: data.path, url: urlData.publicUrl };
+            } catch (error) {
+                console.error('Upload error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Validate and proceed to next step from step 3
+        async function validateAndNextStep3() {
+            // Check KYC files are uploaded
+            const kycFront = document.getElementById('kyc_front').files[0];
+            const kycBack = document.getElementById('kyc_back').files[0];
+            
+            if (!kycFront) {
+                alert('Please upload the front of your ID');
+                return;
+            }
+            
+            if (!kycBack) {
+                alert('Please upload the back of your ID');
+                return;
+            }
+            
+            // Validate certifications (file must be uploaded if name is entered)
+            let validCerts = true;
+            for (let i = 1; i <= certificationCount; i++) {
+                const certDiv = document.getElementById(`cert-${i}`);
+                if (!certDiv) continue; // Removed
+                
+                const fileInput = document.getElementById(`cert-file-${i}`);
+                const nameInput = document.getElementById(`cert-name-${i}`);
+                
+                if (nameInput.value && !fileInput.files[0]) {
+                    alert(`Please upload file for certification "${nameInput.value}"`);
+                    validCerts = false;
+                    return;
+                }
+            }
+            
+            // All validated, proceed to next step
+            nextStep(3);
+        }
+    </script>
+</body>
+</html>
