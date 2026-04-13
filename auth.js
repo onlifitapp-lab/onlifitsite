@@ -625,9 +625,6 @@ async function createBooking(clientId, trainerId, planType, details) {
         throw error;
     }
 }
-        return null;
-    }
-}
 
 // ─── NOTIFICATIONS & MESSAGES ─────────────────────────────────────────────────
 
