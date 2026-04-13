@@ -404,7 +404,7 @@ const DUMMY_TRAINERS = [
 async function getTrainers() {
     const { data, error } = await supabaseClient
         .from('profiles')
-        .select('*')
+        .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
         .eq('role', 'trainer');
     
     if (!data || data.length === 0) {
@@ -503,7 +503,7 @@ async function submitReview(trainerId, rating, text) {
 async function searchTrainers(query, location) {
     let q = supabaseClient
         .from('profiles')
-        .select('*')
+        .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
         .eq('role', 'trainer');
 
     if (query) {

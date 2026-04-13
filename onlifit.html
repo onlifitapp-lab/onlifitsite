@@ -12,11 +12,11 @@
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     
     <!-- Performance: Optimized fonts - removed unused weights (300) -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Fast: Pre-built Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -847,7 +847,9 @@
                         
                         <!-- Image Container -->
                         <div class="relative h-60 w-full bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center overflow-hidden">
-                            <div class="text-[5rem] group-hover:scale-110 transition-transform duration-500">${t.avatar_url || '🧘‍♀️'}</div>
+                            ${t.avatar_url && t.avatar_url.startsWith('http') ? 
+                                `<img src="${t.avatar_url}" alt="${t.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />` : 
+                                `<div class="text-[5rem] group-hover:scale-110 transition-transform duration-500">${t.avatar_url || '🧘‍♀️'}</div>`}
                         </div>
 
                         <!-- Content Container -->

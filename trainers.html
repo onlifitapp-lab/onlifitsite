@@ -198,7 +198,7 @@
             try {
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('id, name, avatar_url, rating, location, specialty, bio, plans, tags')
                     .eq('role', 'trainer')
                     .order('rating', { ascending: false });
 
@@ -235,7 +235,9 @@
             grid.innerHTML = trainers.map(t => `
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
                     <div class="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
-                        <div class="text-7xl">${t.avatar_url || '🏋️'}</div>
+                        ${t.avatar_url && t.avatar_url.startsWith('http') ? 
+                            `<img src="${t.avatar_url}" alt="${t.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />` : 
+                            `<div class="text-7xl group-hover:scale-110 transition-transform duration-500">${t.avatar_url || '🏋️'}</div>`}
                         <div class="absolute top-4 left-4 flex gap-2">
                             <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
