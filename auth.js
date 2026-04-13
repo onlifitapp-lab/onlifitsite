@@ -405,28 +405,62 @@ let _cachedTrainers = null;
 let _cachedTrainersTime = 0;
 
 async function getTrainers() {
-    // Use memory cache if available and less than 5 minutes old
+    // 1. Check memory cache (fastest)
     if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
         return _cachedTrainers;
     }
 
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-        .eq('role', 'trainer');
+    // 2. Check localStorage cache
+    try {
+        const stored = localStorage.getItem('onlifit_trainers_cache');
+        const storedTime = localStorage.getItem('onlifit_trainers_time');
+        if (stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
+            _cachedTrainers = JSON.parse(stored);
+            _cachedTrainersTime = parseInt(storedTime);
+            return _cachedTrainers;
+        }
+    } catch (e) {}
 
-    if (!data || data.length === 0) {
+    try {
+        // 3. Fast Timeout for cold starts: max 2 seconds before returning fallback data
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 2500));
+        
+        const fetchPromise = supabaseClient
+            .from('profiles')
+            .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
+            .eq('role', 'trainer');
+
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (response._timeout) {
+            console.warn("Supabase query took >2.5s. Using cache or DUMMY_TRAINERS to prevent blank screen.");
+            // Background fetch continues
+            fetchPromise.then(res => {
+                if (res.data && res.data.length > 0) {
+                    _cachedTrainers = res.data;
+                    _cachedTrainersTime = Date.now();
+                    localStorage.setItem('onlifit_trainers_cache', JSON.stringify(res.data));
+                    localStorage.setItem('onlifit_trainers_time', Date.now().toString());
+                }
+            }).catch(e => console.error("Background fetch error:", e));
+
+            return DUMMY_TRAINERS;
+        }
+
+        const { data, error } = response;
+        if (error || !data || data.length === 0) {
+            return DUMMY_TRAINERS;
+        }
+
+        // Save to cache
+        _cachedTrainers = data;
+        _cachedTrainersTime = Date.now();
+        localStorage.setItem('onlifit_trainers_cache', JSON.stringify(data));
+        localStorage.setItem('onlifit_trainers_time', Date.now().toString());
+        return data;
+    } catch (err) {
         return DUMMY_TRAINERS;
     }
-    
-    // Save to cache
-    _cachedTrainers = data;
-    _cachedTrainersTime = Date.now();
-    return data;
-}
-
-async function getTrainerById(id) {
-    const { data: trainer, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', id)

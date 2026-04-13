@@ -196,15 +196,20 @@
             document.getElementById('empty-state').classList.add('hidden');
             
             try {
-                // Return immediately if cached
-                const cached = sessionStorage.getItem('onlifit_trainers_cache');
-                const cacheTime = sessionStorage.getItem('onlifit_trainers_time');
-                if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < 300000)) {
-                    allTrainers = JSON.parse(cached);
+                // If getTrainers exists in auth.js, use its advanced caching & dummy fallbacks
+                if (typeof getTrainers === 'function') {
+                    allTrainers = await getTrainers();
+                    
+                    // Client-side sort by rating (since auth.js fetch doesn't explicitly sort)
+                    if (allTrainers && allTrainers.length > 0) {
+                        allTrainers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    }
+                    
                     renderTrainers(allTrainers);
-                    return; // Loaded from cache
+                    return;
                 }
 
+                // Fallback direct DB fetch (legacy)
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('id, name, avatar_url, rating, location, specialty, bio, plans, tags')
@@ -212,22 +217,10 @@
                     .order('rating', { ascending: false });
 
                 if (error) throw error;
-
                 allTrainers = data || [];
-                
-                // Save to cache for 5 minutes
-                sessionStorage.setItem('onlifit_trainers_cache', JSON.stringify(allTrainers));
-                sessionStorage.setItem('onlifit_trainers_time', Date.now().toString());
-
                 renderTrainers(allTrainers);
             } catch (error) {
                 console.error('Error loading trainers:', error);
-                // Show empty state on error
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('empty-state').classList.remove('hidden');
-            }
-        }
-
         function renderTrainers(trainers) {
             const grid = document.getElementById('trainers-grid');
             const loading = document.getElementById('loading');
