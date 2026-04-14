@@ -1,11 +1,33 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Simple in-memory KV store for rate limiting in serverless environments
+const rateLimitCache = new Map();
+const MAX_BOOKINGS_PER_WINDOW = 5;
+const WINDOW_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
+        // --- SECURE GLOBAL API RATE LIMITING ---
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const now = Date.now();
+        
+        if (rateLimitCache.has(ip)) {
+            let userData = rateLimitCache.get(ip);
+            userData.requests = userData.requests.filter(timestamp => now - timestamp < WINDOW_DURATION_MS);
+            
+            if (userData.requests.length >= MAX_BOOKINGS_PER_WINDOW) {
+                return res.status(429).json({ error: 'Global Rate Limit Exceeded. You can only perform 5 major actions every 15 minutes. Please wait before trying again.' });
+            }
+            userData.requests.push(now);
+            rateLimitCache.set(ip, userData);
+        } else {
+            rateLimitCache.set(ip, { requests: [now] });
+        }
+
         // 1. Get the raw client request
         const { clientId, trainerId, planType, details, authHeader } = req.body;
 
