@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/onlifitapp-lab/onlifitsite#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.0"
+    "@supabase/supabase-js": "^2.103.0",
+    "razorpay": "^2.9.6"
   }
 }
