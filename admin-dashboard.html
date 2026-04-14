@@ -82,7 +82,7 @@
 
         .nav-item.active {
             background: #FFFFFF;
-            color: #000000;
+            color: #FF5A5F;
             font-weight: 600;
         }
 
@@ -245,28 +245,27 @@
         }
 
         .btn-primary {
-            background: #000000;
+            background: #FF5A5F;
             color: white;
         }
 
         .btn-primary:hover {
-            background: #1A1A1A;
+            background: #e04f54;
             transform: translateY(-1px);
         }
 
         .btn-success {
-            background: #000000;
+            background: #10B981;
             color: white;
         }
 
         .btn-success:hover {
-            background: #1A1A1A;
+            background: #059669;
         }
 
         .btn-danger {
-            background: #000000;
+            background: #EF4444;
             color: white;
-            opacity: 0.8;
         }
 
         .btn-danger:hover {
@@ -334,7 +333,7 @@
         }
 
         .badge-verified {
-            background: #000000;
+            background: #10B981;
             color: #FFFFFF;
         }
 
@@ -500,7 +499,7 @@
         /* Loading Spinner - Professional */
         .spinner {
             border: 2px solid #F5F5F5;
-            border-top: 2px solid #000000;
+            border-top: 2px solid #FF5A5F;
             border-radius: 50%;
             width: 36px;
             height: 36px;
@@ -2263,9 +2262,11 @@
                             <td><span class="badge ${statusClass}">${sub.status}</span></td>
                             <td>${sub.auto_renew ? 'Yes' : 'No'}</td>
                             <td>
-                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openSubscriptionModal('${sub.id}')">
-                                    Manage
-                                </button>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #3182ce; color: white; border: none;" onclick="openExtendModal('${sub.id}')">Extend</button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #f56565; color: white; border: none;" onclick="openCancelModal('${sub.id}')">Cancel</button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #ed8936; color: white; border: none;" onclick="openRefundModal('${sub.id}')">Refund</button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -3007,7 +3008,7 @@
                     datasets: [{
                         label: 'Revenue (₹)',
                         data: amounts,
-                        borderColor: '#000000',
+                        borderColor: '#FF5A5F',
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         tension: 0.4,
                         fill: true
@@ -3055,8 +3056,8 @@
                     datasets: [{
                         data: Object.values(revenueByPlan),
                         backgroundColor: [
-                            '#000000',
-                            '#666666',
+                            '#FF5A5F',
+                            '#FFB6B8',
                             '#999999',
                             '#CCCCCC',
                             '#E8E8E8'
@@ -3148,7 +3149,7 @@
                         {
                             label: 'Trainers',
                             data: trainersData,
-                            borderColor: '#000000',
+                            borderColor: '#FF5A5F',
                             backgroundColor: 'rgba(0, 0, 0, 0.1)',
                             tension: 0.4
                         },
@@ -3238,7 +3239,7 @@
                     datasets: [{
                         label: 'Bookings',
                         data: counts,
-                        backgroundColor: '#000000',
+                        backgroundColor: '#FF5A5F',
                         borderRadius: 4
                     }]
                 },
@@ -3327,7 +3328,7 @@
                     datasets: [{
                         label: 'Bookings',
                         data: trainersWithBookings.map(t => t.bookings),
-                        backgroundColor: '#000000',
+                        backgroundColor: '#FF5A5F',
                         borderRadius: 4
                     }]
                 },
