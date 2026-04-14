@@ -1654,6 +1654,8 @@
                 // Check if both KYC and certificates are verified to update overall status
                 await updateOverallVerificationStatus(trainerId);
 
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Verified ✅', message: 'Your identity documents have been approved.', read: false }]);
+
                 alert('KYC documents approved!');
                 closeTrainerModal();
                 loadTrainers();
@@ -1679,6 +1681,7 @@
 
                 if (error) throw error;
 
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Rejected ❌', message: 'Your identity documents were rejected. Please review and re-upload.', read: false }]);
                 alert('KYC documents rejected');
                 closeTrainerModal();
                 loadTrainers();
@@ -1720,6 +1723,8 @@
                 // Check if both KYC and certificates are verified to update overall status
                 await updateOverallVerificationStatus(trainerId);
 
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Verified ✅', message: 'Your professional certifications have been approved.', read: false }]);
+
                 alert('Certificates approved!');
                 closeTrainerModal();
                 loadTrainers();
@@ -1745,6 +1750,7 @@
 
                 if (error) throw error;
 
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Rejected ❌', message: 'Your professional certifications were rejected.', read: false }]);
                 alert('Certificates rejected');
                 closeTrainerModal();
                 loadTrainers();
