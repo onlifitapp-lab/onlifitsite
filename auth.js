@@ -240,7 +240,9 @@ async function handleOAuthCallback() {
                 localStorage.removeItem('oauth_is_signup');
                 
                 // Redirect based on actual role in database
-                if (profile.role === 'trainer') {
+                if (profile.role === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                } else if (profile.role === 'trainer') {
                     console.log('Redirecting trainer to bookings dashboard');
                     window.location.href = 'bookings.html';
                 } else {
@@ -386,7 +388,8 @@ async function requireAuth(requiredRole, redirectUrl) {
         return null;
     }
     if (requiredRole && user.role !== requiredRole) {
-        window.location.href = user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html';
+        if (user.role === 'admin') window.location.href = 'admin-dashboard.html';
+        else window.location.href = user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html';
         return null;
     }
     return user;
@@ -1022,7 +1025,7 @@ async function renderAuthNav() {
                     <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
                 </a>
                 <div class="h-6 w-[1px] bg-outline-variant mx-1 hidden sm:block"></div>
-                <a href="${user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html'}" 
+                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
                    class="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[18px]">dashboard</span>
                     <span class="hidden lg:inline">Dashboard</span>

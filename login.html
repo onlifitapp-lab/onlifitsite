@@ -244,7 +244,7 @@
                     } 
                     // For logins, use role-based redirect
                     else {
-                        const targetPage = response.user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html';
+                        const targetPage = response.user.role === 'admin' ? 'admin-dashboard.html' : (response.user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html');
                         console.log('Redirecting based on role to:', targetPage);
                         window.location.href = targetPage;
                     }
