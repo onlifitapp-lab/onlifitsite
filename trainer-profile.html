@@ -69,10 +69,7 @@
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
         }
     </style>
-</head>
-
-<body class="bg-surface-container-low font-body text-on-surface">
-
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
         <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
@@ -493,11 +490,82 @@
             bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Processing...';
 
             try {
-                const result = await createBooking(user.id, trainer.id, selectedPlan, { date, time });
-                if (!result) throw new Error('Booking failed');
+                // 1. Create Order via Vercel Backend
+                const response = await fetch('/api/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        clientId: user.id,
+                        trainerId: trainer.id,
+                        planType: selectedPlan,
+                        details: { date, time }
+                    })
+                });
                 
-                document.getElementById('booking-modal').classList.add('hidden');
-                document.getElementById('success-modal').classList.remove('hidden');
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to initialize payment');
+                }
+
+                // 2. Open Razorpay Checkout
+                const options = {
+                    key: data.keyId,
+                    amount: data.amount,
+                    currency: data.currency,
+                    name: 'Onlifit',
+                    description: `Booking for ${trainer.name}`,
+                    order_id: data.orderId,
+                    handler: async function (rpResponse) {
+                        try {
+                            // 3. Verify Payment on Backend
+                            const verifyRes = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_order_id: rpResponse.razorpay_order_id,
+                                    razorpay_payment_id: rpResponse.razorpay_payment_id,
+                                    razorpay_signature: rpResponse.razorpay_signature,
+                                    booking_id: data.bookingId
+                                })
+                            });
+                            
+                            const verifyData = await verifyRes.json();
+                            if (verifyRes.ok && verifyData.success) {
+                                document.getElementById('booking-modal').classList.add('hidden');
+                                document.getElementById('success-modal').classList.remove('hidden');
+                            } else {
+                                alert('Payment verification failed. If money was deducted, contact support.');
+                            }
+                        } catch (err) {
+                            alert('An error occurred during payment verification.');
+                        }
+                        
+                        bookingBtn.disabled = false;
+                        bookingBtn.innerHTML = originalBtnContent;
+                    },
+                    prefill: {
+                        name: user.name,
+                        email: user.email,
+                        contact: user.phone || ''
+                    },
+                    theme: {
+                        color: '#000000'
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            bookingBtn.disabled = false;
+                            bookingBtn.innerHTML = originalBtnContent;
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response){
+                    alert('Payment failed. Reason: ' + response.error.description);
+                });
+                rzp.open();
+                
             } catch (error) {
                 alert('Booking failed: ' + error.message);
                 bookingBtn.disabled = false;
