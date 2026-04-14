@@ -1,9 +1,31 @@
+// Simple in-memory KV store for rate limiting in serverless environments (Ephemeral but helps against burst spam per lambda container)
+const rateLimitCache = new Map();
+const MAX_TICKETS_PER_WINDOW = 3;
+const WINDOW_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
+        // --- RATE LIMITING CHOKEPOINT ---
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+        const now = Date.now();
+        
+        if (rateLimitCache.has(ip)) {
+            let userData = rateLimitCache.get(ip);
+            userData.requests = userData.requests.filter(timestamp => now - timestamp < WINDOW_DURATION_MS);
+            
+            if (userData.requests.length >= MAX_TICKETS_PER_WINDOW) {
+                return res.status(429).json({ error: 'Rate limit exceeded. You can only create 3 support tickets every 15 minutes. Please try again later.' });
+            }
+            userData.requests.push(now);
+            rateLimitCache.set(ip, userData);
+        } else {
+            rateLimitCache.set(ip, { requests: [now] });
+        }
+
         const { subject, category, message, guestEmail, authHeader } = req.body;
 
         if (!subject || !message) {

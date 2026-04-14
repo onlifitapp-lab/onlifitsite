@@ -252,21 +252,32 @@ document.addEventListener('DOMContentLoaded', () => {
     let isCreatingTicket = false;
     let ticketData = { subject: '', category: 'other', message: '', email: '' };
     let ticketStep = 0;
+    
+    // --- RATE LIMITING LOGIC ---
+    const MAX_MESSAGES = 15;
+    const RATE_LIMIT_WINDOW = 60000; // 1 minute
+    let messageHistory = [];
+
+    function checkRateLimit() {
+        const now = Date.now();
+        // Clean up old messages outside the window
+        messageHistory = messageHistory.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+        
+        if (messageHistory.length >= MAX_MESSAGES) {
+            return false;
+        }
+        
+        messageHistory.push(now);
+        return true;
+    }
 
     function handleUserMessage(message) {
         if (!message.trim()) return;
         
-        // 1. Render User Message
-        appendMessage('user', message);
-        chatInput.value = '';
-
-        // 2. Handle Support Ticket Flow Override
-        if (isCreatingTicket) {
-            handleTicketFlow(message);
+        if (!checkRateLimit()) {
+            appendMessage('bot', "⚠️ <strong>Rate Limit Exceeded.</strong> You are sending messages too quickly. Please wait a minute before sending another message.");
             return;
         }
-
-        // 3. Process standard NLP/Keyword logic
         setTimeout(() => {
             const botReply = processMessage(message);
             appendMessage('bot', botReply);
