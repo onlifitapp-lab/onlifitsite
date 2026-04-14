@@ -967,15 +967,15 @@
             const data = activities[Math.floor(Math.random() * activities.length)];
             
             ticker.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="h-8 w-8 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+                <div class="flex items-center gap-2 md:gap-3">
+                    <div class="h-6 w-6 md:h-8 md:w-8 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
                         ${data.user.charAt(0)}
                     </div>
                     <div>
-                        <p class="text-sm text-on-surface">
+                        <p class="text-xs md:text-sm text-on-surface leading-tight">
                             <span class="font-bold">${data.user}</span> ${data.action} <span class="font-bold text-primary">${data.trainer}</span>
                         </p>
-                        <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mt-0.5">Just now</p>
+                        <p class="text-[9px] md:text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mt-0.5">Just now</p>
                     </div>
                 </div>
             `;
@@ -999,7 +999,7 @@
     </script>
     
     <!-- Live Activity Ticker Popup Component -->
-    <div id="live-activity-ticker" class="fixed bottom-6 left-6 md:bottom-8 md:left-8 bg-surface-container-lowest border border-outline-variant/30 px-4 py-3 rounded-2xl shadow-elevated z-50 max-w-[300px] transform translate-y-[150%] opacity-0 transition-all duration-700 pointer-events-none">
+    <div id="live-activity-ticker" class="fixed bottom-4 left-4 right-4 md:right-auto md:left-8 md:bottom-8 bg-surface-container-lowest border border-outline-variant/30 px-3 py-2 md:px-4 md:py-3 rounded-2xl shadow-elevated z-50 md:max-w-[300px] transform translate-y-[150%] opacity-0 transition-all duration-700 pointer-events-none text-sm md:text-base">
         <!-- Content injected by JS -->
     </div>
 
