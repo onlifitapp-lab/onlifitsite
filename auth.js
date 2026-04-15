@@ -61,17 +61,7 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
         
-        // Determine redirect based on role and whether it's signup or login
-        let redirectTo = window.location.origin;
-        if (isSignup && role === 'trainer') {
-            redirectTo += '/trainer-onboarding.html';
-        } else if (isSignup && role === 'client') {
-            redirectTo += '/onboarding.html';
-        } else if (role === 'trainer') {
-            redirectTo += '/bookings.html';
-        } else {
-            redirectTo += '/client-dashboard.html';
-        }
+        let redirectTo = window.location.origin + '/login.html';
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
@@ -81,8 +71,9 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
             provider: 'google',
             options: {
                 redirectTo: redirectTo,
-                data: {
-                    role: role
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent'
                 }
             }
         });
