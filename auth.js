@@ -167,24 +167,51 @@ async function handleOAuthCallback() {
     const oauthIsSignup = localStorage.getItem('oauth_is_signup');
     
     // Get current user
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    if (!sessionData.session) {
+        if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        } else {
+            return;
+        }
+    }
+
     const user = await getCurrentUser();
-    
+
     if (!user) {
         return; // No user logged in, nothing to do
     }
-    
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     // CASE 1: OAuth Signup (has localStorage data)
     if (oauthRole && oauthIsSignup === 'true') {
         console.log('OAuth SIGNUP detected. Role:', oauthRole);
-        
+
         // Update profile with correct role
-        const { data: profile } = await supabaseClient
+        let { data: profile } = await supabaseClient
             .from('profiles')
             .select('role, onboarding_completed')
             .eq('id', user.id)
             .single();
-        
-        if (!profile || !profile.role || profile.role !== oauthRole) {
+
+        if (!profile) {
+            console.log("No profile found, creating fallback manually...");
+            const { data: newProfile } = await supabaseClient
+                .from('profiles')
+                .insert([{
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+                    role: oauthRole,
+                    phone: null
+                }])
+                .select()
+                .single();
+            profile = newProfile;
+        }
+
+        if (profile && profile.role !== oauthRole) {
             console.log('Updating OAuth user role to:', oauthRole);
             await supabaseClient
                 .from('profiles')
