@@ -1,3 +1,38 @@
+
+// GLOBAL OAUTH CATCHER: Run this immediately on ANY page load
+(async function() {
+    // If the URL contains an access token (like when Supabase dumps you on the homepage)
+    if (window.location.hash.includes('access_token=') || window.location.search.includes('code=')) {
+        console.log('� � GLOBAL OAUTH CATCHER ACTIVATED: Found tokens in URL');
+        try {
+            // Force Supabase to immediately process the tokens in the URL
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                console.log('✅ Session captured globally!');
+                // We caught a stray login. Let's instantly route them to their dashboard
+                const user = session.user;
+                
+                // Fetch profile to know where to send them
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+                    
+                const role = profile?.role || localStorage.getItem('oauth_role') || 'client';
+                
+                if (role === 'admin') window.location.replace('admin-dashboard.html');
+                else if (role === 'trainer') window.location.replace('bookings.html');
+                else window.location.replace('client-dashboard.html');
+            }
+        } catch (err) {
+            console.error('Global oauth capture failed:', err);
+        }
+    }
+})();
+
+
 /**
  * Onlifit Auth & Data Module (Supabase Version)
  * ──────────────────────────────────────────
