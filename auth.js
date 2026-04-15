@@ -61,7 +61,7 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
         
-        let redirectTo = window.location.origin + '/login.html';
+        let redirectTo = window.location.origin + (window.location.pathname.endsWith('.html') ? '/login.html' : '/login');
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
@@ -217,7 +217,7 @@ async function handleOAuthCallback() {
     localStorage.removeItem('oauth_is_signup');
 
     // Only redirect if we are on the login page (or auth redirect page)
-    if (window.location.pathname.includes('login.html')) {
+    if (window.location.pathname.includes('login')) {
         console.log('Redirecting user to their dashboard...');
         const finalRole = profile?.role || oauthRole;
         
