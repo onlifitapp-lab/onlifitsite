@@ -212,6 +212,10 @@
                     console.log('Phone:', phone);
                     
                     response = await signUp(name, email, password, selectedRole, {}, phone);
+                   // HACK: Supabase signup with email confirmation disabled returns user but session might need a force refresh depending on settings
+                   if (response.success) {
+                       await supabaseClient.auth.signInWithPassword({ email, password });
+                   }
                     
                     console.log('Signup response:', response);
                 } else {
