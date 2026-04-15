@@ -61,7 +61,9 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
         
-        let redirectTo = window.location.origin + (window.location.pathname.endsWith('.html') ? '/login.html' : '/login');
+        // Force strictly .html so Supabase Auth string-matches its whitelist exactly.
+          // Vercel's cleanUrls will 308 redirect it to /login gracefully on the frontend.
+          let redirectTo = window.location.origin + '/login.html';
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
