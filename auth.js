@@ -163,126 +163,80 @@ async function getCurrentUser() {
  * Handle OAuth callback - Check and set role from localStorage, then redirect
  */
 async function handleOAuthCallback() {
-    const oauthRole = localStorage.getItem('oauth_role');
-    const oauthIsSignup = localStorage.getItem('oauth_is_signup');
+    const oauthRole = localStorage.getItem('oauth_role') || 'client';
+    const oauthIsSignup = localStorage.getItem('oauth_is_signup') === 'true';
+
+    console.log('handleOAuthCallback invoked. Checking session...');
     
-    // Get current user
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if (!sessionData.session) {
+    // Let Supabase process the URL tokens
+    let { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
         if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-        } else {
-            return;
+            console.log('Tokens found in URL, waiting for Supabase to process...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const refresh = await supabaseClient.auth.getSession();
+            session = refresh.data.session;
         }
     }
 
-    const user = await getCurrentUser();
-
-    if (!user) {
-        return; // No user logged in, nothing to do
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // CASE 1: OAuth Signup (has localStorage data)
-    if (oauthRole && oauthIsSignup === 'true') {
-        console.log('OAuth SIGNUP detected. Role:', oauthRole);
-
-        // Update profile with correct role
-        let { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('role, onboarding_completed')
-            .eq('id', user.id)
-            .single();
-
-        if (!profile) {
-            console.log("No profile found, creating fallback manually...");
-            const { data: newProfile } = await supabaseClient
-                .from('profiles')
-                .insert([{
-                    id: user.id,
-                    email: user.email,
-                    name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
-                    role: oauthRole,
-                    phone: null
-                }])
-                .select()
-                .single();
-            profile = newProfile;
-        }
-
-        if (profile && profile.role !== oauthRole) {
-            console.log('Updating OAuth user role to:', oauthRole);
-            await supabaseClient
-                .from('profiles')
-                .update({ role: oauthRole })
-                .eq('id', user.id);
-        }
-        
-        // Clear OAuth data
-        localStorage.removeItem('oauth_role');
-        localStorage.removeItem('oauth_is_signup');
-        
-        // Redirect new user to onboarding
-        if (oauthRole === 'trainer') {
-            console.log('Redirecting new trainer to onboarding');
-            window.location.href = 'trainer-onboarding.html';
-        } else {
-            console.log('Redirecting new client to onboarding');
-            window.location.href = 'onboarding.html';
-        }
+    if (!session) {
+        console.log('No session found. Aborting OAuth callback.');
         return;
     }
-    
-    // CASE 2: OAuth Login (returning user, no localStorage or isSignup is false)
-    // Check if we just came back from OAuth (user is logged in but we're on login page)
-    if (window.location.pathname.includes('login.html')) {
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // If no specific mode/role in URL, this is a returning user login
-        if (!urlParams.get('tab') && !oauthRole) {
-            console.log('OAuth LOGIN detected for returning user');
-            
-            // Fetch user's role from database
-            const { data: profile } = await supabaseClient
-                .from('profiles')
-                .select('role, onboarding_completed')
-                .eq('id', user.id)
-                .single();
-            
-            if (profile && profile.role) {
-                console.log('User role:', profile.role);
-                
-                // Clear any leftover OAuth data
-                localStorage.removeItem('oauth_role');
-                localStorage.removeItem('oauth_is_signup');
-                
-                // Redirect based on actual role in database
-                if (profile.role === 'admin') {
-                    window.location.href = 'admin-dashboard.html';
-                } else if (profile.role === 'trainer') {
-                    console.log('Redirecting trainer to bookings dashboard');
-                    window.location.href = 'bookings.html';
-                } else {
-                    console.log('Redirecting client to dashboard');
-                    window.location.href = 'client-dashboard.html';
-                }
-                return;
-            }
-        }
+
+    // We have a session!
+    const user = session.user;
+    console.log('User authenticated:', user.id);
+
+    // Fetch profile
+    let { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role, onboarding_completed')
+        .eq('id', user.id)
+        .single();
+
+    // Create profile if missing
+    if (!profile) {
+        console.log('Profile missing. Creating new profile...');
+        const { data: newProfile } = await supabaseClient
+            .from('profiles')
+            .insert([{
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+                role: oauthRole,
+                phone: null
+            }])
+            .select()
+            .single();
+        profile = newProfile;
     }
-    
-    // Clear OAuth data if present (cleanup)
-    if (oauthRole) {
-        localStorage.removeItem('oauth_role');
-        localStorage.removeItem('oauth_is_signup');
+
+    // Clean up oauth local storage immediately
+    localStorage.removeItem('oauth_role');
+    localStorage.removeItem('oauth_is_signup');
+
+    // Only redirect if we are on the login page (or auth redirect page)
+    if (window.location.pathname.includes('login.html')) {
+        console.log('Redirecting user to their dashboard...');
+        const finalRole = profile?.role || oauthRole;
+        
+        if (finalRole === 'admin') {
+            window.location.href = 'admin-dashboard.html';
+        } else if (finalRole === 'trainer') {
+            if (oauthIsSignup && !profile?.onboarding_completed) {
+               window.location.href = 'trainer-onboarding.html';
+            } else {
+               window.location.href = 'bookings.html';
+            }
+        } else {
+            window.location.href = oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html';
+        }
     }
 }
 
 /**
- * Update user profile (e.g., during onboarding or settings)
- */
-async function updateUserProfile(userId, data) {
+ * Update user profileserId, data) {
     try {
         const { error } = await supabaseClient
             .from('profiles')
