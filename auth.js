@@ -98,7 +98,7 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
         
         // Force strictly .html so Supabase Auth string-matches its whitelist exactly.
           // Vercel's cleanUrls will 308 redirect it to /login gracefully on the frontend.
-          let redirectTo = window.location.origin + '/login.html';
+          let redirectTo = window.location.href.split('?')[0].split('#')[0];
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
@@ -378,6 +378,25 @@ async function deleteAvatar(userId) {
     } catch (error) {
         console.error("Delete avatar error:", error.message);
         return false;
+    }
+}
+
+
+/**
+ * Update user profile (e.g., during onboarding or settings)
+ */
+async function updateUserProfile(userId, data) {
+    try {
+        const { error } = await supabaseClient
+            .from('profiles')
+            .update(data)
+            .eq('id', userId);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error("Update profile error:", error.message);
+        return { success: false, error: error.message };
     }
 }
 
@@ -1062,3 +1081,4 @@ function initData() {
 // Init on load
 // Note: We don't call renderAuthNav here because it's async now.
 // Pages should call as needed.
+
