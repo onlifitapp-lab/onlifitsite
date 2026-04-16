@@ -98,7 +98,7 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
         
         // Force strictly .html so Supabase Auth string-matches its whitelist exactly.
           // Vercel's cleanUrls will 308 redirect it to /login gracefully on the frontend.
-          let redirectTo = window.location.href.split('?')[0].split('#')[0];
+          let redirectTo = window.location.hostname.includes('onlifit.in') ? 'https://onlifit.in/login' : window.location.hostname.includes('vercel.app') ? 'https://' + window.location.hostname + '/login' : window.location.href.split('?')[0].split('#')[0];
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
@@ -1081,4 +1081,6 @@ function initData() {
 // Init on load
 // Note: We don't call renderAuthNav here because it's async now.
 // Pages should call as needed.
+
+
 
