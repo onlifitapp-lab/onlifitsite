@@ -79,10 +79,10 @@
 <body class="bg-surface-container-low font-body text-on-surface">
 <!-- TopNavBar (Fixed) -->
 <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
-    <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
+    <div class="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
         <div class="flex items-center gap-8">
             <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
-            <div class="hidden md:flex gap-6 items-center">
+            <div class="md:flex gap-6 items-center">
                 <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
             </div>
@@ -93,8 +93,8 @@
 
 <div class="flex min-h-screen pt-20">
 <!-- SideNavBar -->
-<aside class="h-screen w-64 fixed left-0 top-0 pt-20 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col gap-2 py-6 font-headline text-sm hidden md:flex">
-<div class="px-6 mb-8 flex items-center gap-3">
+<aside class="w-full md:w-64 relative md:fixed left-0 top-0 pt-2 md:pt-20 bg-surface-container-lowest border-b md:border-r md:border-b-0 border-outline-variant/30 flex flex-row md:flex-col gap-2 py-4 md:py-6 font-headline text-sm overflow-x-auto md:overflow-visible">
+<div class="hidden md:flex px-6 mb-8 items-center gap-3">
 <div id="trainer-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-md">
     T
 </div>
@@ -103,7 +103,7 @@
 <p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-black">Certified Pro</p>
 </div>
 </div>
-<nav class="flex-1">
+<nav class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0">
 <a class="flex items-center gap-3 px-6 py-3 bg-primary-container text-primary font-bold rounded-r-full mr-4 transition-all" href="#">
 <span class="material-symbols-outlined">dashboard</span>
 <span>Dashboard</span>
@@ -121,15 +121,15 @@
 <span>Settings</span>
 </a>
 </nav>
-<div class="px-6 mt-auto pb-10">
-<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all">
+<div class="flex-shrink-0 md:px-6 md:mt-auto md:pb-10">
+<button class="px-6 md:w-full py-2 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all">
 <span class="material-symbols-outlined text-sm">sensors</span> Go Live
 </button>
 </div>
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="flex-1 md:ml-64 p-8 bg-surface-container-low">
+<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low">
 <header class="mb-10 flex justify-between items-end">
 <div>
 <h1 class="text-3xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
@@ -171,11 +171,11 @@
 </div>
 </div>
 <div class="flex gap-1 mt-4">
-<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex-1 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex-1 bg-surface-container-low rounded-full"></div>
+<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
+<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-surface-container-low rounded-full"></div>
 </div>
 </div>
 </div>
@@ -329,3 +329,11 @@
     initDashboard();
 </script>
 </body></html>
+
+
+
+
+
+
+
+
