@@ -142,7 +142,33 @@
             return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
         }
 
-        async function loadTrainers() {
+        
+// --- REALTIME UPDATES ---
+function listenForTrainerUpdates() {
+    supabase.channel('public-trainers-updates')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, payload => {
+            const updatedTrainer = payload.new;
+            if (updatedTrainer.role !== 'trainer') return;
+
+            const idx = allTrainers.findIndex(t => t.id === updatedTrainer.id);
+            if (idx !== -1) {
+                // Update local array
+                allTrainers[idx] = { ...allTrainers[idx], ...updatedTrainer };
+                
+                // Re-apply current filter without click event hack
+                let filtered = allTrainers;
+                if (currentFilter !== 'all') {
+                    filtered = allTrainers.filter(t => t.specialty?.includes(currentFilter) || t.tags?.includes(currentFilter));
+                }
+                sortAndRender(filtered);
+            }
+        })
+        .subscribe();
+}
+// ------------------------
+
+
+          async function loadTrainers() {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
             
@@ -157,7 +183,8 @@
                     }
                     
                     renderTrainers(allTrainers);
-                    return;
+                      listenForTrainerUpdates();
+                      return;
                 }
 
                 // Fallback direct DB fetch (legacy)
