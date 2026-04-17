@@ -161,7 +161,11 @@
 </aside>
 
 <!-- ── Main Content ────────────────────────────────────────────────────── -->
-<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen relative"><section id="view-overview" class="route-view active-view anim-slide-up">
+<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen relative">
+    <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <span class="material-symbols-outlined animate-spin text-primary text-4xl">autorenew</span>
+    </div>
+    <section id="view-overview" class="route-view active-view anim-slide-up">
     
 
 
@@ -355,7 +359,27 @@
                 <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">— Unknown</p>
             </div>
         </div>
-    </div></section>
+    </div>
+
+    <!-- ── Past Sessions ───────────────────────────────────────────────── -->
+    <div class="mt-10" id="past-section">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-headline text-xl font-bold text-on-surface">Past Sessions</h2>
+            <button id="toggle-past" onclick="togglePast()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">expand_more</span> Show all
+            </button>
+        </div>
+        <div id="past-bookings-list" class="space-y-3">
+            <!-- Populated by JS -->
+        </div>
+        <div id="no-past" class="hidden">
+            <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
+                <p class="text-sm text-on-surface-variant">Completed sessions will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+</section>
     <section id="view-find-trainers" class="route-view hidden anim-slide-up">
         <header class="mb-8">
             <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
