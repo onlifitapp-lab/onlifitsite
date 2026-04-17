@@ -57,11 +57,11 @@
 </div>
 </div>
 <nav class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0">
-<a class="flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="#overview">
+<a class="flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="/trainer/dashboard">
 <span class="material-symbols-outlined">dashboard</span>
 <span>Dashboard</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="#bookings">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/bookings">
 <span class="material-symbols-outlined">calendar_today</span>
 <span>Bookings</span>
 </a>
@@ -69,7 +69,7 @@
 <span class="material-symbols-outlined">chat_bubble</span>
 <span>Messages</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="settings.html" target="_blank">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
 <span class="material-symbols-outlined">settings</span>
 <span>Settings</span>
 </a>
@@ -82,7 +82,7 @@
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative"><section id="view-overview" class="route-view active-view anim-slide-up">
+<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative"><section id="view-dashboard" class="route-view active-view anim-slide-up">
     <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
         <div>
             <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
@@ -180,15 +180,224 @@
 </div>
 </div>
 </div>
-</section></main>
+</section>
+<section id="view-settings" class="route-view hidden anim-slide-up">
+    
+    <!-- Header -->
+    <div class="mb-8">
+        <button onclick="router.navigate('dashboard')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
+            <span class="material-symbols-outlined text-lg">arrow_back</span>
+            Back to Dashboard
+        </button>
+        <h1 class="font-headline text-4xl font-black mb-2">Account Settings</h1>
+        <p class="text-on-surface-variant">Manage your profile and account preferences</p>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="alert-container" class="mb-6"></div>
+
+    <!-- Settings Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+        
+        <!-- Profile Picture Section -->
+        <div class="p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-6">Profile Picture</h2>
+            <div class="flex items-center gap-6">
+                <div class="relative">
+                    <img id="avatar-preview" src="" alt="Profile" class="avatar-preview bg-primary-container" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div id="avatar-placeholder" class="avatar-preview bg-primary-container flex items-center justify-center text-4xl font-bold text-primary" style="display:none;">
+                        <span id="avatar-initials">U</span>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <input type="file" id="avatar-input" accept="image/*" class="hidden">
+                    <button onclick="document.getElementById('avatar-input').click()" class="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
+                        Upload New Photo
+                    </button>
+                    <p class="text-xs text-on-surface-variant">JPG, PNG or GIF. Max size 2MB.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-6">Personal Information</h2>
+            <form id="profile-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Full Name</label>
+                        <input type="text" id="name" required="" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Email Address</label>
+                        <input type="email" id="email" required="" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Phone Number</label>
+                        <input type="tel" id="phone" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Address</label>
+                        <input type="text" id="address" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Security Section -->
+        <div class="p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-6">Security</h2>
+            <form id="password-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">New Password</label>
+                        <input type="password" id="new-password" placeholder="Enter new password" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Confirm Password</label>
+                        <input type="password" id="confirm-password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                </div>
+                <button type="button" onclick="changePassword()" class="px-6 py-2 bg-secondary text-white rounded-lg font-semibold hover:bg-primary transition-all">
+                    Update Password
+                </button>
+            </form>
+        </div>
+
+        <!-- Trainer-Specific Settings (Hidden for clients) -->
+        <div id="trainer-settings" class="p-8 border-b border-outline-variant/30 hidden">
+            <h2 class="font-headline text-xl font-bold mb-6">Professional Details</h2>
+            <form id="trainer-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Specialty</label>
+                        <input type="text" id="specialty" placeholder="e.g., Weight Loss, Strength Training" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Experience</label>
+                        <input type="text" id="experience" placeholder="e.g., 5+ years" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-2">About / Bio</label>
+                    <textarea id="bio" rows="4" placeholder="Tell clients about your training philosophy, achievements, and what makes you unique..." class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold mb-4">Pricing &amp; Packages</label>
+                    <div class="space-y-4">
+                        <!-- Hourly Rate -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Per Session / Hourly Rate</label>
+                                <input type="text" id="basic-label" placeholder="e.g., 1 Hour Session" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                            <div class="w-32">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <input type="number" id="basic-price" placeholder="999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Weekly Package -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Weekly Package</label>
+                                <input type="text" id="standard-label" placeholder="e.g., 1 Week (5 Sessions)" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                            <div class="w-32">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <input type="number" id="standard-price" placeholder="3499" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Monthly Package -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Monthly Package</label>
+                                <input type="text" id="premium-label" placeholder="e.g., 1 Month Unlimited" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                            <div class="w-32">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <input type="number" id="premium-price" placeholder="9999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Transformation / Long-term Package -->
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Transformation / Long-term Program</label>
+                                <input type="text" id="transformation-label" placeholder="e.g., 3-Month Transformation" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                            <div class="w-32">
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <input type="number" id="transformation-price" placeholder="25999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-on-surface-variant mt-2">💡 Tip: Offer flexible packages - hourly for beginners, weekly for regular clients, monthly for committed clients, and transformation programs for serious fitness goals.</p>
+                </div>
+
+                <!-- Certifications Section -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2">Certifications &amp; Credentials</label>
+                    <p class="text-xs text-on-surface-variant mb-3">Upload your certifications to get verified badge and build trust with clients</p>
+                    <div class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center hover:border-primary transition-all cursor-pointer" onclick="document.getElementById('cert-input').click()">
+                        <input type="file" id="cert-input" accept="image/*,application/pdf" multiple="" class="hidden">
+                        <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2 block">upload_file</span>
+                        <p class="text-sm font-semibold mb-1">Click to upload certifications</p>
+                        <p class="text-xs text-on-surface-variant">PDF, JPG, PNG (Max 5MB each)</p>
+                    </div>
+                    <div id="cert-list" class="mt-4 space-y-2">
+                        <!-- Uploaded certs will appear here -->
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Save Button -->
+        <div class="p-8 bg-surface-container-low">
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-on-surface-variant">Changes will be saved to your profile</p>
+                <button onclick="saveSettings()" id="save-btn" class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all flex items-center gap-2">
+                    <span id="save-text">Save Changes</span>
+                    <span id="save-spinner" class="spinner hidden"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</section>
+</main>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
-<script src="auth.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <script>
+
+
+
+
     async function initDashboard() {
         await renderAuthNav();
-        const user = await requireAuth('trainer', 'bookings.html');
+    await initSettings();
+
+        const user = await requireAuth('trainer');
         if (!user) return;
 
         // Real-time subscription for notifications (updates nav bell)
@@ -305,32 +514,51 @@
     }
 
     initDashboard();
-</script>
 
 
 
-
-
-
-
-
-
-
-<script>
 class DashboardRouter {
     constructor() {
         this.loader = document.getElementById('page-loader');
         this.views = document.querySelectorAll('.route-view');
         this.navLinks = document.querySelectorAll('.sidebar-link');
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', () => this.handleRoute());
         
-        window.addEventListener('hashchange', () => this.handleRoute());
-        window.addEventListener('load', () => this.handleRoute());
+        // Initial load
+        window.addEventListener('load', () => {
+            // Convert hash to pathname if someone loads a hash
+            if (window.location.hash) {
+                const path = window.location.hash.replace('#', '');
+                history.replaceState(null, '', '/trainer/' + path);
+            }
+            this.handleRoute();
+        });
+
+        // Intercept clicks on sidebar links
+        document.body.addEventListener('click', (e) => {
+            const link = e.target.closest('.sidebar-link');
+            if (link && link.getAttribute('href').startsWith('/trainer/')) {
+                e.preventDefault();
+                const targetUrl = link.getAttribute('href');
+                history.pushState(null, '', targetUrl);
+                this.handleRoute();
+            }
+        });
     }
 
     async handleRoute() {
-        const path = window.location.hash.replace('#', '') || 'overview';
-        const targetView = document.getElementById('view-' + path);
+        let path = window.location.pathname.replace('/trainer/', '');
+        if (path === '/' || path === '/trainer' || !path.includes('bookings.html') === false) {
+            path = 'dashboard'; // default
+        }
+        if (path.endsWith('.html')) path = 'dashboard';
+        if (path === 'settings') path = 'settings';
+        if (path === 'bookings') path = 'bookings';
+        if (path !== 'settings' && path !== 'bookings') path = 'dashboard';
 
+        const targetView = document.getElementById('view-' + path);
         if (!targetView) return;
 
         // Show loading state & hide all views
@@ -343,7 +571,7 @@ class DashboardRouter {
         // Update Sidebar Active States
         this.navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            if (href === '#' + path) {
+            if (href === '/trainer/' + path) {
                 link.classList.add('bg-primary-container', 'text-primary');
                 link.classList.remove('text-on-surface-variant');
             } else {
@@ -358,11 +586,459 @@ class DashboardRouter {
         // Reveal the requested view smoothly
         this.loader.classList.add('hidden');
         targetView.classList.remove('hidden');
-        
+
         void targetView.offsetWidth;
         targetView.classList.add('active-view');
     }
+
+    navigate(path) {
+        history.pushState(null, '', '/trainer/' + path);
+        this.handleRoute();
+    }
 }
 const router = new DashboardRouter();
-</script>
-</body></html>
+
+
+
+
+    let settingsUser = null;
+
+    // Function to go back to dashboard
+     else {
+            // Fallback: try to detect from current session
+            getCurrentUser().then(currentUser => {
+                if (currentUser) {
+                    const isTrainer = currentUser.role && currentUser.role.toLowerCase() === 'trainer';
+                    window.location.href = isTrainer ? 'bookings.html' : 'client-dashboard.html';
+                } else {
+                    window.location.href = 'client-dashboard.html'; // Default fallback
+                }
+            });
+        }
+    }
+
+    async async function initSettings() {
+        settingsUser = await requireAuth();
+        if (!settingsUser) return;
+
+        
+
+        // Load current profile data
+        await loadProfile();
+
+        // Setup avatar upload
+        document.getElementById('avatar-input').addEventListener('change', handleAvatarUpload);
+        
+        // Setup certification upload
+        if (document.getElementById('cert-input')) {
+            document.getElementById('cert-input').addEventListener('change', handleCertUpload);
+        }
+    }
+
+    async function changePassword() {
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (!newPassword || newPassword.length < 6) {
+            showAlert('Password must be at least 6 characters long', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showAlert('Passwords do not match', 'error');
+            return;
+        }
+
+        try {
+            const { error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            if (error) throw error;
+
+            showAlert('Password updated successfully!', 'success');
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        } catch (error) {
+            console.error('Password change error:', error);
+            showAlert('Failed to update password: ' + error.message, 'error');
+        }
+    }
+
+    async function handleCertUpload(event) {
+        const files = Array.from(event.target.files);
+        if (files.length === 0) return;
+
+        showAlert('Uploading certifications...', 'info');
+
+        try {
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (const file of files) {
+                // Validate file size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert(`File ${file.name} is too large (max 5MB)`, 'error');
+                    failCount++;
+                    continue;
+                }
+
+                // Validate file type
+                const allowedTypes = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                if (!allowedTypes.includes(fileExt)) {
+                    showAlert(`File ${file.name} type not allowed`, 'error');
+                    failCount++;
+                    continue;
+                }
+
+                // Upload with metadata (trainer name, date, etc.)
+                const result = await uploadCertification(settingsUser.id, settingsUser.name, file);
+                
+                if (result.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error('Upload failed:', result.error);
+                }
+            }
+
+            if (successCount > 0) {
+                showAlert(`${successCount} certification(s) uploaded successfully!`, 'success');
+                // Reload certifications from database
+                const certs = await getTrainerCertifications(settingsUser.id);
+                displayCertifications(certs);
+            }
+            
+            if (failCount > 0) {
+                showAlert(`${failCount} file(s) failed to upload`, 'error');
+            }
+            
+            // Clear file input
+            event.target.value = '';
+        } catch (error) {
+            console.error('Cert upload error:', error);
+            showAlert('Failed to upload certifications', 'error');
+        }
+    }
+
+    function displayCertifications(certs) {
+        const certList = document.getElementById('cert-list');
+        if (!certs || certs.length === 0) {
+            certList.innerHTML = '<p class="text-xs text-on-surface-variant">No certifications uploaded yet</p>';
+            return;
+        }
+
+        certList.innerHTML = certs.map((cert) => {
+            // Format upload date
+            const uploadDate = new Date(cert.uploaded_at).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            // Format file size
+            const fileSizeKB = (cert.file_size / 1024).toFixed(1);
+            
+            // Verification badge
+            const verifiedBadge = cert.verified 
+                ? '<span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">✓ Verified</span>'
+                : '<span class="text-xs px-2 py-1 bg-outline-variant/20 text-on-surface-variant rounded-full">Pending Review</span>';
+            
+            return `
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-lg">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-1">
+                        <span class="material-symbols-outlined text-primary">description</span>
+                        <span class="text-sm font-semibold">${cert.file_name}</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-on-surface-variant ml-9">
+                        <span>Uploaded: ${uploadDate}</span>
+                        <span>•</span>
+                        <span>${fileSizeKB} KB</span>
+                        <span>•</span>
+                        <span class="uppercase">${cert.file_type}</span>
+                    </div>
+                    <div class="mt-2 ml-9">
+                        ${verifiedBadge}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="window.open('${cert.file_url}', '_blank')" class="p-2 hover:bg-surface-container-high rounded-lg transition-all" title="View">
+                        <span class="material-symbols-outlined text-primary">visibility</span>
+                    </button>
+                    <button onclick="removeCert('${cert.id}')" class="p-2 hover:bg-error/10 rounded-lg transition-all" title="Delete">
+                        <span class="material-symbols-outlined text-error">delete</span>
+                    </button>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    async function removeCert(certId) {
+        if (!confirm('Remove this certification? This cannot be undone.')) return;
+
+        try {
+            const result = await deleteCertification(certId, settingsUser.id);
+            
+            if (result.success) {
+                showAlert('Certification removed', 'success');
+                // Reload certifications
+                const certs = await getTrainerCertifications(settingsUser.id);
+                displayCertifications(certs);
+            } else {
+                showAlert('Failed to remove certification: ' + result.error, 'error');
+            }
+        } catch (error) {
+            console.error('Remove cert error:', error);
+            showAlert('Failed to remove certification', 'error');
+        }
+    }
+                    <a href="${cert}" target="_blank" class="text-xs text-primary hover:underline">View</a>
+                    <button onclick="removeCert(${index})" class="text-xs text-error hover:underline">Remove</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function removeCert(index) {
+        if (!confirm('Remove this certification?')) return;
+
+        try {
+            const certs = [...(settingsUser.certifications || [])];
+            certs.splice(index, 1);
+
+            const { error } = await supabaseClient
+                .from('profiles')
+                .update({ certifications: certs })
+                .eq('id', settingsUser.id);
+
+            if (error) throw error;
+
+            showAlert('Certification removed', 'success');
+            displayCertifications(certs);
+            user = await getCurrentUser();
+        } catch (error) {
+            console.error('Remove cert error:', error);
+            showAlert('Failed to remove certification', 'error');
+        }
+    }
+
+    async function loadProfile() {
+        // Debug: log user object to see what's loaded
+        console.log('Loading profile for user:', settingsUser);
+        console.log('User role:', settingsUser.role);
+        
+        // Set basic info
+        document.getElementById('name').value = settingsUser.name || '';
+        document.getElementById('email').value = settingsUser.email || '';
+        document.getElementById('phone').value = settingsUser.phone || '';
+        document.getElementById('address').value = settingsUser.address || '';
+
+        // Set avatar
+        if (settingsUser.avatar_url && settingsUser.avatar_url !== 'null' && settingsUser.avatar_url !== 'undefined') {
+            // Check if it's a full URL or a storage path
+            if (settingsUser.avatar_url.startsWith('http')) {
+                document.getElementById('avatar-preview').src = settingsUser.avatar_url;
+                document.getElementById('avatar-preview').style.display = 'block';
+            } else {
+                // It's a storage path, get public URL
+                const avatarUrl = await getAvatarUrl(settingsUser.avatar_url);
+                if (avatarUrl) {
+                    document.getElementById('avatar-preview').src = avatarUrl;
+                    document.getElementById('avatar-preview').style.display = 'block';
+                } else {
+                    showInitials();
+                }
+            }
+        } else {
+            showInitials();
+        }
+
+        // Show trainer settings if user is a trainer
+        // Check both 'trainer' and 'Trainer' (case insensitive)
+        const isTrainer = settingsUser.role && settingsUser.role.toLowerCase() === 'trainer';
+        console.log('Is trainer?', isTrainer);
+        
+        if (isTrainer) {
+            console.log('Showing trainer settings');
+            document.getElementById('trainer-settings').classList.remove('hidden');
+            document.getElementById('specialty').value = settingsUser.specialty || '';
+            document.getElementById('experience').value = settingsUser.experience || '';
+            document.getElementById('bio').value = settingsUser.bio || '';
+
+            // Load pricing plans
+            if (settingsUser.plans) {
+                const plans = typeof settingsUser.plans === 'string' ? JSON.parse(settingsUser.plans) : settingsUser.plans;
+                
+                if (plans.basic) {
+                    document.getElementById('basic-label').value = plans.basic.label || '';
+                    document.getElementById('basic-price').value = plans.basic.price || '';
+                }
+                if (plans.standard) {
+                    document.getElementById('standard-label').value = plans.standard.label || '';
+                    document.getElementById('standard-price').value = plans.standard.price || '';
+                }
+                if (plans.premium) {
+                    document.getElementById('premium-label').value = plans.premium.label || '';
+                    document.getElementById('premium-price').value = plans.premium.price || '';
+                }
+                if (plans.transformation) {
+                    document.getElementById('transformation-label').value = plans.transformation.label || '';
+                    document.getElementById('transformation-price').value = plans.transformation.price || '';
+                }
+            }
+            
+            // Load certifications from database (not from profile)
+            const certs = await getTrainerCertifications(settingsUser.id);
+            if (certs && certs.length > 0) {
+                displayCertifications(certs);
+            }
+        } else {
+            console.log('NOT showing trainer settings - user is not a trainer');
+        }
+    }
+
+    function showInitials() {
+        const initials = settingsUser.name ? settingsUser.name.charAt(0).toUpperCase() : 'U';
+        document.getElementById('avatar-initials').textContent = initials;
+        document.getElementById('avatar-placeholder').style.display = 'flex';
+        document.getElementById('avatar-preview').style.display = 'none';
+    }
+
+    async function handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            showAlert('File size must be less than 2MB', 'error');
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showAlert('Please upload an image file', 'error');
+            return;
+        }
+
+        // Show loading
+        showAlert('Uploading avatar...', 'info');
+
+        try {
+            const avatarUrl = await uploadAvatar(settingsUser.id, file);
+            if (avatarUrl) {
+                // Update preview
+                document.getElementById('avatar-preview').src = avatarUrl;
+                document.getElementById('avatar-preview').style.display = 'block';
+                document.getElementById('avatar-placeholder').style.display = 'none';
+                
+                showAlert('Avatar uploaded successfully!', 'success');
+                
+                // Refresh user data
+                user = await getCurrentUser();
+            } else {
+                showAlert('Failed to upload avatar', 'error');
+            }
+        } catch (error) {
+            console.error('Avatar upload error:', error);
+            showAlert('Failed to upload avatar', 'error');
+        }
+    }
+
+    async function saveSettings() {
+        const saveBtn = document.getElementById('save-btn');
+        const saveText = document.getElementById('save-text');
+        const saveSpinner = document.getElementById('save-spinner');
+
+        // Disable button and show spinner
+        saveBtn.disabled = true;
+        saveText.textContent = 'Saving...';
+        saveSpinner.classList.remove('hidden');
+
+        try {
+            const updates = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value,
+            };
+
+            // Add trainer-specific fields
+            if (settingsUser.role === 'trainer') {
+                updates.specialty = document.getElementById('specialty').value;
+                updates.experience = document.getElementById('experience').value;
+                updates.bio = document.getElementById('bio').value;
+
+                // Build pricing plans object
+                const plans = {};
+                
+                const basicLabel = document.getElementById('basic-label').value;
+                const basicPrice = document.getElementById('basic-price').value;
+                if (basicLabel && basicPrice) {
+                    plans.basic = { label: basicLabel, price: parseFloat(basicPrice) };
+                }
+
+                const standardLabel = document.getElementById('standard-label').value;
+                const standardPrice = document.getElementById('standard-price').value;
+                if (standardLabel && standardPrice) {
+                    plans.standard = { label: standardLabel, price: parseFloat(standardPrice) };
+                }
+
+                const premiumLabel = document.getElementById('premium-label').value;
+                const premiumPrice = document.getElementById('premium-price').value;
+                if (premiumLabel && premiumPrice) {
+                    plans.premium = { label: premiumLabel, price: parseFloat(premiumPrice) };
+                }
+
+                const transformationLabel = document.getElementById('transformation-label').value;
+                const transformationPrice = document.getElementById('transformation-price').value;
+                if (transformationLabel && transformationPrice) {
+                    plans.transformation = { label: transformationLabel, price: parseFloat(transformationPrice) };
+                }
+
+                if (Object.keys(plans).length > 0) {
+                    updates.plans = plans;
+                }
+            }
+
+            const result = await updateUserProfile(settingsUser.id, updates);
+            
+            if (result.success) {
+                showAlert('Settings saved successfully!', 'success');
+                // Refresh user data
+                user = await getCurrentUser();
+            } else {
+                showAlert('Failed to save settings: ' + (result.error || 'Unknown error'), 'error');
+            }
+        } catch (error) {
+            console.error('Save settings error:', error);
+            showAlert('Failed to save settings', 'error');
+        } finally {
+            // Re-enable button and hide spinner
+            saveBtn.disabled = false;
+            saveText.textContent = 'Save Changes';
+            saveSpinner.classList.add('hidden');
+        }
+    }
+
+    function showAlert(message, type = 'info') {
+        const container = document.getElementById('alert-container');
+        const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+        
+        container.innerHTML = `
+            <div class="${bgColor} text-white px-6 py-4 rounded-xl flex items-center gap-3 shadow-lg">
+                <span class="material-symbols-outlined">${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}</span>
+                <span class="font-semibold">${message}</span>
+            </div>
+        `;
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            container.innerHTML = '';
+        }, 5000);
+    }
+
+    
+
+</script></body></html>

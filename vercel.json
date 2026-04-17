@@ -1,8 +1,12 @@
-{
+﻿{
   "rewrites": [
     {
       "source": "/",
       "destination": "/onlifit.html"
+    },
+    {
+      "source": "/trainer/:path*",
+      "destination": "/bookings.html"
     }
   ],
   "cleanUrls": true,
