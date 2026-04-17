@@ -1,93 +1,16 @@
 
-// GLOBAL OAUTH CATCHER: Run this immediately on ANY page load
-(async function() {
-    // If the URL contains an access token (like when Supabase dumps you on the homepage)
-    if (window.location.hash.includes('access_token=') || window.location.search.includes('code=')) {
-        console.log('� � GLOBAL OAUTH CATCHER ACTIVATED: Found tokens in URL');
-        try {
-            // PKCE flow returns `?code=...` and requires exchanging it for a session.
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            const hadOAuthParams = !!code || window.location.hash.includes('access_token=');
+// GLOBAL OAUTH CATCHER: Run this immediately on ANY page load.
+// Important: do NOT strip `?code=` / `#access_token=` until a session is actually established,
+// otherwise we can lose the ability to exchange the code and end up “stuck” on the homepage.
+(async function () {
+    try {
+        const hasOAuthParams = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
+        if (!hasOAuthParams) return;
 
-            let session = null;
-            if (code) {
-                console.log('Exchanging OAuth code for session (global catcher)...');
-                const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
-                if (exchangeError) {
-                    console.error('exchangeCodeForSession failed (global catcher):', exchangeError);
-                } else {
-                    session = exchangeData?.session || null;
-                }
-
-                // Remove sensitive oauth params from the URL to prevent re-processing.
-                params.delete('code');
-                params.delete('state');
-                params.delete('error');
-                params.delete('error_description');
-                const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
-                window.history.replaceState({}, document.title, cleanUrl);
-            }
-
-            // If we didn't get a session directly, fall back to stored session.
-            if (!session) {
-                const stored = await supabaseClient.auth.getSession();
-                session = stored?.data?.session || null;
-            }
-
-            // In some cases, the session is established asynchronously after page load.
-            // Subscribe briefly and redirect as soon as Supabase confirms SIGNED_IN.
-            if (!session && hadOAuthParams) {
-                try {
-                    const { data: subData } = supabaseClient.auth.onAuthStateChange(async (event, newSession) => {
-                        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && newSession) {
-                            try { subData?.subscription?.unsubscribe(); } catch (e) {}
-                            session = newSession;
-                            // Re-run redirect logic by reloading this catcher block's tail.
-                            const user = session.user;
-                            const { data: profile } = await supabaseClient
-                                .from('profiles')
-                                .select('role')
-                                .eq('id', user.id)
-                                .single();
-
-                            const role = profile?.role || localStorage.getItem('oauth_role') || 'client';
-                            if (role === 'admin') window.location.replace('admin-dashboard.html');
-                            else if (role === 'trainer') window.location.replace('bookings.html');
-                            else window.location.replace('client-dashboard.html');
-                        }
-                    });
-
-                    // Safety cleanup
-                    setTimeout(() => {
-                        try { subData?.subscription?.unsubscribe(); } catch (e) {}
-                    }, 8000);
-                } catch (e) {
-                    // Non-fatal
-                }
-            }
-            
-            if (session) {
-                console.log('✅ Session captured globally!');
-                // We caught a stray login. Let's instantly route them to their dashboard
-                const user = session.user;
-                
-                // Fetch profile to know where to send them
-                const { data: profile } = await supabaseClient
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
-                    
-                const role = profile?.role || localStorage.getItem('oauth_role') || 'client';
-                
-                if (role === 'admin') window.location.replace('admin-dashboard.html');
-                else if (role === 'trainer') window.location.replace('bookings.html');
-                else window.location.replace('client-dashboard.html');
-            }
-        } catch (err) {
-            console.error('Global oauth capture failed:', err);
-        }
+        console.log('GLOBAL OAUTH CATCHER: OAuth params detected in URL');
+        await handleOAuthCallback({ redirectEverywhere: true });
+    } catch (err) {
+        console.error('Global oauth catcher failed:', err);
     }
 })();
 
@@ -155,15 +78,25 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
 
-                // Redirect back to the CURRENT origin to avoid cross-domain redirects
-                // (e.g., www ↔ apex) that can strip OAuth tokens from the URL.
-                // We use cleanUrls `/login` which maps to `login.html` on Vercel.
-                const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
-                const redirectTo = isHttp ? `${window.location.origin}/login` : 'https://onlifit.in/login';
-        
-        // Store role in localStorage so we can use it after OAuth redirect
-        localStorage.setItem('oauth_role', role);
-        localStorage.setItem('oauth_is_signup', isSignup ? 'true' : 'false');
+        // Supabase URL Configuration (docs) uses the apex domain (`https://onlifit.in`).
+        // If we send `redirectTo` for `www`, Supabase may reject it (not in allow-list)
+        // and dump users on the homepage without a session.
+        const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
+        const isOnlifitDomain = /(^|\.)onlifit\.in$/i.test(window.location.hostname);
+        const authBase = (!isHttp)
+            ? 'https://onlifit.in'
+            : (isOnlifitDomain ? 'https://onlifit.in' : window.location.origin);
+        const redirectTo = `${authBase}/login`;
+
+        // localStorage bridge is only for OAuth signups (role selection happens during signup).
+        // For logins, role must be fetched from DB.
+        if (isSignup) {
+            localStorage.setItem('oauth_role', role);
+            localStorage.setItem('oauth_is_signup', 'true');
+        } else {
+            localStorage.removeItem('oauth_role');
+            localStorage.removeItem('oauth_is_signup');
+        }
         
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
@@ -260,102 +193,135 @@ async function getCurrentUser() {
 /**
  * Handle OAuth callback - Check and set role from localStorage, then redirect
  */
-async function handleOAuthCallback() {
-    const oauthRole = localStorage.getItem('oauth_role') || 'client';
+async function handleOAuthCallback(options = {}) {
+    const redirectEverywhere = !!options.redirectEverywhere;
+
+    const oauthRoleRaw = localStorage.getItem('oauth_role');
     const oauthIsSignup = localStorage.getItem('oauth_is_signup') === 'true';
+    const oauthRole = oauthIsSignup ? (oauthRoleRaw || 'client') : null;
 
-    console.log('handleOAuthCallback invoked. Checking session...');
-
-    // If we returned from OAuth with `?code=...`, exchange it for a session.
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    let exchangedSession = null;
-    if (code) {
-        console.log('Exchanging OAuth code for session (login callback)...');
-        const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
-        if (exchangeError) {
-            console.error('exchangeCodeForSession failed (login callback):', exchangeError);
-        } else {
-            exchangedSession = exchangeData?.session || null;
+    const hasAccessToken = window.location.hash.includes('access_token=');
+    const hadOAuthParams = !!code || hasAccessToken;
+
+    console.log('handleOAuthCallback invoked.', { hadOAuthParams, oauthIsSignup, oauthRole });
+
+    // Helper: wait briefly for a session to appear (Supabase can finalize asynchronously).
+    async function waitForSession(maxMs) {
+        const start = Date.now();
+        while (Date.now() - start < maxMs) {
+            const stored = await supabaseClient.auth.getSession();
+            const maybeSession = stored?.data?.session || null;
+            if (maybeSession) return maybeSession;
+            await new Promise(resolve => setTimeout(resolve, 250));
+        }
+        return null;
+    }
+
+    let session = options._reuseSession || null;
+
+    if (!hadOAuthParams) {
+        // Normal visit (no oauth params). If already authenticated on /login, redirect out.
+        if (!session && window.location.pathname.includes('login')) {
+            const existing = await supabaseClient.auth.getSession();
+            session = existing?.data?.session || null;
+        }
+        if (!session) return;
+    } else {
+        // OAuth return visit.
+        if (!session && code) {
+            console.log('Exchanging OAuth code for session...');
+            const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+            if (exchangeError) {
+                console.error('exchangeCodeForSession failed:', exchangeError);
+            } else {
+                session = exchangeData?.session || null;
+            }
         }
 
-        // Clean the URL so refresh/back doesn't re-run the exchange.
-        params.delete('code');
-        params.delete('state');
-        params.delete('error');
-        params.delete('error_description');
-        const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
-        window.history.replaceState({}, document.title, cleanUrl);
-    }
-    
-    // Let Supabase process the URL tokens
-    let session = exchangedSession;
-    if (!session) {
-        const stored = await supabaseClient.auth.getSession();
-        session = stored?.data?.session || null;
-    }
-    if (!session) {
-        if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
-            console.log('Tokens found in URL, waiting for Supabase to process...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            const refresh = await supabaseClient.auth.getSession();
-            session = refresh?.data?.session || null;
+        if (!session) {
+            session = await waitForSession(6000);
+        }
+
+        if (!session) {
+            console.warn('OAuth callback: no session established (leaving URL intact for retry).');
+            return;
+        }
+
+        // Clean OAuth params only after session is confirmed.
+        try {
+            if (code) {
+                params.delete('code');
+                params.delete('state');
+                params.delete('error');
+                params.delete('error_description');
+                const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+            if (hasAccessToken) {
+                const cleanUrl = window.location.pathname + window.location.search;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+        } catch (e) {
+            // Non-fatal
         }
     }
 
-    if (!session) {
-        console.log('No session found. Aborting OAuth callback.');
-        return;
-    }
-
-    // We have a session!
     const user = session.user;
-    console.log('User authenticated:', user.id);
+    console.log('OAuth session established for user:', user?.id);
 
-    // Fetch profile
-    let { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('role, onboarding_completed')
-        .eq('id', user.id)
-        .single();
-
-    // Create profile if missing
-    if (!profile) {
-        console.log('Profile missing. Creating new profile...');
-        const { data: newProfile } = await supabaseClient
+    // Fetch profile role (DB is the source of truth). Be tolerant of 0 or duplicate rows.
+    let profile = null;
+    try {
+        const { data: profiles } = await supabaseClient
             .from('profiles')
-            .insert([{
-                id: user.id,
-                email: user.email,
-                name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
-                role: oauthRole,
-                phone: null
-            }])
-            .select()
-            .single();
-        profile = newProfile;
+            .select('role, onboarding_completed')
+            .eq('id', user.id);
+        profile = (profiles && profiles.length > 0) ? profiles[0] : null;
+    } catch (e) {
+        // Non-fatal
     }
 
-    // Clean up oauth local storage immediately
+    // Create profile if missing (mainly for first-time OAuth signups)
+    if (!profile) {
+        try {
+            const roleForNewProfile = oauthRole || user.user_metadata?.role || 'client';
+            const { data: insertedProfiles } = await supabaseClient
+                .from('profiles')
+                .insert([{
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
+                    role: roleForNewProfile,
+                    phone: null
+                }])
+                .select('role, onboarding_completed');
+            profile = (insertedProfiles && insertedProfiles.length > 0) ? insertedProfiles[0] : profile;
+        } catch (e) {
+            // Non-fatal
+        }
+    }
+
+    // Clean up oauth local storage (only after session exists)
     localStorage.removeItem('oauth_role');
     localStorage.removeItem('oauth_is_signup');
 
-    // Only redirect if we are on the login page (or auth redirect page)
-    if (window.location.pathname.includes('login')) {
-        console.log('Redirecting user to their dashboard...');
-        const finalRole = profile?.role || oauthRole;
-        
-        if (finalRole === 'admin') {
-            window.location.replace('admin-dashboard.html');
-        } else if (finalRole === 'trainer') {
-            if (oauthIsSignup && !profile?.onboarding_completed) {
-               window.location.replace('trainer-onboarding.html');
-            } else {
-               window.location.replace('bookings.html');
-            }
+    const finalRole = profile?.role || oauthRole || user.user_metadata?.role || 'client';
+    const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
+    if (!shouldRedirectNow) return;
+
+    console.log('Redirecting after OAuth. Role:', finalRole);
+    if (finalRole === 'admin') {
+        window.location.replace('admin-dashboard.html');
+    } else if (finalRole === 'trainer') {
+        if (oauthIsSignup && !profile?.onboarding_completed) {
+            window.location.replace('trainer-onboarding.html');
         } else {
-            window.location.replace(oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html');
+            window.location.replace('bookings.html');
         }
+    } else {
+        window.location.replace(oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html');
     }
 }
 
