@@ -95,10 +95,12 @@ async function signUp(name, email, password, role, trainerData, phone) {
 async function signInWithGoogle(role = 'client', isSignup = false) {
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
-        
-        // Force strictly .html so Supabase Auth string-matches its whitelist exactly.
-          // Vercel's cleanUrls will 308 redirect it to /login gracefully on the frontend.
-          let redirectTo = window.location.hostname.includes('onlifit.in') ? 'https://onlifit.in/login' : window.location.hostname.includes('vercel.app') ? 'https://' + window.location.hostname + '/login' : window.location.href.split('?')[0].split('#')[0];
+
+                // Redirect back to the CURRENT origin to avoid cross-domain redirects
+                // (e.g., www ↔ apex) that can strip OAuth tokens from the URL.
+                // We use cleanUrls `/login` which maps to `login.html` on Vercel.
+                const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
+                const redirectTo = isHttp ? `${window.location.origin}/login` : 'https://onlifit.in/login';
         
         // Store role in localStorage so we can use it after OAuth redirect
         localStorage.setItem('oauth_role', role);
