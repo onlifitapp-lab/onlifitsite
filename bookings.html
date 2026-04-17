@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Onlifit | Trainer Dashboard</title>
 
 <!-- Performance: Preconnect to external domains -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 
 <!-- Performance: Optimized fonts - removed unused weights -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 
 <!-- Tailwind CSS -->
-<link href="styles.css" rel="stylesheet" />
+<link href="styles.css" rel="stylesheet">
     
 <style>
     /* Font Size Reset - Standard 16px base */
@@ -35,7 +34,7 @@
 <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
     <div class="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
         <div class="flex items-center gap-8">
-            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+            <a href="onlifit.html" class="text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant">Onlifit</a>
             <div class="md:flex gap-6 items-center">
                 <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
@@ -58,11 +57,11 @@
 </div>
 </div>
 <nav class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0">
-<a class="flex items-center gap-3 px-6 py-3 bg-primary-container text-primary font-bold rounded-r-full mr-4 transition-all" href="#" target="_blank">
+<a class="flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="#overview">
 <span class="material-symbols-outlined">dashboard</span>
 <span>Dashboard</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="bookings.html" target="_blank">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="#bookings">
 <span class="material-symbols-outlined">calendar_today</span>
 <span>Bookings</span>
 </a>
@@ -83,7 +82,32 @@
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low">
+<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative"><section id="view-overview" class="route-view active-view anim-slide-up">
+    <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+        <div>
+            <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
+            <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back! Manage your sessions.</p>
+        </div>
+    </header>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+            <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-upcoming">0</h3>
+            <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+            <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-completed">0</h3>
+            <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Completed Sessions</p>
+        </div>
+    </div>
+</section><section id="view-bookings" class="route-view hidden anim-slide-up">
+    <header class="mb-8 mt-4">
+        <h2 class="text-3xl font-black font-headline text-on-surface">Bookings List</h2>
+        <p class="text-on-surface-variant text-sm mt-1">Manage pending and upcoming requests.</p>
+    </header>
+<div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-4xl">autorenew</span>
+    </div>
+
 <header class="mb-10 flex justify-between items-end">
 <div>
 <h1 class="text-3xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
@@ -156,7 +180,7 @@
 </div>
 </div>
 </div>
-</main>
+</section></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
@@ -282,12 +306,63 @@
 
     initDashboard();
 </script>
+
+
+
+
+
+
+
+
+
+
+<script>
+class DashboardRouter {
+    constructor() {
+        this.loader = document.getElementById('page-loader');
+        this.views = document.querySelectorAll('.route-view');
+        this.navLinks = document.querySelectorAll('.sidebar-link');
+        
+        window.addEventListener('hashchange', () => this.handleRoute());
+        window.addEventListener('load', () => this.handleRoute());
+    }
+
+    async handleRoute() {
+        const path = window.location.hash.replace('#', '') || 'overview';
+        const targetView = document.getElementById('view-' + path);
+
+        if (!targetView) return;
+
+        // Show loading state & hide all views
+        this.loader.classList.remove('hidden');
+        this.views.forEach(view => {
+            view.classList.add('hidden');
+            view.classList.remove('active-view');
+        });
+
+        // Update Sidebar Active States
+        this.navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '#' + path) {
+                link.classList.add('bg-primary-container', 'text-primary');
+                link.classList.remove('text-on-surface-variant');
+            } else {
+                link.classList.remove('bg-primary-container', 'text-primary');
+                link.classList.add('text-on-surface-variant');
+            }
+        });
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Reveal the requested view smoothly
+        this.loader.classList.add('hidden');
+        targetView.classList.remove('hidden');
+        
+        void targetView.offsetWidth;
+        targetView.classList.add('active-view');
+    }
+}
+const router = new DashboardRouter();
+</script>
 </body></html>
-
-
-
-
-
-
-
-

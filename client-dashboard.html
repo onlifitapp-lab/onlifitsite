@@ -1,21 +1,19 @@
-<!DOCTYPE html>
-<html class="scroll-smooth" lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>My Dashboard | Onlifit</title>
-    <meta name="description" content="Manage your fitness bookings, track progress, and connect with your trainers on Onlifit."/>
+    <meta name="description" content="Manage your fitness bookings, track progress, and connect with your trainers on Onlifit.">
     
     <!-- Performance: Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     
     <!-- Performance: Optimized fonts - removed unused weights -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
-    <link href="styles.css" rel="stylesheet" />
+    <link href="styles.css" rel="stylesheet">
     
     <style>
         /* Font Size Reset - Standard 16px base */
@@ -128,11 +126,11 @@
     </div>
 
     <nav class="flex-1 space-y-1">
-        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="client-dashboard.html" target="_blank">
+        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="#overview">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#bookings-section" target="_blank">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Bookings</span>
         </a>
@@ -140,7 +138,7 @@
             <span class="material-symbols-outlined text-[20px]">chat</span>
             <span>Messages</span>
         </a>        
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="onlifit.html#trainers" target="_blank">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#find-trainers">
             <span class="material-symbols-outlined text-[20px]">search</span>
             <span>Find Trainers</span>
         </a>
@@ -163,7 +161,9 @@
 </aside>
 
 <!-- ── Main Content ────────────────────────────────────────────────────── -->
-<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen">
+<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen relative"><section id="view-overview" class="route-view active-view anim-slide-up">
+    
+
 
     <!-- Header -->
     <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
@@ -239,7 +239,12 @@
     </div>
 
     <!-- ── Content Grid ────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-12 gap-6" id="bookings-section">
+    </section><section id="view-bookings" class="route-view hidden anim-slide-up">
+    <header class="mb-8">
+        <h2 class="text-3xl font-black font-headline text-on-surface">My Bookings</h2>
+        <p class="text-on-surface-variant text-sm mt-1">Manage your upcoming and past sessions.</p>
+    </header>
+<div class="grid grid-cols-12 gap-6" id="bookings-section">
 
         <!-- Upcoming Bookings (main) -->
         <div class="col-span-12 lg:col-span-8 space-y-6">
@@ -311,9 +316,8 @@
                 <div class="flex items-center gap-6">
                     <div class="relative w-20 h-20 flex-shrink-0">
                         <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="36" fill="none" stroke="#EBEBEB" stroke-width="6"/>
-                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#1E88E5" stroke-width="6"
-                                stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" class="ring-animate"/>
+                            <circle cx="40" cy="40" r="36" fill="none" stroke="#EBEBEB" stroke-width="6"></circle>
+                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#1E88E5" stroke-width="6" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" class="ring-animate"></circle>
                         </svg>
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span id="progress-pct" class="text-lg font-black font-headline text-on-surface">0%</span>
@@ -351,26 +355,34 @@
                 <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">— Unknown</p>
             </div>
         </div>
-    </div>
-
-    <!-- ── Past Sessions ───────────────────────────────────────────────── -->
-    <div class="mt-10" id="past-section">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="font-headline text-xl font-bold text-on-surface">Past Sessions</h2>
-            <button id="toggle-past" onclick="togglePast()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">expand_more</span> Show all
-            </button>
-        </div>
-        <div id="past-bookings-list" class="space-y-3">
-            <!-- Populated by JS -->
-        </div>
-        <div id="no-past" class="hidden">
-            <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
-                <p class="text-sm text-on-surface-variant">Completed sessions will appear here.</p>
+    </div></section>
+    <section id="view-find-trainers" class="route-view hidden anim-slide-up">
+        <header class="mb-8">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Discover experts tailored to your goals.</p>
+        </header>
+        <div class="flex flex-col items-center justify-center py-20 text-center bg-white border border-dashed border-outline-variant rounded-2xl">
+            <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-3xl text-on-surface-variant">search</span>
             </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface mb-2">Trainer Search</h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-sm">Browse our directory to find the perfect coach.</p>
+            <a href="onlifit.html#trainers" class="px-6 py-2 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg">Go to Directory</a>
         </div>
-    </div>
+    </section>
 
+    <section id="view-billing" class="route-view hidden anim-slide-up">
+        <header class="mb-8">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Billing &amp; Payments</h2>
+        </header>
+        <div class="flex flex-col items-center justify-center py-20 text-center bg-white border border-dashed border-outline-variant rounded-2xl">
+            <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+                <span class="material-symbols-outlined text-3xl text-on-surface-variant">receipt_long</span>
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface mb-2">No billing history yet</h3>
+            <p class="text-sm text-on-surface-variant mb-6 max-w-sm">When you book your first premium session, your receipts and invoices will appear here.</p>
+        </div>
+    </section>
 </main>
 
 <!-- ── Review Modal ────────────────────────────────────────────────────── -->
@@ -943,9 +955,64 @@
         initDashboard();
     });
 </script>
-</body>
-</html>
 
 
 
 
+
+
+
+<script>
+class DashboardRouter {
+    constructor() {
+        this.loader = document.getElementById('page-loader');
+        this.views = document.querySelectorAll('.route-view');
+        this.navLinks = document.querySelectorAll('.sidebar-link');
+        
+        window.addEventListener('hashchange', () => this.handleRoute());
+        window.addEventListener('load', () => this.handleRoute());
+    }
+
+    async handleRoute() {
+        const path = window.location.hash.replace('#', '') || 'overview';
+        const targetView = document.getElementById('view-' + path);
+
+        if (!targetView) return;
+
+        // Show loading state & hide all views
+        this.loader.classList.remove('hidden');
+        this.views.forEach(view => {
+            view.classList.add('hidden');
+            view.classList.remove('active-view');
+        });
+
+        // Update Sidebar Active States
+        this.navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '#' + path) {
+                link.classList.add('bg-primary-container', 'text-primary', 'active');
+                link.classList.remove('text-on-surface-variant');
+            } else if (href && href.startsWith('#')) {
+                link.classList.remove('bg-primary-container', 'text-primary', 'active');
+                link.classList.add('text-on-surface-variant');
+            }
+        });
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Reveal the requested view smoothly
+        this.loader.classList.add('hidden');
+        targetView.classList.remove('hidden');
+        
+        // Force reflow
+        void targetView.offsetWidth;
+        targetView.classList.add('active-view');
+        
+        // ensure mobile menu closes
+        if (typeof closeSidebar === 'function') closeSidebar();
+    }
+}
+const router = new DashboardRouter();
+</script>
+</body></html>
