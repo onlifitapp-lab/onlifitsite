@@ -154,7 +154,7 @@
 
     <!-- Bottom CTA -->
     <div class="px-6 mt-auto pb-10">
-        <a href="onlifit.html" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all text-sm">
+        <a href="trainers.html" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-all text-sm">
             <span class="material-symbols-outlined text-[18px]">explore</span> Explore Trainers
         </a>
     </div>
@@ -391,7 +391,7 @@
             </div>
             <h3 class="font-headline font-bold text-lg text-on-surface mb-2">Trainer Search</h3>
             <p class="text-sm text-on-surface-variant mb-6 max-w-sm">Browse our directory to find the perfect coach.</p>
-            <a href="onlifit.html#trainers" class="px-6 py-2 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg">Go to Directory</a>
+            <a href="trainers.html" class="px-6 py-2 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg">Go to Directory</a>
         </div>
     </section>
 
@@ -500,7 +500,7 @@
             
             if (authError || !authUser) {
                 console.log('Not authenticated, redirecting to login');
-                window.location.href = 'login.html?redirect=client-dashboard.html';
+                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash);
                 return;
             }
 

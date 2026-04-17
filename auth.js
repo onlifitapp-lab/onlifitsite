@@ -1036,14 +1036,14 @@ async function getLastMessagesForContacts(userId, contactIds) {
 
 async function renderAuthNav() {
     const user = await getCurrentUser();
-    const navAuthContainer = document.getElementById('nav-auth');
-    if (!navAuthContainer) return;
+    const navAuthContainer = document.getElementById('nav-auth') || document.getElementById('auth-nav');
+    const mobileNavAuthContainer = document.getElementById('mobile-nav-auth');
 
     if (user) {
         const notifications = await getNotifications(user.id);
         const unreadCount = notifications.filter(n => !n.read).length;
 
-        navAuthContainer.innerHTML = `
+        const desktopHtml = `
             <div class="flex items-center justify-end gap-3 sm:gap-6 w-full">
                 <!-- Notifications -->
                 <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
@@ -1060,7 +1060,7 @@ async function renderAuthNav() {
                 <div class="h-6 w-[1px] bg-outline-variant hidden sm:block"></div>
 
                 <!-- Dashboard link (Grid + Text) -->
-                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}"
+                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
                    class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[20px]">grid_view</span>
                     <span>Dashboard</span>
@@ -1075,13 +1075,32 @@ async function renderAuthNav() {
                 <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all ml-1">Logout</button>
             </div>
         `;
+        
+        const mobileHtml = `
+            <!-- Dashboard link (Grid + Text) -->
+            <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
+                class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all flex justify-center items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+            </a>
+            
+            <!-- Logout Button -->
+            <button onclick="logout()" class="w-full text-center px-6 py-3 text-base font-bold bg-error/10 text-error rounded-xl shadow-lg hover:opacity-90 transition-all duration-300">Logout</button>
+        `;
+
+        if (navAuthContainer) navAuthContainer.innerHTML = desktopHtml;
+        if (mobileNavAuthContainer) mobileNavAuthContainer.innerHTML = mobileHtml;
+
     } else {
-        navAuthContainer.innerHTML = `
+        const desktopLoggedOut = `
             <a href="login.html" class="px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all">Login</a>
             <a href="login.html?tab=signup" class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all">Sign Up</a>
         `;
-    }
-}
+        const mobileLoggedOut = `
+            <a href="login.html" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all">Login</a>
+            <a href="login.html?tab=signup" class="w-full text-center px-6 py-3 text-base font-bold bg-primary text-on-primary rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Sign Up</a>
+        `;
+        if (navAuthContainer) navAuthContainer.innerHTML = desktopLoggedOut;
+        if (mobileNavAuthContainer) mobileNavAuthContainer.innerHTML = mobileLoggedOut;
 
 function initData() {
     // Supabase handles data persistence. This is a placeholder for legacy compatibility.
