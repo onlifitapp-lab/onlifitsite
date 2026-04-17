@@ -5,8 +5,27 @@
     if (window.location.hash.includes('access_token=') || window.location.search.includes('code=')) {
         console.log('� � GLOBAL OAUTH CATCHER ACTIVATED: Found tokens in URL');
         try {
-            // Force Supabase to immediately process the tokens in the URL
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            // PKCE flow returns `?code=...` and requires exchanging it for a session.
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (code) {
+                console.log('Exchanging OAuth code for session (global catcher)...');
+                const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+                if (exchangeError) {
+                    console.error('exchangeCodeForSession failed (global catcher):', exchangeError);
+                }
+
+                // Remove sensitive oauth params from the URL to prevent re-processing.
+                params.delete('code');
+                params.delete('state');
+                params.delete('error');
+                params.delete('error_description');
+                const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+
+            // Force Supabase to process any remaining tokens in the URL
+            const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (session) {
                 console.log('✅ Session captured globally!');
@@ -206,6 +225,25 @@ async function handleOAuthCallback() {
     const oauthIsSignup = localStorage.getItem('oauth_is_signup') === 'true';
 
     console.log('handleOAuthCallback invoked. Checking session...');
+
+    // If we returned from OAuth with `?code=...`, exchange it for a session.
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) {
+        console.log('Exchanging OAuth code for session (login callback)...');
+        const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+        if (exchangeError) {
+            console.error('exchangeCodeForSession failed (login callback):', exchangeError);
+        }
+
+        // Clean the URL so refresh/back doesn't re-run the exchange.
+        params.delete('code');
+        params.delete('state');
+        params.delete('error');
+        params.delete('error_description');
+        const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
     
     // Let Supabase process the URL tokens
     let { data: { session } } = await supabaseClient.auth.getSession();
@@ -261,15 +299,15 @@ async function handleOAuthCallback() {
         const finalRole = profile?.role || oauthRole;
         
         if (finalRole === 'admin') {
-            window.location.href = 'admin-dashboard.html';
+            window.location.replace('admin-dashboard.html');
         } else if (finalRole === 'trainer') {
             if (oauthIsSignup && !profile?.onboarding_completed) {
-               window.location.href = 'trainer-onboarding.html';
+               window.location.replace('trainer-onboarding.html');
             } else {
-               window.location.href = 'bookings.html';
+               window.location.replace('bookings.html');
             }
         } else {
-            window.location.href = oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html';
+            window.location.replace(oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html');
         }
     }
 }
