@@ -8,11 +8,16 @@
             // PKCE flow returns `?code=...` and requires exchanging it for a session.
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
+            const hadOAuthParams = !!code || window.location.hash.includes('access_token=');
+
+            let session = null;
             if (code) {
                 console.log('Exchanging OAuth code for session (global catcher)...');
-                const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+                const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
                 if (exchangeError) {
                     console.error('exchangeCodeForSession failed (global catcher):', exchangeError);
+                } else {
+                    session = exchangeData?.session || null;
                 }
 
                 // Remove sensitive oauth params from the URL to prevent re-processing.
@@ -24,8 +29,43 @@
                 window.history.replaceState({}, document.title, cleanUrl);
             }
 
-            // Force Supabase to process any remaining tokens in the URL
-            const { data: { session } } = await supabaseClient.auth.getSession();
+            // If we didn't get a session directly, fall back to stored session.
+            if (!session) {
+                const stored = await supabaseClient.auth.getSession();
+                session = stored?.data?.session || null;
+            }
+
+            // In some cases, the session is established asynchronously after page load.
+            // Subscribe briefly and redirect as soon as Supabase confirms SIGNED_IN.
+            if (!session && hadOAuthParams) {
+                try {
+                    const { data: subData } = supabaseClient.auth.onAuthStateChange(async (event, newSession) => {
+                        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && newSession) {
+                            try { subData?.subscription?.unsubscribe(); } catch (e) {}
+                            session = newSession;
+                            // Re-run redirect logic by reloading this catcher block's tail.
+                            const user = session.user;
+                            const { data: profile } = await supabaseClient
+                                .from('profiles')
+                                .select('role')
+                                .eq('id', user.id)
+                                .single();
+
+                            const role = profile?.role || localStorage.getItem('oauth_role') || 'client';
+                            if (role === 'admin') window.location.replace('admin-dashboard.html');
+                            else if (role === 'trainer') window.location.replace('bookings.html');
+                            else window.location.replace('client-dashboard.html');
+                        }
+                    });
+
+                    // Safety cleanup
+                    setTimeout(() => {
+                        try { subData?.subscription?.unsubscribe(); } catch (e) {}
+                    }, 8000);
+                } catch (e) {
+                    // Non-fatal
+                }
+            }
             
             if (session) {
                 console.log('✅ Session captured globally!');
@@ -229,11 +269,14 @@ async function handleOAuthCallback() {
     // If we returned from OAuth with `?code=...`, exchange it for a session.
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
+    let exchangedSession = null;
     if (code) {
         console.log('Exchanging OAuth code for session (login callback)...');
-        const { error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
+        const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
         if (exchangeError) {
             console.error('exchangeCodeForSession failed (login callback):', exchangeError);
+        } else {
+            exchangedSession = exchangeData?.session || null;
         }
 
         // Clean the URL so refresh/back doesn't re-run the exchange.
@@ -246,13 +289,17 @@ async function handleOAuthCallback() {
     }
     
     // Let Supabase process the URL tokens
-    let { data: { session } } = await supabaseClient.auth.getSession();
+    let session = exchangedSession;
+    if (!session) {
+        const stored = await supabaseClient.auth.getSession();
+        session = stored?.data?.session || null;
+    }
     if (!session) {
         if (window.location.hash.includes('access_token') || window.location.search.includes('code=')) {
             console.log('Tokens found in URL, waiting for Supabase to process...');
             await new Promise(resolve => setTimeout(resolve, 2000));
             const refresh = await supabaseClient.auth.getSession();
-            session = refresh.data.session;
+            session = refresh?.data?.session || null;
         }
     }
 
@@ -309,22 +356,6 @@ async function handleOAuthCallback() {
         } else {
             window.location.replace(oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html');
         }
-    }
-}
-
-/**
- * Update user profileserId, data) {
-    try {
-        const { error } = await supabaseClient
-            .from('profiles')
-            .update(data)
-            .eq('id', userId);
-
-        if (error) throw error;
-        return { success: true };
-    } catch (error) {
-        console.error("Update profile error:", error.message);
-        return { success: false, error: error.message };
     }
 }
 
@@ -1154,4 +1185,19 @@ function initData() {
 
 
     }
+}
+
+// Auto-refresh header/nav on auth changes (helps after OAuth redirects).
+try {
+    if (window.supabaseClient?.auth?.onAuthStateChange) {
+        supabaseClient.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+                if (typeof renderAuthNav === 'function') {
+                    renderAuthNav();
+                }
+            }
+        });
+    }
+} catch (e) {
+    // Non-fatal
 }
