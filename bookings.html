@@ -449,17 +449,22 @@
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+
 <script>
 
 
 
 
     async function initDashboard() {
-        await renderAuthNav();
-    await initSettings();
-
         const user = await requireAuth('trainer');
         if (!user) return;
+
+        await renderAuthNav();
+        settingsUser = user;
+        await initSettings();
 
         // Real-time subscription for notifications (updates nav bell)
         subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
@@ -610,16 +615,19 @@ class DashboardRouter {
     }
 
     async handleRoute() {
-        let path = window.location.pathname.replace('/trainer/', '');
-        if (path === '/' || path === '/trainer' || !path.includes('bookings.html') === false) {
-            path = 'dashboard'; // default
-        }
-        if (path.endsWith('.html')) path = 'dashboard';
-        if (path === 'settings') path = 'settings';
-        if (path === 'bookings') path = 'bookings';
-        if (path !== 'settings' && path !== 'bookings') path = 'dashboard';
+        let path = window.location.pathname;
+        let route = path.replace(/^\/trainer\/?/i, '');
 
-        const targetView = document.getElementById('view-' + path);
+        if (!route || route === 'trainer' || route === 'bookings.html' || route.endsWith('.html')) {
+            route = 'dashboard';
+        }
+
+        // Only support these 3 routes; default to dashboard.
+        if (route !== 'dashboard' && route !== 'bookings' && route !== 'settings') {
+            route = 'dashboard';
+        }
+
+        const targetView = document.getElementById('view-' + route);
         if (!targetView) return;
 
         // Show loading state & hide all views
@@ -632,7 +640,7 @@ class DashboardRouter {
         // Update Sidebar Active States
         this.navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            if (href === '/trainer/' + path) {
+            if (href === '/trainer/' + route) {
                 link.classList.add('bg-primary-container', 'text-primary');
                 link.classList.remove('text-on-surface-variant');
             } else {
@@ -659,27 +667,9 @@ class DashboardRouter {
 }
 const router = new DashboardRouter();
 
-
-
-
     let settingsUser = null;
 
-    // Function to go back to dashboard
-     else {
-            // Fallback: try to detect from current session
-            getCurrentUser().then(currentUser => {
-                if (currentUser) {
-                    const isTrainer = currentUser.role && currentUser.role.toLowerCase() === 'trainer';
-                    window.location.href = isTrainer ? 'bookings.html' : 'client-dashboard.html';
-                } else {
-                    window.location.href = 'client-dashboard.html'; // Default fallback
-                }
-            });
-        }
-    }
-
-    async async function initSettings() {
-        settingsUser = await requireAuth();
+    async function initSettings() {
         if (!settingsUser) return;
 
         
@@ -688,7 +678,8 @@ const router = new DashboardRouter();
         await loadProfile();
 
         // Setup avatar upload
-        document.getElementById('avatar-input').addEventListener('change', handleAvatarUpload);
+        const avatarInput = document.getElementById('avatar-input');
+        if (avatarInput) avatarInput.addEventListener('change', handleAvatarUpload);
         
         // Setup certification upload
         if (document.getElementById('cert-input')) {
@@ -855,35 +846,6 @@ const router = new DashboardRouter();
             showAlert('Failed to remove certification', 'error');
         }
     }
-                    <a href="${cert}" target="_blank" class="text-xs text-primary hover:underline">View</a>
-                    <button onclick="removeCert(${index})" class="text-xs text-error hover:underline">Remove</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    async function removeCert(index) {
-        if (!confirm('Remove this certification?')) return;
-
-        try {
-            const certs = [...(settingsUser.certifications || [])];
-            certs.splice(index, 1);
-
-            const { error } = await supabaseClient
-                .from('profiles')
-                .update({ certifications: certs })
-                .eq('id', settingsUser.id);
-
-            if (error) throw error;
-
-            showAlert('Certification removed', 'success');
-            displayCertifications(certs);
-            user = await getCurrentUser();
-        } catch (error) {
-            console.error('Remove cert error:', error);
-            showAlert('Failed to remove certification', 'error');
-        }
-    }
 
     async function loadProfile() {
         // Debug: log user object to see what's loaded
@@ -894,22 +856,14 @@ const router = new DashboardRouter();
         document.getElementById('name').value = settingsUser.name || '';
         document.getElementById('email').value = settingsUser.email || '';
         document.getElementById('phone').value = settingsUser.phone || '';
-        
 
-document.getElementById('address').value = settingsUser.address || '';
-const mode = settingsUser.training_mode || 'online';
-const rb = document.querySelector(`input[name="training_mode"][value="${mode}"]`);
-if (rb) rb.checked = true;
-document.getElementById('city').value = settingsUser.city || '';
-document.getElementById('state').value = settingsUser.state || '';
-toggleLocationFields();
-
-const mode = settingsUser.training_mode || 'online';
-const rb = document.querySelector(`input[name="training_mode"][value="${mode}"]`);
-if (rb) rb.checked = true;
-document.getElementById('city').value = settingsUser.city || '';
-document.getElementById('state').value = settingsUser.state || '';
-toggleLocationFields();
+        document.getElementById('address').value = settingsUser.address || '';
+        const mode = settingsUser.training_mode || 'online';
+        const rb = document.querySelector(`input[name="training_mode"][value="${mode}"]`);
+        if (rb) rb.checked = true;
+        document.getElementById('city').value = settingsUser.city || '';
+        document.getElementById('state').value = settingsUser.state || '';
+        toggleLocationFields();
 
 
         // Set avatar
@@ -1133,16 +1087,6 @@ toggleLocationFields();
 
     
 
-
-function toggleLocationFields() {
-    const mode = document.querySelector('input[name="training_mode"]:checked').value;
-    const locFields = document.getElementById('location-fields');
-    if (mode === 'offline' || mode === 'both') {
-        locFields.classList.remove('hidden');
-    } else {
-        locFields.classList.add('hidden');
-    }
-}
 
 function toggleLocationFields() {
     const mode = document.querySelector('input[name="training_mode"]:checked').value;
