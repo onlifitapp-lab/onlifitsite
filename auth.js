@@ -1044,26 +1044,35 @@ async function renderAuthNav() {
         const unreadCount = notifications.filter(n => !n.read).length;
 
         navAuthContainer.innerHTML = `
-            <div class="flex items-center gap-1 sm:gap-4">
-                <a href="notifications.html" class="relative w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all">
+            <div class="flex items-center justify-end gap-3 sm:gap-6 w-full">
+                <!-- Notifications -->
+                <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
                     <span class="material-symbols-outlined text-[24px]">notifications</span>
-                    ${unreadCount > 0 ? `<span class="absolute top-2 right-2 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white">${unreadCount}</span>` : ''}
+                    ${unreadCount > 0 ? `<span class="absolute -top-1 -right-0 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white">${unreadCount}</span>` : ''}
                 </a>
-                <a href="messages.html" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all">
+
+                <!-- Messages -->
+                <a href="messages.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
                     <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
                 </a>
-                <div class="h-6 w-[1px] bg-outline-variant mx-1 hidden sm:block"></div>
-                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
-                   class="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
-                    <span class="hidden lg:inline">Dashboard</span>
+
+                <!-- Vertical Divider -->
+                <div class="h-6 w-[1px] bg-outline-variant hidden sm:block"></div>
+
+                <!-- Dashboard link (Grid + Text) -->
+                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}"
+                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                    <span>Dashboard</span>
                 </a>
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full">
-                    <div class="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary">
-                        ${user.name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
+
+                <!-- Name Initial / Avatar (S circle) -->
+                <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center text-sm font-bold text-primary ml-1">
+                    ${user.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <button onclick="logout()" class="px-3 py-2 text-sm font-semibold text-on-surface-variant hover:text-error transition-all sm:inline hidden">Logout</button>
+
+                <!-- Logout Button -->
+                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all ml-1">Logout</button>
             </div>
         `;
     } else {

@@ -130,7 +130,7 @@
     <main class="flex-1 flex overflow-hidden">
         
         <!-- Sidebar (Contacts) -->
-        <aside class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low">
+        <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
             <div class="p-6 border-b border-outline-variant/50">
                 <h2 class="font-headline text-2xl font-black mb-4">Messages</h2>
                 <div class="relative">
@@ -145,9 +145,12 @@
         </aside>
 
         <!-- Message View -->
-        <section class="flex-1 flex flex-col relative bg-white">
-            <div id="chat-header" class="px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+        <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
+            <div id="chat-header" class="px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
                 <div class="flex items-center gap-3">
+                    <button onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+                        <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+                    </button>
                     <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">👤</div>
                     <div>
                         <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
@@ -339,6 +342,11 @@
         document.getElementById('chat-header').classList.remove('hidden');
         document.getElementById('message-input-area').classList.remove('hidden');
         
+        // Mobile layout toggles
+        document.getElementById('contacts-sidebar').classList.add('hidden', 'md:flex');
+        document.getElementById('chat-view').classList.remove('hidden');
+        document.getElementById('chat-view').classList.add('flex');
+
         document.getElementById('active-name').textContent = name;
         document.getElementById('active-avatar').textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : '👤';
         
@@ -365,6 +373,13 @@
         
         // Mark all messages from this contact as read
         await markMessagesAsRead(id, user.id);
+    }
+
+    function closeChat() {
+        // Mobile layout toggles for back button
+        document.getElementById('contacts-sidebar').classList.remove('hidden', 'md:flex');
+        document.getElementById('chat-view').classList.add('hidden');
+        document.getElementById('chat-view').classList.remove('flex');
     }
 
     async function loadMessages() {
