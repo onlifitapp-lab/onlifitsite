@@ -52,6 +52,13 @@ WHERE email = 'your-admin-email@example.com';
 - Approve or reject KYC documents
 - Approve or reject certificates
 - Overall verification status updates automatically
+- View the trainer’s public profile (opens in the same tab)
+- Permanently delete a trainer (requires admin login and server-side API)
+
+**Permanent Delete Notes:**
+- Implemented via `api/delete-trainer.js` (Vercel API route)
+- Requires `VITE_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables
+- Deletes dependent records (bookings/messages/etc.) first, then deletes the profile and auth user
 
 **Verification Workflow:**
 1. Trainer uploads documents during onboarding
@@ -103,9 +110,9 @@ WHERE email = 'your-admin-email@example.com';
 ## 🔒 Security & Access Control
 
 ### Authentication
-- Only users with `role = 'admin'` can access
-- Authentication check runs on page load
-- Non-admins are redirected to their respective dashboards
+- The dashboard can open in **Preview mode** without forcing a redirect/login
+- Admin actions (approve/reject/delete/etc.) require a real admin session (`profiles.role = 'admin'`)
+- Authentication check runs on page load to enable/disable admin actions
 
 ### RLS Policies
 All data queries use Supabase Row Level Security:

@@ -93,14 +93,20 @@
     <!-- Trainers Grid -->
     <section class="py-16 px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <p class="text-on-surface-variant"><span id="trainer-count" class="font-bold text-on-surface">0</span> trainers found</p>
-                <select id="sort-by" onchange="sortTrainers()" class="px-4 py-2 rounded-lg border border-outline-variant bg-white text-on-surface font-medium">
-                    <option value="rating">Top Rated</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="experience">Most Experienced</option>
-                </select>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/40 bg-white text-xs font-black uppercase tracking-widest text-on-surface-variant">
+                        <input id="black-only" type="checkbox" class="w-4 h-4 rounded border-outline-variant" />
+                        Show only OnliFit Black
+                    </label>
+                    <select id="sort-by" onchange="sortTrainers()" class="px-4 py-2 rounded-lg border border-outline-variant bg-white text-on-surface font-medium">
+                        <option value="rating">Top Rated</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="experience">Most Experienced</option>
+                    </select>
+                </div>
             </div>
 
             <div id="trainers-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -132,6 +138,7 @@
         let allTrainers = [];
         let currentFilter = 'all';
         let currentSort = 'rating';
+        let showOnlyBlack = false;
 
         function toggleLocationInput() {
             const mode = document.getElementById('search-mode').value;
@@ -147,59 +154,148 @@
 // --- REALTIME UPDATES ---
 function listenForTrainerUpdates() {
     supabase.channel('public-trainers-updates')
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, payload => {
-            const updatedTrainer = payload.new;
-            if (updatedTrainer.role !== 'trainer') return;
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, payload => {
+            const row = payload.new || payload.old;
+            if (!row || row.role !== 'trainer') return;
+
+            const updatedTrainer = (typeof window.normalizeTrainerBadges === 'function')
+                ? window.normalizeTrainerBadges(row)
+                : row;
 
             const idx = allTrainers.findIndex(t => t.id === updatedTrainer.id);
-            if (idx !== -1) {
-                // Update local array
+
+            if (payload.eventType === 'DELETE') {
+                if (idx !== -1) allTrainers.splice(idx, 1);
+            } else if (idx !== -1) {
                 allTrainers[idx] = { ...allTrainers[idx], ...updatedTrainer };
-                
-                // Re-apply current filter without click event hack
-                let filtered = allTrainers;
-                if (currentFilter !== 'all') {
-                    filtered = allTrainers.filter(t => t.specialty?.includes(currentFilter) || t.tags?.includes(currentFilter));
-                }
-                sortAndRender(filtered);
+            } else if (payload.eventType === 'INSERT') {
+                allTrainers.push(updatedTrainer);
             }
+
+            // Re-apply all active filters (search, tags, black-only, sort)
+            if (typeof applyAllFilters === 'function') applyAllFilters();
         })
         .subscribe();
 }
 // ------------------------
 
 
-          async function loadTrainers() {
+        async function loadTrainers() {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
-            
+
             try {
-                // If getTrainers exists in auth.js, use its advanced caching & dummy fallbacks
+                // Prefer auth.js helper (caching + consistent shape)
                 if (typeof getTrainers === 'function') {
                     allTrainers = await getTrainers();
-                    
-                    // Client-side sort by rating (since auth.js fetch doesn't explicitly sort)
+
                     if (allTrainers && allTrainers.length > 0) {
-                        allTrainers.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                        allTrainers.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
                     }
-                    
-                    renderTrainers(allTrainers);
-                      listenForTrainerUpdates();
-                      return;
+
+                    // Wire "OnliFit Black" filter checkbox
+                    const blackOnly = document.getElementById('black-only');
+                    if (blackOnly) {
+                        blackOnly.addEventListener('change', () => {
+                            showOnlyBlack = !!blackOnly.checked;
+                            applyAllFilters();
+                        });
+                    }
+
+                    applyAllFilters();
+                    listenForTrainerUpdates();
+                    return;
                 }
 
                 // Fallback direct DB fetch (legacy)
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select('id, name, avatar_url, rating, location, specialty, bio, plans, tags')
+                    .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, specialty, bio, plans, tags')
                     .eq('role', 'trainer')
                     .order('rating', { ascending: false });
 
                 if (error) throw error;
                 allTrainers = data || [];
-                renderTrainers(allTrainers);
+
+                const blackOnly = document.getElementById('black-only');
+                if (blackOnly) {
+                    blackOnly.addEventListener('change', () => {
+                        showOnlyBlack = !!blackOnly.checked;
+                        applyAllFilters();
+                    });
+                    showOnlyBlack = !!blackOnly.checked;
+                }
+
+                applyAllFilters();
+                listenForTrainerUpdates();
             } catch (error) {
                 console.error('Error loading trainers:', error);
+                allTrainers = [];
+                renderTrainers([]);
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function getHourlyPrice(t) {
+            const raw = t?.plans?.hourly?.price;
+            const n = typeof raw === 'string' ? Number(raw) : raw;
+            return Number.isFinite(n) && n > 0 ? n : null;
+        }
+
+        function normalizeTrainingMode(mode) {
+            const m = String(mode || '').toLowerCase();
+            if (m === 'both') return 'Online & Offline';
+            if (m === 'offline') return 'Offline';
+            if (m === 'online') return 'Online';
+            return '';
+        }
+
+        function getTrainerMeta(t) {
+            const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
+            const location = (cityState || t?.location || '').trim();
+            const mode = normalizeTrainingMode(t?.training_mode);
+            return [location, mode].filter(Boolean).join(' • ');
+        }
+
+        function renderTrainerAvatar(t) {
+            const url = (t?.avatar_url || '').trim();
+            const name = (t?.name || 'Trainer').trim();
+            const initial = (name.charAt(0) || 'T').toUpperCase();
+
+            if (url && url.startsWith('http')) {
+                return `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />`;
+            }
+
+            return `<div class="w-20 h-20 rounded-full bg-white/90 text-primary flex items-center justify-center font-black text-3xl">${escapeHtml(initial)}</div>`;
+        }
+
+        function renderTrainerRatingChip(t) {
+            const rating = Number(t?.rating);
+            const count = Number(t?.review_count);
+
+            if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
+                return `<div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">${rating.toFixed(1)} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span></div>`;
+            }
+
+            return `<div class="flex items-center gap-1 bg-white/90 text-on-surface px-2 py-0.5 rounded text-xs font-bold">New</div>`;
+        }
+
+        function renderTrainerPriceLine(t) {
+            const p = getHourlyPrice(t);
+            if (p) {
+                return `<span class="text-primary font-bold text-xl">${formatPrice(p)}</span><span class="text-on-surface-variant text-sm">/hour</span>`;
+            }
+            return `<span class="text-primary font-bold">View pricing</span>`;
+        }
+
         function renderTrainers(trainers) {
             const grid = document.getElementById('trainers-grid');
             const loading = document.getElementById('loading');
@@ -218,120 +314,142 @@ function listenForTrainerUpdates() {
             emptyState.classList.add('hidden');
             count.textContent = trainers.length;
 
-            grid.innerHTML = trainers.map(t => `
-                <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
-                    <div class="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
-                        ${t.avatar_url && t.avatar_url.startsWith('http') ? 
-                            `<img src="${t.avatar_url}" alt="${t.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />` : 
-                            `<div class="text-7xl group-hover:scale-110 transition-transform duration-500">${t.avatar_url || '🏋️'}</div>`}
-                        <div class="absolute top-4 left-4 flex gap-2">
-                            <span class="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                Verified
-                            </span>
-                        </div>
-                        <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <span class="text-on-surface font-headline font-bold text-xl">${t.name || 'Trainer'}</span>
-                                <div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">
-                                    ${t.rating || '5.0'} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span>
+            grid.innerHTML = trainers.map(tRaw => {
+                const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : tRaw;
+                const meta = getTrainerMeta(t);
+                const specialty = (t?.specialty || '').trim();
+                const bio = (t?.bio || '').trim();
+                const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
+                    ? window.renderTrainerBadgesHtml(t, { variant: 'corner', size: 'sm' })
+                    : '';
+
+                return `
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
+                        <div class="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
+                            ${badgeHtml}
+                            ${renderTrainerAvatar(t)}
+                            <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-on-surface font-headline font-bold text-xl">${escapeHtml(t?.name || 'Trainer')}</span>
+                                    ${renderTrainerRatingChip(t)}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="px-4 pb-4 pt-4">
-                        <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[18px]">location_on</span>
-                            ${t.location || 'Online'}
-                        </p>
-                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">${t.specialty || 'Personal Trainer'}</h3>
-                        <p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${t.bio || 'Professional fitness coach'}</p>
-                        <div class="mb-4">
-                            <span class="text-primary font-bold text-xl">${formatPrice(t.plans?.hourly?.price || 2000)}</span>
-                            <span class="text-on-surface-variant text-sm">/hour</span>
+                        <div class="px-4 pb-4 pt-4">
+                            ${meta ? `
+                                <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                    ${escapeHtml(meta)}
+                                </p>
+                            ` : ''}
+
+                            ${specialty ? `<h3 class="font-headline text-lg font-bold text-on-surface mb-1">${escapeHtml(specialty)}</h3>` : ''}
+
+                            ${bio ? `<p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${escapeHtml(bio)}</p>` : ''}
+
+                            <div class="mb-4">${renderTrainerPriceLine(t)}</div>
+                            <button class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
+                                View Profile
+                            </button>
                         </div>
-                        <button class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
-                            View Profile
-                        </button>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        function applyAllFilters() {
+            const query = (document.getElementById('search-query')?.value || '').trim().toLowerCase();
+            const mode = document.getElementById('search-mode')?.value || 'online';
+            const location = mode === 'offline' ? (document.getElementById('search-location')?.value || '').trim().toLowerCase() : '';
+
+            let filtered = Array.isArray(allTrainers) ? [...allTrainers] : [];
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(t =>
+                    t?.specialty?.includes(currentFilter) ||
+                    t?.tags?.includes(currentFilter)
+                );
+            }
+
+            if (query) {
+                filtered = filtered.filter(t =>
+                    (t?.name || '').toLowerCase().includes(query) ||
+                    (t?.specialty || '').toLowerCase().includes(query) ||
+                    (t?.bio || '').toLowerCase().includes(query) ||
+                    (Array.isArray(t?.tags) ? t.tags.some(tag => String(tag || '').toLowerCase().includes(query)) : false)
+                );
+            }
+
+            if (location) {
+                filtered = filtered.filter(t =>
+                    (t?.location || '').toLowerCase().includes(location) ||
+                    (t?.city || '').toLowerCase().includes(location) ||
+                    (t?.state || '').toLowerCase().includes(location)
+                );
+            }
+
+            if (showOnlyBlack) {
+                filtered = filtered.filter(t => {
+                    const normalized = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(t) : t;
+                    return !!normalized?.hasBlackStatus;
+                });
+            }
+
+            sortAndRender(filtered);
         }
 
         function filterBySpecialty(specialty) {
             currentFilter = specialty;
-            
+
             // Update active button
             document.querySelectorAll('.filter-tag').forEach(btn => {
                 btn.classList.remove('active', 'bg-primary', 'text-on-primary');
                 btn.classList.add('border-outline', 'text-on-surface-variant');
             });
-            event.target.classList.add('active', 'bg-primary', 'text-on-primary', 'border-primary');
-            event.target.classList.remove('border-outline', 'text-on-surface-variant');
-
-            let filtered = allTrainers;
-            if (specialty !== 'all') {
-                filtered = allTrainers.filter(t => 
-                    t.specialty?.includes(specialty) || 
-                    t.tags?.includes(specialty)
-                );
+            if (typeof event !== 'undefined' && event?.target) {
+                event.target.classList.add('active', 'bg-primary', 'text-on-primary', 'border-primary');
+                event.target.classList.remove('border-outline', 'text-on-surface-variant');
             }
-            
-            sortAndRender(filtered);
+
+            applyAllFilters();
         }
 
         function sortTrainers() {
             currentSort = document.getElementById('sort-by').value;
-            let filtered = currentFilter === 'all' ? allTrainers : allTrainers.filter(t => 
-                t.specialty?.includes(currentFilter) || t.tags?.includes(currentFilter)
-            );
-            sortAndRender(filtered);
+            applyAllFilters();
         }
 
         function sortAndRender(trainers) {
-            let sorted = [...trainers];
-            
+            let sorted = [...(trainers || [])];
+
             switch(currentSort) {
                 case 'rating':
-                    sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    sorted.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
                     break;
                 case 'price-low':
-                    sorted.sort((a, b) => (a.plans?.hourly?.price || 2000) - (b.plans?.hourly?.price || 2000));
+                    sorted.sort((a, b) => {
+                        const pa = getHourlyPrice(a);
+                        const pb = getHourlyPrice(b);
+                        return (pa ?? Number.POSITIVE_INFINITY) - (pb ?? Number.POSITIVE_INFINITY);
+                    });
                     break;
                 case 'price-high':
-                    sorted.sort((a, b) => (b.plans?.hourly?.price || 2000) - (a.plans?.hourly?.price || 2000));
+                    sorted.sort((a, b) => {
+                        const pa = getHourlyPrice(a);
+                        const pb = getHourlyPrice(b);
+                        return (pb ?? Number.NEGATIVE_INFINITY) - (pa ?? Number.POSITIVE_INFINITY);
+                    });
                     break;
                 case 'experience':
                     sorted.sort((a, b) => (b.experience || 0) - (a.experience || 0));
                     break;
             }
-            
+
             renderTrainers(sorted);
         }
 
         async function performSearch() {
-            const query = document.getElementById('search-query').value.toLowerCase();
-            const mode = document.getElementById('search-mode').value;
-            const location = mode === 'offline' ? document.getElementById('search-location').value : '';
-
-            let filtered = allTrainers;
-
-            if (query) {
-                filtered = filtered.filter(t => 
-                    t.name?.toLowerCase().includes(query) ||
-                    t.specialty?.toLowerCase().includes(query) ||
-                    t.bio?.toLowerCase().includes(query) ||
-                    t.tags?.some(tag => tag.toLowerCase().includes(query))
-                );
-            }
-
-            if (location) {
-                filtered = filtered.filter(t => 
-                    t.location?.toLowerCase().includes(location.toLowerCase())
-                );
-            }
-
-            sortAndRender(filtered);
+            applyAllFilters();
         }
 
         function resetFilters() {
@@ -340,14 +458,18 @@ function listenForTrainerUpdates() {
             document.getElementById('search-location').style.display = 'none';
             currentFilter = 'all';
             currentSort = 'rating';
-            
+            showOnlyBlack = false;
+
+            const blackOnly = document.getElementById('black-only');
+            if (blackOnly) blackOnly.checked = false;
+
             document.querySelectorAll('.filter-tag').forEach(btn => {
                 btn.classList.remove('active', 'bg-primary', 'text-on-primary');
                 btn.classList.add('border-outline', 'text-on-surface-variant');
             });
             document.querySelector('.filter-tag').classList.add('active', 'bg-primary', 'text-on-primary', 'border-primary');
-            
-            renderTrainers(allTrainers);
+
+            applyAllFilters();
         }
 
         // Load trainers on page load

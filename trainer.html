@@ -53,59 +53,55 @@
 </div>
 
 <!-- Featured Trainer Card -->
-<div class="w-full bg-surface-container-lowest rounded-xl p-8 shadow-md border border-outline-variant relative overflow-hidden group">
-<div class="absolute -top-12 -right-12 w-32 h-32 bg-secondary-container rounded-full blur-3xl"></div>
-<div class="absolute -bottom-12 -left-12 w-32 h-32 bg-primary-container rounded-full blur-3xl"></div>
-<div class="relative flex flex-col md:flex-row items-center md:items-start gap-8">
-<div class="relative">
-<div class="w-32 h-32 rounded-full overflow-hidden ring-4 ring-surface-container-low shadow-xl">
-<img alt="Rajesh Kumar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzfiu5Kg2T50c6-q3nr39K3aSLCk3rgQmgV5pPEuEWWvsVQn659tLPxQZQE7YbgPlYmwo6on1eMAsJP_zhdMuNxDwGULk_5fKlV5ErIpTKoFTrm3LVyp4tsleUuLiSlBfuEvaw1lHvAsAbuzE-gOSmcex1tRb0f6V8ej52WL1ADq8-wMaTJI0SD448NXe27gHW3venZ3yePvWCH5lI9oc7JYqJaWnSwZMHEMK5aGF1pVhxflZjtay4Cf58E1PP9tMc7H0Z85hHZYe-"/>
+<div id="trainer-card" class="w-full bg-surface-container-lowest rounded-xl p-8 shadow-md border border-outline-variant relative overflow-hidden group">
+  <div class="absolute -top-12 -right-12 w-32 h-32 bg-secondary-container rounded-full blur-3xl"></div>
+  <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-primary-container rounded-full blur-3xl"></div>
+
+  <div class="relative flex flex-col md:flex-row items-center md:items-start gap-8">
+    <div class="relative">
+      <div id="trainer-avatar" class="w-32 h-32 rounded-full overflow-hidden ring-4 ring-surface-container-low shadow-xl bg-surface-container flex items-center justify-center text-4xl font-black text-primary">
+        <span>…</span>
+      </div>
+      <div id="trainer-verified" class="absolute bottom-0 right-0 bg-primary text-on-primary text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg ring-2 ring-white hidden">
+        <span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+        VERIFIED
+      </div>
+    </div>
+
+    <!-- Trainer Details -->
+    <div class="flex-1 text-center md:text-left">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+        <h2 id="trainer-name" class="font-headline text-2xl font-bold text-on-surface">Loading…</h2>
+        <div id="trainer-rating" class="flex items-center justify-center md:justify-start gap-1 text-on-surface font-bold"></div>
+      </div>
+
+      <div id="trainer-meta" class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-on-surface-variant text-sm mb-4"></div>
+      <p id="trainer-bio" class="text-on-surface-variant text-sm leading-relaxed mb-6 hidden"></p>
+      <div id="trainer-tags" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Interaction Section -->
+  <div class="mt-8 pt-8 border-t border-outline-variant w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+    <a id="chat-platform-link" href="/client/messages" class="flex items-center justify-center gap-2 py-3 px-6 bg-primary text-on-primary font-headline font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">
+      <span class="material-symbols-outlined">chat_bubble</span>
+      Chat on Platform
+    </a>
+    <a id="chat-whatsapp-link" href="#" class="hidden flex items-center justify-center gap-2 py-3 px-6 bg-white border-2 border-outline-variant text-on-surface font-headline font-semibold rounded-lg hover:border-black transition-all">
+      <span class="material-symbols-outlined text-green-600">forum</span>
+      Chat on WhatsApp
+    </a>
+  </div>
+
+  <div class="mt-6 flex flex-col justify-center items-center">
+    <a href="/client/overview" class="text-on-surface-variant hover:text-primary text-sm font-medium underline underline-offset-4">Continue to Client Dashboard</a>
+  </div>
 </div>
-<div class="absolute bottom-0 right-0 bg-primary text-on-primary text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg ring-2 ring-white">
-<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-                            VERIFIED
-                        </div>
-</div>
-<!-- Trainer Details -->
-<div class="flex-1 text-center md:text-left">
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
-<h2 class="font-headline text-2xl font-bold text-on-surface">Rajesh Kumar</h2>
-<div class="flex items-center justify-center md:justify-start gap-1 text-on-surface font-bold">
-<span class="material-symbols-outlined text-xl text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="text-lg">4.9</span>
-<span class="text-on-surface-variant text-sm font-normal underline">(128 reviews)</span>
-</div>
-</div>
-<div class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-on-surface-variant text-sm mb-4">
-<span class="material-symbols-outlined text-base">location_on</span>
-<span>Mumbai, India</span>
-<span class="mx-1">•</span>
-<span class="font-medium text-secondary">Advanced Level</span>
-</div>
-<p class="text-on-surface-variant text-sm leading-relaxed mb-6">
-                            Expert in physical transformation and endurance. Rajesh has helped over 500+ clients achieve their fitness breakthroughs through personalized intensive mentoring sessions.
-                        </p>
-<div class="flex flex-wrap justify-center md:justify-start gap-2">
-<span class="px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">Endurance</span>
-<span class="px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">Weight Loss</span>
-<span class="px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">Nutrition</span>
-</div>
-</div>
-</div>
-<!-- Interaction Section -->
-<div class="mt-8 pt-8 border-t border-outline-variant w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-<button class="flex items-center justify-center gap-2 py-3 px-6 bg-primary text-on-primary font-headline font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">
-<span class="material-symbols-outlined">chat_bubble</span>
-                    Chat on Platform
-                </button>
-<button class="flex items-center justify-center gap-2 py-3 px-6 bg-white border-2 border-outline-variant text-on-surface font-headline font-semibold rounded-lg hover:border-black transition-all">
-<span class="material-symbols-outlined text-green-600">forum</span>
-                    Chat on WhatsApp
-                </button>
-</div>
-<div class="mt-6 flex flex-col justify-center items-center">
-    <a href="bookings.html" class="text-on-surface-variant hover:text-primary text-sm font-medium underline underline-offset-4">Continue to Student Dashboard / Bookings</a>
-</div>
+
+<div id="trainer-card-empty" class="hidden w-full bg-white rounded-xl p-8 shadow-md border border-outline-variant text-center">
+  <h2 class="font-headline text-xl font-bold text-on-surface mb-2">No trainer selected</h2>
+  <p class="text-on-surface-variant text-sm">Open this page with a trainer id (e.g. <span class="font-mono">trainer.html?id=...</span>), or browse trainers.</p>
+  <a href="trainers.html" class="inline-flex mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">Browse Trainers</a>
 </div>
 </div>
 </main>
@@ -116,5 +112,139 @@
             </div>
 </div>
 </footer>
+
+<script src="supabase-client.js"></script>
+<script>
+(function () {
+  const supabase = window.supabaseClient || window.supabase;
+  const params = new URLSearchParams(window.location.search);
+  const trainerId = params.get('id') || params.get('trainerId');
+
+  const card = document.getElementById('trainer-card');
+  const empty = document.getElementById('trainer-card-empty');
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function normalizeTrainingMode(mode) {
+    const m = String(mode || '').toLowerCase();
+    if (m === 'both') return 'Online & Offline';
+    if (m === 'offline') return 'Offline';
+    if (m === 'online') return 'Online';
+    return '';
+  }
+
+  function getTrainerMeta(t) {
+    const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
+    const location = (cityState || t?.location || '').trim();
+    const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
+    return [location, mode].filter(Boolean).join(' • ');
+  }
+
+  function renderAvatarInto(el, t) {
+    const url = (t?.avatar_url || '').trim();
+    const name = (t?.name || 'Trainer').trim();
+    const initial = (name.charAt(0) || 'T').toUpperCase();
+
+    if (url && url.startsWith('http')) {
+      el.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" loading="lazy" />`;
+      return;
+    }
+
+    el.textContent = initial;
+  }
+
+  function renderRating(t) {
+    const el = document.getElementById('trainer-rating');
+    const rating = Number(t?.rating);
+    const count = Number(t?.review_count);
+
+    if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
+      el.innerHTML = `
+        <span class="material-symbols-outlined text-xl text-primary" style="font-variation-settings: 'FILL' 1;">star</span>
+        <span class="text-lg">${rating.toFixed(1)}</span>
+        <span class="text-on-surface-variant text-sm font-normal underline">(${count} review${count === 1 ? '' : 's'})</span>
+      `;
+    } else {
+      el.innerHTML = `<span class="text-on-surface-variant text-sm italic">New</span>`;
+    }
+  }
+
+  async function load() {
+    if (!supabase) {
+      card.classList.add('hidden');
+      empty.classList.remove('hidden');
+      empty.querySelector('p').textContent = 'Supabase client is not available.';
+      return;
+    }
+
+    if (!trainerId) {
+      card.classList.add('hidden');
+      empty.classList.remove('hidden');
+      return;
+    }
+
+    const { data: trainer, error } = await supabase
+      .from('profiles')
+      .select('id, name, avatar_url, city, state, location, training_mode, session_mode, specialty, bio, tags, rating, review_count, kyc_verified, certificates_verified, phone')
+      .eq('id', trainerId)
+      .eq('role', 'trainer')
+      .single();
+
+    if (error || !trainer) {
+      card.classList.add('hidden');
+      empty.classList.remove('hidden');
+      empty.querySelector('p').textContent = 'Unable to load trainer details.';
+      return;
+    }
+
+    document.getElementById('trainer-name').textContent = trainer.name || 'Trainer';
+
+    const avatarEl = document.getElementById('trainer-avatar');
+    renderAvatarInto(avatarEl, trainer);
+
+    const verified = Boolean(trainer.kyc_verified || trainer.certificates_verified);
+    document.getElementById('trainer-verified').classList.toggle('hidden', !verified);
+
+    renderRating(trainer);
+
+    const meta = getTrainerMeta(trainer);
+    const metaEl = document.getElementById('trainer-meta');
+    metaEl.innerHTML = meta
+      ? `<span class="material-symbols-outlined text-base">location_on</span><span>${escapeHtml(meta)}</span>`
+      : '';
+
+    const bio = (trainer.bio || '').trim();
+    const bioEl = document.getElementById('trainer-bio');
+    if (bio) {
+      bioEl.classList.remove('hidden');
+      bioEl.textContent = bio;
+    } else {
+      bioEl.classList.add('hidden');
+    }
+
+    const tags = Array.isArray(trainer.tags) ? trainer.tags.slice(0, 6) : [];
+    const tagsEl = document.getElementById('trainer-tags');
+    tagsEl.innerHTML = tags.map(t => `<span class="px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">${escapeHtml(t)}</span>`).join('');
+
+    document.getElementById('chat-platform-link').href = '/client/messages?id=' + encodeURIComponent(trainer.id);
+
+    const wa = document.getElementById('chat-whatsapp-link');
+    const phone = (trainer.phone || '').replace(/\D/g, '');
+    if (phone) {
+      wa.classList.remove('hidden');
+      wa.href = 'https://wa.me/' + phone;
+    }
+  }
+
+  load();
+})();
+</script>
 </body>
 </html>

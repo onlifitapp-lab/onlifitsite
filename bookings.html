@@ -19,14 +19,62 @@
     /* Font Size Reset - Standard 16px base */
     html { font-size: 16px; }
     body { font-size: 1rem; line-height: 1.5; }
-    
+
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         vertical-align: middle;
     }
+
     .glass-effect {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(12px);
+    }
+
+    /* Messages (embedded) helpers */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .chat-bubble-received { border-top-left-radius: 0.25rem; }
+    .chat-bubble-sent { border-top-right-radius: 0.25rem; }
+
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-10px); }
+    }
+    .typing-dot { animation: typing 1.4s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .msg-status { font-size: 14px; opacity: 0.6; }
+    .msg-status.seen { color: #4CAF50; opacity: 1; }
+
+    .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #1A1A1A;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    .unread-badge {
+        min-width: 20px;
+        height: 20px;
+        background: #000;
+        color: white;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
     }
 </style>
 </head>
@@ -66,7 +114,7 @@
 <span class="material-symbols-outlined">calendar_today</span>
 <span>Bookings</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="messages.html" target="_blank">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/messages">
 <span class="material-symbols-outlined">chat_bubble</span>
 <span>Messages</span>
 </a>
@@ -76,112 +124,208 @@
 </a>
 </nav>
 <div class="flex-shrink-0 md:px-6 md:mt-auto md:pb-10">
-<button class="px-6 md:w-full py-2 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all">
-<span class="material-symbols-outlined text-sm">sensors</span> Go Live
-</button>
+<a href="/trainer/earnings" class="px-6 md:w-full py-2 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all sidebar-link">
+<span class="material-symbols-outlined text-sm">analytics</span> Insights
+</a>
 </div>
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative"><section id="view-dashboard" class="route-view active-view anim-slide-up">
-    <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
-        <div>
-            <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
-            <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back! Manage your sessions.</p>
-        </div>
-    </header>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-            <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-upcoming">0</h3>
-            <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-            <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-completed">0</h3>
-            <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Completed Sessions</p>
-        </div>
-    </div>
-</section><section id="view-bookings" class="route-view hidden anim-slide-up">
-    <header class="mb-8 mt-4">
-        <h2 class="text-3xl font-black font-headline text-on-surface">Bookings List</h2>
-        <p class="text-on-surface-variant text-sm mt-1">Manage pending and upcoming requests.</p>
-    </header>
-<div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-4xl">autorenew</span>
+<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative">
+    <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-4xl animate-spin">autorenew</span>
     </div>
 
-<header class="mb-10 flex justify-between items-end">
-<div>
-<h1 class="text-3xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
-<p class="text-on-surface-variant mt-1" id="welcome-message">Welcome back! Loading your bookings...</p>
-</div>
-<div class="flex gap-2">
-<span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant" id="current-date">Loading...</span>
-</div>
-</header>
-<div class="grid grid-cols-12 gap-6">
-<!-- Performance Stats -->
-<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
-<div>
-<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Response Rate</p>
-<h3 class="text-3xl font-black text-primary font-headline" id="stat-response-rate">98.4%</h3>
-</div>
-<div class="mt-4 h-1 w-full bg-surface-container-low rounded-full overflow-hidden">
-<div class="h-full bg-primary" style="width: 98.4%"></div>
-</div>
-</div>
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
-<div>
-<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p>
-<h3 class="text-3xl font-black text-on-surface font-headline" id="stat-total-bookings">42</h3>
-</div>
-<p class="text-xs text-green-500 font-bold mt-2 flex items-center gap-1" id="stat-total-trend">
-<span class="material-symbols-outlined text-sm">trending_up</span> +3 this month
-</p>
-</div>
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high flex flex-col justify-between">
-<div>
-<p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Avg Rating</p>
-<div class="flex items-center gap-2">
-<h3 class="text-3xl font-black text-on-surface font-headline" id="stat-avg-rating">4.92</h3>
-<div class="flex text-yellow-400" id="stat-rating-stars">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-</div>
-</div>
-<div class="flex gap-1 mt-4">
-<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-yellow-400 rounded-full"></div>
-<div class="h-1 flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 bg-surface-container-low rounded-full"></div>
-</div>
-</div>
-</div>
+    <section id="view-dashboard" class="route-view active-view anim-slide-up">
+        <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+            <div>
+                <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
+                <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back! Manage your sessions.</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant" id="current-date">Loading...</span>
+            </div>
+        </header>
 
-<!-- New Allocation Card -->
-<div id="new-allocation-container" class="col-span-12 lg:col-span-4 row-span-2">
-    <!-- Populated by JS -->
-    <div class="bg-white p-12 rounded-2xl shadow-sm border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center h-full">
-        <p class="text-on-surface-variant text-sm">No new allocations</p>
-    </div>
-</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-upcoming">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-completed">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Sessions Delivered (7d)</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-unread-messages">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Unread Messages</p>
+            </div>
+            <div id="profile-visits-card" class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-profile-visits">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Profile Visits (7d)</p>
+            </div>
+        </div>
 
-<!-- Empty State / Pending Section -->
-<div class="col-span-12 lg:col-span-8">
-<div class="bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
-<div class="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6">
-<span class="material-symbols-outlined text-on-surface-variant text-5xl">inbox_customize</span>
-</div>
-<h3 class="text-xl font-bold text-on-surface mb-2">No Pending Bookings</h3>
-<p class="text-on-surface-variant max-w-sm">You're all caught up! When new trainees match with your profile, they will appear here for review.</p>
-<button class="mt-8 px-6 py-2 border border-surface-container-high rounded-full text-sm font-bold text-on-surface-variant hover:bg-surface-container-low transition-all">
-                            Refresh Queue
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
+                <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
+                    <h3 class="font-headline text-lg font-black">Next Sessions</h3>
+                    <a href="/trainer/bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">View all</a>
+                </div>
+                <div id="next-sessions-list" class="divide-y divide-outline-variant/20">
+                    <div class="p-6 text-sm text-on-surface-variant">Loading…</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
+                <div class="px-6 py-5 border-b border-outline-variant/20">
+                    <h3 class="font-headline text-lg font-black">Performance</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">Based on your live bookings and reviews.</p>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Avg Rating</span>
+                        <span class="text-lg font-black font-headline" id="stat-avg-rating">—</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Reviews</span>
+                        <span class="text-sm font-bold" id="stat-review-count">0</span>
+                    </div>
+                    <div class="h-px bg-outline-variant/20"></div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Booking Value (30d)</span>
+                        <span class="text-sm font-black" id="stat-revenue-30d">—</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">New Bookings (7d)</span>
+                        <span class="text-sm font-black" id="stat-new-bookings">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-bookings" class="route-view hidden anim-slide-up">
+        <header class="mb-6 mt-2">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Bookings</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Real-time booking requests and scheduled sessions.</p>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+            <div class="p-4 md:p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex flex-wrap gap-2" id="booking-filters">
+                    <button type="button" data-filter="all" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary">All</button>
+                    <button type="button" data-filter="upcoming" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Upcoming</button>
+                    <button type="button" data-filter="past" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Past</button>
+                    <button type="button" data-filter="cancelled" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Cancelled</button>
+                </div>
+                <div class="w-full md:w-80 relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                </div>
+            </div>
+
+            <div id="trainer-bookings-summary" class="px-6 py-3 text-xs font-semibold text-on-surface-variant border-b border-outline-variant/20"></div>
+            <div id="trainer-bookings-list" class="divide-y divide-outline-variant/20"></div>
+        </div>
+
+        <div id="trainer-bookings-empty" class="hidden bg-white rounded-2xl p-10 border border-dashed border-outline-variant/40 text-center mt-6">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">event</span>
+            <h3 class="text-xl font-bold font-headline">No bookings found</h3>
+            <p class="text-sm text-on-surface-variant mt-2">When clients book you, they’ll appear here.</p>
+        </div>
+    </section>
+
+    <section id="view-messages" class="route-view hidden anim-slide-up">
+        <header class="mb-6 mt-2">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Chat with your clients without leaving the dashboard.</p>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden min-h-[70vh] flex">
+            <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
+                <div class="p-6 border-b border-outline-variant/50">
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                    </div>
+                </div>
+                <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30"></div>
+            </aside>
+
+            <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
+                <div id="chat-header" class="px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+                    <div class="flex items-center gap-3">
+                        <button onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+                            <span class="material-symbols-outlined text-on-surface">arrow_back</span>
                         </button>
-</div>
-</div>
-</div>
-</section>
+                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm"><span class="material-symbols-outlined text-on-surface-variant">person</span></div>
+                        <div>
+                            <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
+                            <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
+                            <div id="typing-indicator" class="hidden flex gap-1 mt-1">
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="text-[9px] text-primary font-bold ml-1">typing</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-history" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
+                    <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
+                        <span class="material-symbols-outlined text-7xl text-on-surface-variant mb-6 block">forum</span>
+                        <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
+                        <p class="text-sm">Choose a client to start chatting.</p>
+                    </div>
+                </div>
+
+                <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                    <div class="flex gap-3 items-end">
+                        <div class="flex-1 relative">
+                            <textarea id="msg-input" placeholder="Type your message…" rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
+                            <button onclick="handleSend()" class="absolute right-3 bottom-2 text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">send</span></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <section id="view-earnings" class="route-view hidden anim-slide-up">
+        <header class="mb-6 mt-2">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Insights</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Actionable stats based on your real bookings.</p>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <h3 class="text-2xl font-black font-headline" id="insight-value-7d">—</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (7d)</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <h3 class="text-2xl font-black font-headline" id="insight-value-30d">—</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (30d)</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <h3 class="text-2xl font-black font-headline" id="insight-clients-30d">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Unique Clients (30d)</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <h3 class="text-2xl font-black font-headline" id="insight-upcoming">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
+                <h3 class="font-headline text-lg font-black">Recent Bookings</h3>
+                <a href="/trainer/bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">Open bookings</a>
+            </div>
+            <div id="insight-recent-bookings" class="divide-y divide-outline-variant/20"></div>
+        </div>
+    </section>
 <section id="view-settings" class="route-view hidden anim-slide-up">
     
     <!-- Header -->
@@ -240,70 +384,40 @@
                         <label class="block text-sm font-semibold mb-2">Phone Number</label>
                         <input type="tel" id="phone" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
-                    
-<div class="col-span-1 md:col-span-2">
-    <label class="block text-sm font-semibold mb-2">Training Mode</label>
-    <div class="flex gap-4 mb-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="online" class="text-primary focus:ring-primary w-4 h-4" checked="" onchange="toggleLocationFields()">
-            <span>Online Only</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="offline" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
-            <span>Offline (In-Person)</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="both" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
-            <span>Both (Online &amp; Offline)</span>
-        </label>
-    </div>
-</div>
 
-<div id="location-fields" class="col-span-1 md:col-span-2 grid md:grid-cols-2 gap-6 hidden">
-    <div>
-        <label class="block text-sm font-semibold mb-2">City</label>
-        <input type="text" id="city" placeholder="e.g. Mumbai" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-    </div>
-    <div>
-        <label class="block text-sm font-semibold mb-2">State</label>
-        <input type="text" id="state" placeholder="e.g. Maharashtra" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-    </div>
-    
-<div class="col-span-1 md:col-span-2">
-    <label class="block text-sm font-semibold mb-2">Training Mode</label>
-    <div class="flex gap-4 mb-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="online" class="text-primary focus:ring-primary w-4 h-4" checked="" onchange="toggleLocationFields()">
-            <span>Online Only</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="offline" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
-            <span>Offline (In-Person)</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="training_mode" value="both" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
-            <span>Both (Online &amp; Offline)</span>
-        </label>
-    </div>
-</div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold mb-2">Training Mode</label>
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="training_mode" value="online" class="text-primary focus:ring-primary w-4 h-4" checked="" onchange="toggleLocationFields()">
+                                <span class="text-sm font-medium">Online Only</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="training_mode" value="offline" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
+                                <span class="text-sm font-medium">Offline (In-Person)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="training_mode" value="both" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
+                                <span class="text-sm font-medium">Both (Online &amp; Offline)</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-2">Choose how you want to deliver sessions. Offline options will ask for your location.</p>
+                    </div>
 
-<div id="location-fields" class="col-span-1 md:col-span-2 grid md:grid-cols-2 gap-6 hidden">
-    <div>
-        <label class="block text-sm font-semibold mb-2">City</label>
-        <input type="text" id="city" placeholder="e.g. Mumbai" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-    </div>
-    <div>
-        <label class="block text-sm font-semibold mb-2">State</label>
-        <input type="text" id="state" placeholder="e.g. Maharashtra" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold mb-2">Full Address / Gym Location</label>
-        <textarea id="address" rows="2" placeholder="Where do you train your offline clients?" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
-    </div>
-</div>
-
-</div>
-
+                    <div id="location-fields" class="md:col-span-2 grid md:grid-cols-2 gap-6 hidden">
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">City</label>
+                            <input type="text" id="city" placeholder="e.g. Mumbai" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">State</label>
+                            <input type="text" id="state" placeholder="e.g. Maharashtra" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold mb-2">Full Address / Gym Location</label>
+                            <textarea id="address" rows="2" placeholder="Where do you train your offline clients?" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>
@@ -399,7 +513,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-xs text-on-surface-variant mt-2">💡 Tip: Offer flexible packages - hourly for beginners, weekly for regular clients, monthly for committed clients, and transformation programs for serious fitness goals.</p>
+                    <p class="text-xs text-on-surface-variant mt-2">Tip: Offer flexible packages — hourly for beginners, weekly for regular clients, monthly for committed clients, and transformation programs for serious fitness goals.</p>
                 </div>
 
                 <!-- Certifications Section -->
@@ -458,128 +572,789 @@
 
 
 
-    async function initDashboard() {
-        const user = await requireAuth('trainer');
-        if (!user) return;
+    // ────────────────────────────────────────────────────────────────────────────
+    // Trainer Dashboard SPA (real data, no new tabs)
+    // ────────────────────────────────────────────────────────────────────────────
 
-        await renderAuthNav();
-        settingsUser = user;
-        await initSettings();
+    let user = null; // Used by settings code below
+    let trainerUser = null;
 
-        // Real-time subscription for notifications (updates nav bell)
-        subscribeToTable('notifications', `user_id=eq.${user.id}`, () => {
-            renderAuthNav();
-        });
+    let trainerBookings = [];
+    let bookingsLoaded = false;
+    let activeBookingsFilter = 'all';
+    const trainerClientsById = new Map();
 
-        // ── Sidebar user info ──────────────────────────────────────────
-        const avatarElem = document.getElementById('trainer-avatar');
-        const nameElem = document.getElementById('trainer-name');
-        if (avatarElem) avatarElem.textContent = user.name.charAt(0).toUpperCase();
-        if (nameElem) nameElem.textContent = user.name;
-        
-        // ── Update date ──────────────────────────────────────────
-        const dateElem = document.getElementById('current-date');
-        if (dateElem) {
-            dateElem.textContent = new Date().toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-        }
-        
-        const bookings = await getBookings();
-        updateStats(bookings, user);
-        await renderAllocation(bookings);
+    // Messages state
+    let contactsLastMessages = {};
+    let activeChatContactId = null;
+    let activeChatContact = null;
+    let typingSub = null;
+    let messagesRealtimeChannel = null;
+
+    let bootPromise = null;
+
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
-    function updateStats(bookings, user) {
-        const totalBookings = bookings.length;
-        const thisMonth = bookings.filter(b => {
-            const d = new Date(b.date);
-            const now = new Date();
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-        }).length;
+    function formatCurrencyINR(value) {
+        const num = Number(value);
+        if (!Number.isFinite(num)) return '—';
+        try {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+        } catch {
+            return `₹${Math.round(num)}`;
+        }
+    }
 
-        // Update welcome message
-        const firstName = user.name.split(' ')[0];
-        const pendingCount = bookings.filter(b => b.status === 'pending').length;
-        const welcomeMsg = document.getElementById('welcome-message');
-        if (welcomeMsg) {
-            if (pendingCount > 0) {
-                welcomeMsg.textContent = `Welcome back, ${firstName}! You have ${pendingCount} new booking ${pendingCount === 1 ? 'allocation' : 'allocations'} to review.`;
+    function isCancelled(booking) {
+        const s = String(booking?.status || '').toLowerCase();
+        return s === 'cancelled' || s === 'canceled';
+    }
+
+    function parseBookingDateTime(booking) {
+        // booking.date is a DATE in Supabase: typically "YYYY-MM-DD"
+        // booking.time is text: can be "HH:MM" (24h) OR "7:00 AM" (12h)
+        const d = booking?.date;
+        const t = booking?.time;
+
+        if (!d) return null;
+
+        // If date already has time (rare), Date() can parse it.
+        if (typeof d === 'string' && d.includes('T')) {
+            const dt = new Date(d);
+            return Number.isNaN(dt.getTime()) ? null : dt;
+        }
+
+        let hh = 0;
+        let mm = 0;
+
+        const raw = (t && typeof t === 'string') ? t.trim() : '';
+        if (raw) {
+            const upper = raw.toUpperCase();
+            const ampm = upper.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+            if (ampm) {
+                let h = parseInt(ampm[1], 10);
+                mm = parseInt(ampm[2], 10);
+                const mer = ampm[3];
+
+                if (mer === 'AM') {
+                    if (h === 12) h = 0;
+                } else {
+                    if (h !== 12) h += 12;
+                }
+
+                hh = h;
             } else {
-                welcomeMsg.textContent = `Welcome back, ${firstName}! You're all caught up.`;
+                const h24 = upper.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+                if (h24) {
+                    hh = parseInt(h24[1], 10);
+                    mm = parseInt(h24[2], 10);
+                }
             }
         }
 
-        // Update UI stats
-        document.querySelectorAll('h3.font-headline')[1].textContent = totalBookings;
-        document.querySelector('.text-green-500.font-bold').innerHTML = `<span class="material-symbols-outlined text-sm">trending_up</span> +${thisMonth} this month`;
+        const HH = String(hh).padStart(2, '0');
+        const MM = String(mm).padStart(2, '0');
+
+        const iso = `${d}T${HH}:${MM}:00`;
+        const dt = new Date(iso);
+        return Number.isNaN(dt.getTime()) ? null : dt;
     }
 
-    async function renderAllocation(bookings) {
-        const container = document.getElementById('new-allocation-container');
-        if (!container) return;
+    function getBookingValue(booking) {
+        const v = Number(booking?.price);
+        return Number.isFinite(v) ? v : 0;
+    }
 
-        // Show latest "confirmed" booking that hasn't been "completed" or "cancelled"
-        const pending = bookings.filter(b => b.status === 'confirmed').sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-        
-        if (!pending.length) {
-            container.innerHTML = `
-                <div class="bg-white p-12 rounded-2xl shadow-sm border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center h-full">
-                    <div class="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center mb-4">
-                        <span class="material-symbols-outlined text-on-surface-variant text-3xl">inbox</span>
-                    </div>
-                    <p class="text-on-surface-variant text-sm font-medium">No new allocations</p>
-                </div>`;
+    function withinDays(date, days) {
+        if (!date) return false;
+        const ms = days * 24 * 60 * 60 * 1000;
+        return (Date.now() - date.getTime()) <= ms;
+    }
+
+    async function loadTrainerBookings() {
+        const all = await getBookings();
+        const mine = (all || []).filter(b => b && b.trainer_id === trainerUser?.id);
+        trainerBookings = mine;
+        bookingsLoaded = true;
+        window.cachedBookings = mine;
+        return mine;
+    }
+
+    async function ensureClientProfiles(bookings) {
+        const ids = [...new Set((bookings || []).map(b => b?.client_id).filter(Boolean))];
+        const missing = ids.filter(id => !trainerClientsById.has(id));
+        if (!missing.length) return;
+
+        for (let i = 0; i < missing.length; i += 25) {
+            const batch = missing.slice(i, i + 25);
+            const { data } = await supabaseClient
+                .from('profiles')
+                .select('id, name, avatar_url, phone, age, gender, goal')
+                .in('id', batch);
+
+            (data || []).forEach(p => trainerClientsById.set(p.id, p));
+        }
+    }
+
+    async function updateUnreadMessagesCount() {
+        if (!trainerUser) return;
+        const count = await getUnreadCount(trainerUser.id);
+        const el = document.getElementById('stat-unread-messages');
+        if (el) el.textContent = String(count ?? 0);
+    }
+
+    async function updateProfileVisits7d() {
+        const card = document.getElementById('profile-visits-card');
+        const el = document.getElementById('stat-profile-visits');
+        if (!card || !el || !trainerUser) return;
+
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+        try {
+            const { count, error } = await supabaseClient
+                .from('profile_visits')
+                .select('*', { count: 'exact', head: true })
+                .eq('trainer_id', trainerUser.id)
+                .gte('visited_at', since);
+
+            if (error) throw error;
+            el.textContent = String(count ?? 0);
+            card.classList.remove('hidden');
+        } catch {
+            // Schema may not exist yet; hide card to avoid showing fake numbers.
+            card.classList.add('hidden');
+        }
+    }
+
+    async function updatePerformanceStats(bookings) {
+        const avgRatingEl = document.getElementById('stat-avg-rating');
+        const reviewCountEl = document.getElementById('stat-review-count');
+
+        try {
+            const reviews = await getReviews(trainerUser.id);
+            if (reviews && reviews.length) {
+                const sum = reviews.reduce((acc, r) => acc + Number(r.rating || 0), 0);
+                const avg = sum / reviews.length;
+                if (avgRatingEl) avgRatingEl.textContent = avg.toFixed(1);
+                if (reviewCountEl) reviewCountEl.textContent = String(reviews.length);
+            } else {
+                if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : '—');
+                if (reviewCountEl) reviewCountEl.textContent = String(trainerUser.review_count ?? 0);
+            }
+        } catch {
+            if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : '—');
+            if (reviewCountEl) reviewCountEl.textContent = String(trainerUser.review_count ?? 0);
+        }
+
+        // Booking Value (30d)
+        const revenue30El = document.getElementById('stat-revenue-30d');
+        const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const revenue30 = (bookings || [])
+            .filter(b => !isCancelled(b))
+            .filter(b => {
+                const created = b?.created_at ? new Date(b.created_at) : null;
+                return created && created >= since30;
+            })
+            .reduce((acc, b) => acc + getBookingValue(b), 0);
+        if (revenue30El) revenue30El.textContent = formatCurrencyINR(revenue30);
+
+        // New Bookings (7d)
+        const newBookingsEl = document.getElementById('stat-new-bookings');
+        const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const newBookings = (bookings || []).filter(b => {
+            const created = b?.created_at ? new Date(b.created_at) : null;
+            return created && created >= since7;
+        }).length;
+        if (newBookingsEl) newBookingsEl.textContent = String(newBookings);
+    }
+
+    function computeDashboardCounts(bookings) {
+        const now = new Date();
+        const upcoming = (bookings || []).filter(b => {
+            if (isCancelled(b)) return false;
+            const dt = parseBookingDateTime(b);
+            return dt && dt >= now;
+        }).length;
+
+        const delivered7d = (bookings || []).filter(b => {
+            if (isCancelled(b)) return false;
+            const dt = parseBookingDateTime(b);
+            return dt && dt < now && withinDays(dt, 7);
+        }).length;
+
+        const pending = (bookings || []).filter(b => String(b?.status || '').toLowerCase() === 'pending').length;
+
+        return { upcoming, delivered7d, pending };
+    }
+
+    async function renderNextSessions(bookings) {
+        const list = document.getElementById('next-sessions-list');
+        if (!list) return;
+
+        const now = new Date();
+        const upcoming = (bookings || [])
+            .filter(b => !isCancelled(b))
+            .map(b => ({ b, dt: parseBookingDateTime(b) }))
+            .filter(x => x.dt && x.dt >= now)
+            .sort((a, c) => a.dt - c.dt)
+            .slice(0, 6);
+
+        if (!upcoming.length) {
+            list.innerHTML = `<div class="p-6 text-sm text-on-surface-variant">No upcoming sessions yet.</div>`;
             return;
         }
 
-        const latest = pending[0];
-        const client = await getUserById(latest.client_id);
+        await ensureClientProfiles(upcoming.map(x => x.b));
 
-        container.innerHTML = `
-            <div class="bg-white p-1 rounded-2xl shadow-lg border border-surface-container-high h-full overflow-hidden anim-slide-up">
-                <div class="relative h-48 rounded-t-[19px] overflow-hidden">
-                    <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1548690312-e3b507d17a12?q=80&w=800&auto=format&fit=crop"/>
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
-                    <div class="absolute bottom-4 left-4">
-                        <span class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-sm uppercase tracking-wider mb-2 inline-block">New Allocation</span>
-                        <h4 class="text-white text-xl font-bold">${client?.name || 'Trainee'}</h4>
-                        <div class="flex gap-2 mt-1">
-                            ${client?.age ? `<span class="text-white/80 text-[10px] bg-white/10 px-2 py-0.5 rounded-full">${client.age}y</span>` : ''}
-                            ${client?.gender ? `<span class="text-white/80 text-[10px] bg-white/10 px-2 py-0.5 rounded-full capitalize">${client.gender}</span>` : ''}
-                        </div>
+        list.innerHTML = upcoming.map(({ b, dt }) => {
+            const client = trainerClientsById.get(b.client_id);
+            const clientName = client?.name || 'Client';
+            const label = b.plan_label || b.plan_type || 'Session';
+            const when = dt ? dt.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : `${b.date} ${b.time || ''}`;
+            const value = formatCurrencyINR(getBookingValue(b));
+            const status = escapeHtml(b.status || 'confirmed');
+
+            return `
+                <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="font-bold text-on-surface truncate">${escapeHtml(clientName)} • <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
+                        <div class="text-xs text-on-surface-variant mt-1">${escapeHtml(when)} • ${value}</div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">${status}</span>
+                        <a href="/trainer/messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">
+                            Message
+                        </a>
                     </div>
                 </div>
-                <div class="p-6">
-                    <div class="space-y-4 mb-8">
-                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
-                            <span class="text-on-surface-variant text-sm">Goal</span>
-                            <span class="font-bold text-primary truncate max-w-[150px] text-right">${client?.goal || 'General Health'}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
-                            <span class="text-on-surface-variant text-sm">Plan</span>
-                            <span class="font-bold text-on-surface capitalize">${latest.plan_type || 'Session'}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
-                            <span class="text-on-surface-variant text-sm">Schedule</span>
-                            <span class="px-3 py-1 bg-secondary text-on-secondary text-xs font-bold rounded-full">${latest.date} ${latest.time}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2 border-b border-surface-container-low">
-                            <span class="text-on-surface-variant text-sm">Contact</span>
-                            <span class="text-on-surface text-xs font-medium">${client?.phone || 'N/A'}</span>
-                        </div>
-                    </div>
-                    <a href="messages.html?id=${latest.client_id}" class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined text-sm">message</span> Message Client
-                    </a>
-                </div>
-            </div>
-        `;
+            `;
+        }).join('');
     }
 
-    initDashboard();
+    async function renderBookingsList() {
+        const list = document.getElementById('trainer-bookings-list');
+        const empty = document.getElementById('trainer-bookings-empty');
+        const summary = document.getElementById('trainer-bookings-summary');
+        if (!list || !empty || !summary) return;
+
+        await ensureClientProfiles(trainerBookings);
+
+        const q = String(document.getElementById('bookings-search')?.value || '').trim().toLowerCase();
+        const now = new Date();
+
+        const filtered = (trainerBookings || []).filter(b => {
+            if (!b) return false;
+
+            if (activeBookingsFilter === 'cancelled') {
+                if (!isCancelled(b)) return false;
+            } else if (activeBookingsFilter === 'upcoming') {
+                if (isCancelled(b)) return false;
+                const dt = parseBookingDateTime(b);
+                if (!dt || dt < now) return false;
+            } else if (activeBookingsFilter === 'past') {
+                if (isCancelled(b)) return false;
+                const dt = parseBookingDateTime(b);
+                if (!dt || dt >= now) return false;
+            }
+
+            if (!q) return true;
+            const client = trainerClientsById.get(b.client_id);
+            const hay = [client?.name, b.plan_label, b.plan_type, b.status].filter(Boolean).join(' ').toLowerCase();
+            return hay.includes(q);
+        });
+
+        summary.textContent = `Showing ${filtered.length} of ${(trainerBookings || []).length} bookings`;
+
+        if (!filtered.length) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+        empty.classList.add('hidden');
+
+        // Sort: upcoming soonest first, then past most-recent first
+        filtered.sort((a, b) => {
+            const da = parseBookingDateTime(a);
+            const db = parseBookingDateTime(b);
+
+            const aUpcoming = da && da >= now && !isCancelled(a);
+            const bUpcoming = db && db >= now && !isCancelled(b);
+
+            if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+
+            const ta = da ? da.getTime() : 0;
+            const tb = db ? db.getTime() : 0;
+
+            if (aUpcoming) return ta - tb;
+            return tb - ta;
+        });
+
+        list.innerHTML = filtered.map(b => {
+            const client = trainerClientsById.get(b.client_id);
+            const clientName = client?.name || 'Client';
+            const avatar = (client?.avatar_url && client.avatar_url.startsWith('http'))
+                ? `<img src="${escapeHtml(client.avatar_url)}" class="w-10 h-10 rounded-full object-cover" />`
+                : `<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-black text-primary">${escapeHtml((clientName || 'C').charAt(0).toUpperCase())}</div>`;
+
+            const dt = parseBookingDateTime(b);
+            const when = dt
+                ? dt.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+                : `${b.date} ${b.time || ''}`;
+            const label = b.plan_label || b.plan_type || 'Session';
+            const value = formatCurrencyINR(getBookingValue(b));
+            const status = String(b.status || 'confirmed');
+
+            return `
+                <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-4 min-w-0">
+                        ${avatar}
+                        <div class="min-w-0">
+                            <div class="font-bold text-on-surface truncate">${escapeHtml(clientName)}</div>
+                            <div class="text-xs text-on-surface-variant mt-1 truncate">${escapeHtml(label)} • ${escapeHtml(when)} • ${value}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">${escapeHtml(status)}</span>
+                        <a href="/trainer/messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">Message</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function setupBookingsUI() {
+        const filters = document.getElementById('booking-filters');
+        if (filters && !filters.dataset.bound) {
+            filters.dataset.bound = '1';
+            filters.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-filter]');
+                if (!btn) return;
+
+                activeBookingsFilter = btn.dataset.filter;
+                filters.querySelectorAll('button[data-filter]').forEach(b => {
+                    if (b.dataset.filter === activeBookingsFilter) {
+                        b.classList.add('bg-primary-container', 'text-primary');
+                        b.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
+                    } else {
+                        b.classList.remove('bg-primary-container', 'text-primary');
+                        b.classList.add('bg-surface-container-low', 'text-on-surface-variant');
+                    }
+                });
+
+                void renderBookingsList();
+            });
+        }
+
+        const search = document.getElementById('bookings-search');
+        if (search && !search.dataset.bound) {
+            search.dataset.bound = '1';
+            search.addEventListener('input', () => void renderBookingsList());
+        }
+    }
+
+    function setupMessagesUI() {
+        const search = document.getElementById('contacts-search');
+        if (search && !search.dataset.bound) {
+            search.dataset.bound = '1';
+            search.addEventListener('input', () => void renderContacts());
+        }
+
+        const msgInput = document.getElementById('msg-input');
+        if (msgInput && !msgInput.dataset.bound) {
+            msgInput.dataset.bound = '1';
+            msgInput.addEventListener('input', () => {
+                if (!trainerUser || !activeChatContactId) return;
+                setTypingStatus(trainerUser.id, activeChatContactId, true);
+                clearTimeout(msgInput._typingTimer);
+                msgInput._typingTimer = setTimeout(() => {
+                    setTypingStatus(trainerUser.id, activeChatContactId, false);
+                }, 800);
+            });
+        }
+    }
+
+    async function renderContacts() {
+        const list = document.getElementById('contacts-list');
+        if (!list) return;
+
+        const searchQ = String(document.getElementById('contacts-search')?.value || '').trim().toLowerCase();
+        const contactIds = [...new Set((trainerBookings || []).map(b => b?.client_id).filter(Boolean))];
+        await ensureClientProfiles(trainerBookings);
+
+        const visibleIds = contactIds.filter(id => {
+            const c = trainerClientsById.get(id);
+            if (!searchQ) return true;
+            return String(c?.name || '').toLowerCase().includes(searchQ);
+        });
+
+        if (!visibleIds.length) {
+            list.innerHTML = `<div class="p-6 text-sm text-on-surface-variant">No clients found.</div>`;
+            return;
+        }
+
+        contactsLastMessages = await getLastMessagesForContacts(trainerUser.id, visibleIds);
+
+        // Sort contacts by last message time desc
+        visibleIds.sort((a, b) => {
+            const ta = contactsLastMessages[a]?.timestamp ? new Date(contactsLastMessages[a].timestamp).getTime() : 0;
+            const tb = contactsLastMessages[b]?.timestamp ? new Date(contactsLastMessages[b].timestamp).getTime() : 0;
+            return tb - ta;
+        });
+
+        list.innerHTML = visibleIds.map(id => {
+            const c = trainerClientsById.get(id);
+            const name = c?.name || 'Client';
+            const msg = contactsLastMessages[id];
+            const preview = msg?.text ? msg.text : 'No messages yet';
+            const unread = msg?.unreadCount ? Number(msg.unreadCount) : 0;
+
+            const avatar = (c?.avatar_url && c.avatar_url.startsWith('http'))
+                ? `<img src="${escapeHtml(c.avatar_url)}" class="w-10 h-10 rounded-full object-cover" />`
+                : `<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-black text-primary">${escapeHtml(name.charAt(0).toUpperCase())}</div>`;
+
+            const isActive = activeChatContactId === id;
+
+            return `
+                <button type="button" class="w-full text-left p-4 hover:bg-white/70 transition-colors flex items-center gap-3 ${isActive ? 'bg-white' : ''}" onclick="openChat('${escapeHtml(id)}')">
+                    ${avatar}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="font-bold text-sm truncate">${escapeHtml(name)}</div>
+                            ${unread > 0 ? `<span class="min-w-[20px] h-5 px-2 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">${unread}</span>` : ''}
+                        </div>
+                        <div class="text-xs text-on-surface-variant truncate mt-1">${escapeHtml(preview)}</div>
+                    </div>
+                </button>
+            `;
+        }).join('');
+    }
+
+    window.openChat = async function (contactId) {
+        activeChatContactId = contactId;
+        activeChatContact = trainerClientsById.get(contactId) || (await getUserById(contactId));
+
+        // Update URL (deep-linkable)
+        history.replaceState(null, '', `/trainer/messages?id=${encodeURIComponent(contactId)}`);
+
+        // Mobile layout
+        const sidebar = document.getElementById('contacts-sidebar');
+        const chatView = document.getElementById('chat-view');
+        if (sidebar && chatView && window.innerWidth < 768) {
+            sidebar.classList.add('hidden');
+            chatView.classList.remove('hidden');
+        }
+
+        // Header + input visibility
+        const header = document.getElementById('chat-header');
+        const inputArea = document.getElementById('message-input-area');
+        const noChat = document.getElementById('no-chat-state');
+        if (header) header.classList.remove('hidden');
+        if (inputArea) inputArea.classList.remove('hidden');
+        if (noChat) noChat.classList.add('hidden');
+
+        const avatarEl = document.getElementById('active-avatar');
+        const nameEl = document.getElementById('active-name');
+        const statusEl = document.getElementById('active-status');
+        if (avatarEl) avatarEl.textContent = (activeChatContact?.name || 'C').charAt(0).toUpperCase();
+        if (nameEl) nameEl.textContent = activeChatContact?.name || 'Client';
+        if (statusEl) statusEl.textContent = 'Chat';
+
+        // Typing subscription (from contact -> trainer)
+        if (typingSub) {
+            try { await supabaseClient.removeChannel(typingSub); } catch {}
+            typingSub = null;
+        }
+        typingSub = subscribeToTyping(trainerUser.id, contactId, (isTyping) => {
+            const ti = document.getElementById('typing-indicator');
+            if (!ti) return;
+            ti.classList.toggle('hidden', !isTyping);
+        });
+
+        await markMessagesAsRead(contactId, trainerUser.id);
+        await updateUnreadMessagesCount();
+
+        await renderChatHistory();
+        await renderContacts();
+    };
+
+    window.closeChat = function () {
+        const sidebar = document.getElementById('contacts-sidebar');
+        const chatView = document.getElementById('chat-view');
+        if (sidebar && chatView) {
+            sidebar.classList.remove('hidden');
+            chatView.classList.add('hidden');
+        }
+    };
+
+    async function renderChatHistory() {
+        const historyEl = document.getElementById('chat-history');
+        if (!historyEl || !trainerUser || !activeChatContactId) return;
+
+        const msgs = await getMessages(trainerUser.id, activeChatContactId);
+        if (!msgs.length) {
+            historyEl.innerHTML = `
+                <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20">
+                    <span class="material-symbols-outlined text-7xl text-on-surface-variant mb-6 block">forum</span>
+                    <h3 class="font-headline text-xl font-bold mb-2">Start the conversation</h3>
+                    <p class="text-sm">Say hi to your client.</p>
+                </div>
+            `;
+            return;
+        }
+
+        historyEl.innerHTML = msgs.map(m => {
+            const mine = m.sender_id === trainerUser.id;
+            const bubble = mine
+                ? 'bg-primary text-white rounded-2xl rounded-tr-sm'
+                : 'bg-surface-container-low text-on-surface rounded-2xl rounded-tl-sm';
+
+            const ts = m.created_at ? new Date(m.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+
+            return `
+                <div class="flex ${mine ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-[85%] md:max-w-[70%]">
+                        <div class="px-4 py-3 ${bubble} text-sm whitespace-pre-wrap">${escapeHtml(m.text || '')}</div>
+                        <div class="text-[10px] text-on-surface-variant mt-1 ${mine ? 'text-right' : ''}">${escapeHtml(ts)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Scroll to bottom
+        historyEl.scrollTop = historyEl.scrollHeight;
+    }
+
+    window.handleSend = async function () {
+        const input = document.getElementById('msg-input');
+        if (!input || !trainerUser || !activeChatContactId) return;
+        const text = String(input.value || '').trim();
+        if (!text) return;
+
+        input.value = '';
+        await sendMessage(trainerUser.id, activeChatContactId, text);
+        await renderChatHistory();
+        await renderContacts();
+    };
+
+    async function renderInsightsView(bookings) {
+        const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        const value7 = (bookings || [])
+            .filter(b => !isCancelled(b))
+            .filter(b => {
+                const created = b?.created_at ? new Date(b.created_at) : null;
+                return created && created >= since7;
+            })
+            .reduce((acc, b) => acc + getBookingValue(b), 0);
+
+        const value30 = (bookings || [])
+            .filter(b => !isCancelled(b))
+            .filter(b => {
+                const created = b?.created_at ? new Date(b.created_at) : null;
+                return created && created >= since30;
+            })
+            .reduce((acc, b) => acc + getBookingValue(b), 0);
+
+        const uniqueClients30 = new Set((bookings || [])
+            .filter(b => {
+                const created = b?.created_at ? new Date(b.created_at) : null;
+                return created && created >= since30;
+            })
+            .map(b => b.client_id)
+            .filter(Boolean)).size;
+
+        const now = new Date();
+        const upcoming = (bookings || []).filter(b => !isCancelled(b)).filter(b => {
+            const dt = parseBookingDateTime(b);
+            return dt && dt >= now;
+        }).length;
+
+        const el7 = document.getElementById('insight-value-7d');
+        const el30 = document.getElementById('insight-value-30d');
+        const elClients = document.getElementById('insight-clients-30d');
+        const elUpcoming = document.getElementById('insight-upcoming');
+        if (el7) el7.textContent = formatCurrencyINR(value7);
+        if (el30) el30.textContent = formatCurrencyINR(value30);
+        if (elClients) elClients.textContent = String(uniqueClients30);
+        if (elUpcoming) elUpcoming.textContent = String(upcoming);
+
+        const recentContainer = document.getElementById('insight-recent-bookings');
+        if (recentContainer) {
+            const recent = [...(bookings || [])]
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .slice(0, 10);
+
+            await ensureClientProfiles(recent);
+
+            if (!recent.length) {
+                recentContainer.innerHTML = `<div class="p-6 text-sm text-on-surface-variant">No recent bookings yet.</div>`;
+            } else {
+                recentContainer.innerHTML = recent.map(b => {
+                    const client = trainerClientsById.get(b.client_id);
+                    const name = client?.name || 'Client';
+                    const label = b.plan_label || b.plan_type || 'Session';
+                    const value = formatCurrencyINR(getBookingValue(b));
+                    const created = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                    return `
+                        <div class="p-5 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="font-bold truncate">${escapeHtml(name)} • <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
+                                <div class="text-xs text-on-surface-variant mt-1">Booked ${escapeHtml(created)}</div>
+                            </div>
+                            <div class="text-sm font-black">${value}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
+    async function renderDashboardView(bookings) {
+        const { upcoming, delivered7d, pending } = computeDashboardCounts(bookings);
+
+        const upcomingEl = document.getElementById('stat-upcoming');
+        const completedEl = document.getElementById('stat-completed');
+        if (upcomingEl) upcomingEl.textContent = String(upcoming);
+        if (completedEl) completedEl.textContent = String(delivered7d);
+
+        const welcome = document.getElementById('welcome-message');
+        if (welcome && trainerUser?.name) {
+            const first = trainerUser.name.split(' ')[0];
+            welcome.textContent = pending > 0
+                ? `Welcome back, ${first}! You have ${pending} pending booking ${pending === 1 ? 'request' : 'requests'}.`
+                : `Welcome back, ${first}! Manage your sessions.`;
+        }
+
+        await updateUnreadMessagesCount();
+        await updateProfileVisits7d();
+        await updatePerformanceStats(bookings);
+        await renderNextSessions(bookings);
+    }
+
+    async function renderRoute(route) {
+        if (!trainerUser) return;
+
+        // Always ensure bookings are loaded once (most pages use it)
+        if (!bookingsLoaded) {
+            await loadTrainerBookings();
+        }
+
+        // Settings route doesn't need data rendering here
+        if (route === 'settings') return;
+
+        if (route === 'dashboard') {
+            await renderDashboardView(trainerBookings);
+        }
+
+        if (route === 'bookings') {
+            await renderBookingsList();
+        }
+
+        if (route === 'messages') {
+            await renderContacts();
+
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (id && id !== activeChatContactId) {
+                await openChat(id);
+            }
+        }
+
+        if (route === 'earnings') {
+            await renderInsightsView(trainerBookings);
+        }
+    }
+
+    async function bootTrainerDashboard() {
+        if (bootPromise) return bootPromise;
+
+        bootPromise = (async () => {
+            trainerUser = await requireAuth('trainer', window.location.href);
+            if (!trainerUser) return;
+
+            user = trainerUser;
+
+            await renderAuthNav();
+
+            // Settings
+            settingsUser = trainerUser;
+            await initSettings();
+
+            // Notifications bell
+            subscribeToTable('notifications', `user_id=eq.${trainerUser.id}`, () => {
+                renderAuthNav();
+            });
+
+            // Sidebar user info
+            const avatarElem = document.getElementById('trainer-avatar');
+            const nameElem = document.getElementById('trainer-name');
+            if (avatarElem) avatarElem.textContent = (trainerUser.name || 'T').charAt(0).toUpperCase();
+            if (nameElem) nameElem.textContent = trainerUser.name || 'Trainer';
+
+            // Date
+            const dateElem = document.getElementById('current-date');
+            if (dateElem) {
+                dateElem.textContent = new Date().toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+
+            setupBookingsUI();
+            setupMessagesUI();
+
+            // Initial load
+            await loadTrainerBookings();
+            await ensureClientProfiles(trainerBookings);
+
+            // Real-time message updates (unread + contact previews)
+            messagesRealtimeChannel = supabaseClient
+                .channel(`trainer-messages:${trainerUser.id}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `receiver_id=eq.${trainerUser.id}`
+                }, async (payload) => {
+                    try {
+                        const senderId = payload?.new?.sender_id;
+                        if (router?.currentRoute === 'messages' && activeChatContactId && senderId === activeChatContactId) {
+                            await markMessagesAsRead(activeChatContactId, trainerUser.id);
+                        }
+                    } catch {}
+
+                    await updateUnreadMessagesCount();
+                    if (router?.currentRoute === 'messages') {
+                        await renderContacts();
+                        if (activeChatContactId) await renderChatHistory();
+                    }
+                })
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'messages',
+                    filter: `sender_id=eq.${trainerUser.id}`
+                }, async () => {
+                    if (router?.currentRoute === 'messages') {
+                        await renderContacts();
+                    }
+                })
+                .subscribe();
+
+            // Render current route after boot
+            await renderRoute(router.getRouteFromUrl());
+        })();
+
+        return bootPromise;
+    }
 
 
 
@@ -587,12 +1362,11 @@ class DashboardRouter {
     constructor() {
         this.loader = document.getElementById('page-loader');
         this.views = document.querySelectorAll('.route-view');
-        this.navLinks = document.querySelectorAll('.sidebar-link');
+        this.navLinks = document.querySelectorAll('aside .sidebar-link');
+        this.currentRoute = 'dashboard';
 
-        // Handle browser back/forward buttons
         window.addEventListener('popstate', () => this.handleRoute());
-        
-        // Initial load
+
         window.addEventListener('load', () => {
             // Convert hash to pathname if someone loads a hash
             if (window.location.hash) {
@@ -602,36 +1376,46 @@ class DashboardRouter {
             this.handleRoute();
         });
 
-        // Intercept clicks on sidebar links
+        // Intercept clicks on any /trainer/* link to keep SPA navigation in-tab.
         document.body.addEventListener('click', (e) => {
-            const link = e.target.closest('.sidebar-link');
-            if (link && link.getAttribute('href').startsWith('/trainer/')) {
-                e.preventDefault();
-                const targetUrl = link.getAttribute('href');
-                history.pushState(null, '', targetUrl);
-                this.handleRoute();
-            }
+            const a = e.target.closest('a[href]');
+            if (!a) return;
+
+            const href = a.getAttribute('href') || '';
+            if (!href.startsWith('/trainer/')) return;
+
+            // Allow new-tab gestures if user explicitly uses them
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+            e.preventDefault();
+            history.pushState(null, '', href);
+            this.handleRoute();
         });
     }
 
-    async handleRoute() {
-        let path = window.location.pathname;
+    getRouteFromUrl() {
+        const path = window.location.pathname;
         let route = path.replace(/^\/trainer\/?/i, '');
 
         if (!route || route === 'trainer' || route === 'bookings.html' || route.endsWith('.html')) {
             route = 'dashboard';
         }
 
-        // Only support these 3 routes; default to dashboard.
-        if (route !== 'dashboard' && route !== 'bookings' && route !== 'settings') {
-            route = 'dashboard';
-        }
+        const supported = new Set(['dashboard', 'bookings', 'messages', 'settings', 'earnings']);
+        if (!supported.has(route)) route = 'dashboard';
+
+        return route;
+    }
+
+    async handleRoute() {
+        const route = this.getRouteFromUrl();
+        this.currentRoute = route;
 
         const targetView = document.getElementById('view-' + route);
         if (!targetView) return;
 
         // Show loading state & hide all views
-        this.loader.classList.remove('hidden');
+        if (this.loader) this.loader.classList.remove('hidden');
         this.views.forEach(view => {
             view.classList.add('hidden');
             view.classList.remove('active-view');
@@ -649,15 +1433,16 @@ class DashboardRouter {
             }
         });
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 120));
 
-        // Reveal the requested view smoothly
-        this.loader.classList.add('hidden');
+        if (this.loader) this.loader.classList.add('hidden');
         targetView.classList.remove('hidden');
-
         void targetView.offsetWidth;
         targetView.classList.add('active-view');
+
+        // Ensure app is booted and then render route-specific data
+        await bootTrainerDashboard();
+        await renderRoute(route);
     }
 
     navigate(path) {
@@ -666,6 +1451,9 @@ class DashboardRouter {
     }
 }
 const router = new DashboardRouter();
+
+// Boot data + listeners even if user never clicks the sidebar.
+window.addEventListener('load', () => { void bootTrainerDashboard(); });
 
     let settingsUser = null;
 
@@ -791,6 +1579,10 @@ const router = new DashboardRouter();
             
             // Format file size
             const fileSizeKB = (cert.file_size / 1024).toFixed(1);
+
+            const safeUrl = String(cert.file_url || '').replace(/'/g, "\\'");
+            const safeName = escapeHtml(cert.file_name || 'Certification');
+            const safeType = escapeHtml(cert.file_type || '');
             
             // Verification badge
             const verifiedBadge = cert.verified 
@@ -802,29 +1594,73 @@ const router = new DashboardRouter();
                 <div class="flex-1">
                     <div class="flex items-center gap-3 mb-1">
                         <span class="material-symbols-outlined text-primary">description</span>
-                        <span class="text-sm font-semibold">${cert.file_name}</span>
+                        <span class="text-sm font-semibold">${safeName}</span>
                     </div>
                     <div class="flex items-center gap-3 text-xs text-on-surface-variant ml-9">
                         <span>Uploaded: ${uploadDate}</span>
                         <span>•</span>
                         <span>${fileSizeKB} KB</span>
                         <span>•</span>
-                        <span class="uppercase">${cert.file_type}</span>
+                        <span class="uppercase">${safeType}</span>
                     </div>
                     <div class="mt-2 ml-9">
                         ${verifiedBadge}
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="window.open('${cert.file_url}', '_blank')" class="p-2 hover:bg-surface-container-high rounded-lg transition-all" title="View">
+                    <button type="button" onclick="viewCertification('${safeUrl}')" class="p-2 hover:bg-surface-container-high rounded-lg transition-all" title="View">
                         <span class="material-symbols-outlined text-primary">visibility</span>
                     </button>
-                    <button onclick="removeCert('${cert.id}')" class="p-2 hover:bg-error/10 rounded-lg transition-all" title="Delete">
+                    <button type="button" onclick="removeCert('${cert.id}')" class="p-2 hover:bg-error/10 rounded-lg transition-all" title="Delete">
                         <span class="material-symbols-outlined text-error">delete</span>
                     </button>
                 </div>
             </div>
         `}).join('');
+    }
+
+    function ensureCertViewer() {
+        if (document.getElementById('cert-viewer-modal')) return;
+
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="cert-viewer-modal" class="fixed inset-0 bg-black/60 z-[100] hidden items-center justify-center p-4">
+                <div class="bg-white w-full max-w-5xl h-[80vh] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                    <div class="px-4 py-3 border-b border-outline-variant/40 flex items-center justify-between">
+                        <div class="font-bold text-sm">Certification</div>
+                        <button type="button" class="p-2 rounded-lg hover:bg-surface-container-low transition-all" onclick="closeCertViewer()" aria-label="Close">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    <iframe id="cert-viewer-frame" class="w-full flex-1" src="about:blank"></iframe>
+                </div>
+            </div>
+        `);
+
+        const modal = document.getElementById('cert-viewer-modal');
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeCertViewer();
+        });
+    }
+
+    function viewCertification(url) {
+        ensureCertViewer();
+        const modal = document.getElementById('cert-viewer-modal');
+        const frame = document.getElementById('cert-viewer-frame');
+        if (!modal || !frame) return;
+
+        frame.src = url;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeCertViewer() {
+        const modal = document.getElementById('cert-viewer-modal');
+        const frame = document.getElementById('cert-viewer-frame');
+        if (frame) frame.src = 'about:blank';
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
     }
 
     async function removeCert(certId) {
@@ -1041,10 +1877,17 @@ const router = new DashboardRouter();
               user = { ...settingsUser, ...updates };
               localStorage.setItem('user', JSON.stringify(user));
               settingsUser = user;
-              
-              // If we have cached bookings available, re-render the dashboard stats to reflect the new name/info instantly
-              if (window.cachedBookings) {
-                  updateStats(window.cachedBookings, user);
+              trainerUser = user;
+
+              // Update sidebar identity immediately
+              const avatarElem = document.getElementById('trainer-avatar');
+              const nameElem = document.getElementById('trainer-name');
+              if (avatarElem) avatarElem.textContent = (user.name || 'T').charAt(0).toUpperCase();
+              if (nameElem) nameElem.textContent = user.name || 'Trainer';
+
+              // If dashboard is visible, refresh it without reload
+              if (router?.currentRoute === 'dashboard') {
+                  void renderDashboardView(trainerBookings);
               }
               // ----------------------------
 

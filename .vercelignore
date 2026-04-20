@@ -1,0 +1,14 @@
+# Do not deploy design exports / dev artifacts
+stitch_exports/
+
+temp_auth.js
+
+# Debug / test / seeding pages
+debug-*.html
+test-*.html
+create-dummy-trainers.html
+check-parents.cjs
+enhance-settings.cjs
+
+# Backups
+trainer-profile-old-backup.html

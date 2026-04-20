@@ -7,6 +7,10 @@
     {
       "source": "/trainer/:path*",
       "destination": "/bookings.html"
+    },
+    {
+      "source": "/client/:path*",
+      "destination": "/client-dashboard.html"
     }
   ],
   "cleanUrls": true,

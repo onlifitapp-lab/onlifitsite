@@ -89,6 +89,50 @@
         .status-pending   { background: #FFF3E0; color: #E67E22; }
         .status-completed { background: #F5F5F5; color: #717171; }
         .status-cancelled { background: #FFDEDE; color: #E54343; }
+
+        /* Messages view helpers */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .chat-bubble-received { border-top-left-radius: 0.25rem; }
+        .chat-bubble-sent { border-top-right-radius: 0.25rem; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        .typing-dot { animation: typing 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        .msg-status { font-size: 14px; opacity: 0.6; }
+        .msg-status.seen { color: #4CAF50; opacity: 1; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1A1A1A;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .unread-badge {
+            min-width: 20px;
+            height: 20px;
+            background: #000;
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+        }
     </style>
 </head>
 <body class="bg-surface-container-low font-body text-on-surface">
@@ -127,27 +171,27 @@
     </div>
 
     <nav class="flex-1 space-y-1">
-        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="#overview">
+        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="/client/overview" data-route="overview">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#bookings">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/bookings" data-route="bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Bookings</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="messages.html" target="_blank">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/messages" data-route="messages">
             <span class="material-symbols-outlined text-[20px]">chat</span>
             <span>Messages</span>
-        </a>        
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#find-trainers">
+        </a>
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/find-trainers" data-route="find-trainers">
             <span class="material-symbols-outlined text-[20px]">search</span>
             <span>Find Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="#" target="_blank">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/saved-trainers" data-route="saved-trainers">
             <span class="material-symbols-outlined text-[20px]">favorite</span>
             <span>Saved Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="settings.html" target="_blank">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/settings" data-route="settings">
             <span class="material-symbols-outlined text-[20px]">settings</span>
             <span>Settings</span>
         </a>
@@ -275,7 +319,7 @@
                     </div>
                     <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No bookings yet</h3>
                     <p class="text-on-surface-variant max-w-sm mb-6">Your fitness journey starts with one step. Find a trainer who matches your goals and book your first session today!</p>
-                    <a href="onlifit.html" class="px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
+                    <a href="/client/find-trainers" class="px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">search</span>
                         Find a Trainer
                     </a>
@@ -329,8 +373,8 @@
                         </div>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-on-surface mb-1">Monthly Goal</p>
-                        <p class="text-xs text-on-surface-variant"><span id="completed-this-month">0</span> of <span id="goal-this-month">8</span> sessions</p>
+                        <p class="text-sm font-semibold text-on-surface mb-1">This Month</p>
+                        <p class="text-xs text-on-surface-variant"><span id="completed-this-month">0</span> of <span id="goal-this-month">0</span> sessions</p>
                         <p class="text-[10px] text-tertiary font-bold mt-1 flex items-center gap-1">
                             <span class="material-symbols-outlined text-[12px]">trending_up</span>
                             Keep it up!
@@ -343,7 +387,7 @@
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-high">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-headline text-sm font-bold text-on-surface">My Trainers</h3>
-                    <a href="onlifit.html" class="text-xs text-primary font-bold hover:underline">+ Add</a>
+                    <a href="/client/find-trainers" class="text-xs text-primary font-bold hover:underline">+ Add</a>
                 </div>
                 <div id="trainers-list" class="space-y-3">
                     <!-- Populated by JS -->
@@ -381,31 +425,207 @@
     </div>
 
 </section>
+    <section id="view-messages" class="route-view hidden anim-slide-up">
+        <header class="mb-8">
+            <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Chat with your trainers without leaving your dashboard.</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row overflow-hidden bg-white border border-outline-variant/30 rounded-2xl" style="height: calc(100vh - 220px);">
+            <!-- Sidebar (Contacts) -->
+            <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
+                <div class="p-5 border-b border-outline-variant/50">
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+                        <input id="contacts-search" type="text" placeholder="Search contacts..." class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+                </div>
+
+                <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
+                    <!-- Contacts will be injected here -->
+                </div>
+            </aside>
+
+            <!-- Message View -->
+            <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
+                <div id="chat-header" class="px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
+                            <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+                        </button>
+                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">👤</div>
+                        <div>
+                            <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
+                            <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
+                            <div id="typing-indicator" class="hidden flex gap-1 mt-1">
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
+                                <span class="text-[9px] text-primary font-bold ml-1">typing</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">call</span></button>
+                        <button type="button" class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">videocam</span></button>
+                    </div>
+                </div>
+
+                <!-- Chat History -->
+                <div id="chat-history" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
+                    <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
+                        <div class="text-7xl mb-6">💬</div>
+                        <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
+                        <p class="text-sm">Choose someone from the list to start chatting.</p>
+                    </div>
+                    <!-- Messages will be injected here -->
+                </div>
+
+                <!-- Message Input -->
+                <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                    <div class="flex gap-3 items-end">
+                        <button type="button" class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all flex-shrink-0"><span class="material-symbols-outlined">add</span></button>
+                        <div class="flex-1 relative">
+                            <textarea id="msg-input" placeholder="Type your message..." rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
+                            <button type="button" onclick="handleSend()" class="absolute right-3 bottom-2 text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">send</span></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
     <section id="view-find-trainers" class="route-view hidden anim-slide-up">
         <header class="mb-8">
             <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
             <p class="text-on-surface-variant text-sm mt-1">Discover experts tailored to your goals.</p>
         </header>
-        <div class="flex flex-col items-center justify-center py-20 text-center bg-white border border-dashed border-outline-variant rounded-2xl">
-            <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
-                <span class="material-symbols-outlined text-3xl text-on-surface-variant">search</span>
+
+        <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+            <div class="flex flex-col md:flex-row gap-3 md:items-end mb-5">
+                <div class="flex-1">
+                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Search</label>
+                    <input id="trainer-search-input" type="text" placeholder="Name, specialty, goals..." class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Location</label>
+                    <input id="trainer-location-input" type="text" placeholder="City or Online" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/40 bg-white text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                        <input id="trainer-black-only" type="checkbox" class="w-4 h-4 rounded border-outline-variant" />
+                        Show only OnliFit Black
+                    </label>
+                    <button id="trainer-search-btn" type="button" class="px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                        Search
+                    </button>
+                </div>
             </div>
-            <h3 class="font-headline font-bold text-lg text-on-surface mb-2">Trainer Search</h3>
-            <p class="text-sm text-on-surface-variant mb-6 max-w-sm">Browse our directory to find the perfect coach.</p>
-            <a href="trainers.html" class="px-6 py-2 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg">Go to Directory</a>
+
+            <div id="find-trainers-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- Populated by JS -->
+            </div>
+
+            <div id="find-trainers-empty" class="hidden py-16 text-center text-on-surface-variant">
+                No trainers found. Try a different search.
+            </div>
         </div>
     </section>
 
-    <section id="view-billing" class="route-view hidden anim-slide-up">
+    <section id="view-saved-trainers" class="route-view hidden anim-slide-up">
         <header class="mb-8">
-            <h2 class="text-3xl font-black font-headline text-on-surface">Billing &amp; Payments</h2>
+            <h2 class="text-3xl font-black font-headline text-on-surface">Saved Trainers</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Your shortlisted trainers, all in one place.</p>
         </header>
-        <div class="flex flex-col items-center justify-center py-20 text-center bg-white border border-dashed border-outline-variant rounded-2xl">
-            <div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
-                <span class="material-symbols-outlined text-3xl text-on-surface-variant">receipt_long</span>
+
+        <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+            <div id="saved-trainers-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- Populated by JS -->
             </div>
-            <h3 class="font-headline font-bold text-lg text-on-surface mb-2">No billing history yet</h3>
-            <p class="text-sm text-on-surface-variant mb-6 max-w-sm">When you book your first premium session, your receipts and invoices will appear here.</p>
+
+            <div id="saved-trainers-empty" class="hidden py-16 text-center">
+                <p class="text-on-surface-variant">No saved trainers yet.</p>
+                <a href="/client/find-trainers" class="inline-flex mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                    Find Trainers
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="view-settings" class="route-view hidden anim-slide-up">
+        <header class="mb-8">
+            <button type="button" onclick="router.navigate('overview')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Back to Dashboard
+            </button>
+            <h2 class="text-3xl font-black font-headline text-on-surface">Settings</h2>
+            <p class="text-on-surface-variant text-sm mt-1">Update your profile details.</p>
+        </header>
+
+        <div class="max-w-2xl space-y-6">
+            <!-- Profile -->
+            <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-headline text-sm font-black uppercase tracking-widest text-on-surface-variant">Profile</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Full name</label>
+                        <input id="client-setting-name" type="text" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Email</label>
+                        <input id="client-setting-email" type="email" disabled class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm opacity-70"/>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Phone</label>
+                        <input id="client-setting-phone" type="tel" placeholder="+91..." class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Location</label>
+                        <input id="client-setting-location" type="text" placeholder="City or Online" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex items-center gap-3">
+                    <button id="client-settings-save" type="button" onclick="saveClientSettings()" class="px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                        Save Changes
+                    </button>
+                    <span id="client-settings-status" class="text-xs font-bold text-on-surface-variant"></span>
+                </div>
+            </div>
+
+            <!-- Security -->
+            <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-headline text-sm font-black uppercase tracking-widest text-on-surface-variant">Security</h3>
+                </div>
+
+                <p id="client-password-note" class="text-xs text-on-surface-variant mb-4"></p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">New password</label>
+                        <input id="client-setting-new-password" type="password" minlength="6" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Confirm password</label>
+                        <input id="client-setting-confirm-password" type="password" minlength="6" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex items-center gap-3">
+                    <button id="client-password-save" type="button" onclick="changeClientPassword()" class="px-6 py-3 bg-secondary text-on-secondary rounded-xl text-sm font-bold hover:opacity-90 transition-all">
+                        Update Password
+                    </button>
+                    <span id="client-password-status" class="text-xs font-bold text-on-surface-variant"></span>
+                </div>
+            </div>
         </div>
     </section>
 </main>
@@ -494,29 +714,15 @@
         console.log('=== STARTING DASHBOARD INIT ===');
         
         try {
-            // First check if user is authenticated
-            const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser();
-            
-            console.log('Auth check result:', { authUser, authError });
-            
-            if (authError || !authUser) {
-                console.log('Not authenticated, redirecting to login');
-                window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash);
-                return;
-            }
-
-            console.log('User authenticated, ID:', authUser.id);
-
             await renderAuthNav();
             user = await getCurrentUser();
             
-            console.log('Got user profile:', user);
-            
             if (!user) {
-                console.error('Failed to get user profile - this should not happen');
-                alert('Error loading profile. Please contact support.');
-                return; // Don't redirect, just stop
+                console.error('Failed to load a viewer profile.');
+                return;
             }
+
+            console.log('Got viewer profile:', user);
 
             // IMPORTANT: Only redirect to bookings.html if explicitly a trainer
             // Default behavior: allow client dashboard access
@@ -622,16 +828,20 @@
 
         // Progress ring
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const completedThisMonth = cachedBookings.filter(b => {
+        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        const thisMonth = cachedBookings.filter(b => {
             const d = new Date(b.date);
-            return (d >= monthStart && d <= today) || b.status === 'completed';
-        }).length;
-        const goal = 8;
-        const pct = Math.min(100, Math.round((completedThisMonth / goal) * 100));
+            return d >= monthStart && d <= monthEnd;
+        });
+
+        const completedThisMonth = thisMonth.filter(b => (b.status || '').toLowerCase() === 'completed').length;
+        const totalThisMonth = thisMonth.length;
+        const pct = totalThisMonth ? Math.round((completedThisMonth / totalThisMonth) * 100) : 0;
         const offset = 226 - (226 * pct / 100);
 
         document.getElementById('completed-this-month').textContent = completedThisMonth;
-        document.getElementById('goal-this-month').textContent = goal;
+        document.getElementById('goal-this-month').textContent = totalThisMonth;
         document.getElementById('progress-pct').textContent = pct + '%';
         document.getElementById('progress-ring').style.strokeDashoffset = offset;
     }
@@ -650,12 +860,14 @@
         const trainer = await getTrainerById(next.trainer_id);
         card.classList.remove('hidden');
 
-        document.getElementById('next-trainer-name').textContent = trainer?.name || 'Trainer';
-        document.getElementById('next-specialty').textContent = trainer?.specialty || 'Personal Training';
+        const meta = trainer ? getTrainerMeta(trainer) : '';
+
+        document.getElementById('next-trainer-name').textContent = (trainer?.name || 'Trainer');
+        document.getElementById('next-specialty').textContent = (trainer?.specialty || meta || '—');
         document.getElementById('next-date').textContent = formatDate(next.date);
-        document.getElementById('next-time').textContent = next.time || '10:00 AM';
+        document.getElementById('next-time').textContent = (next.time ? next.time : 'TBD');
         document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
-        document.getElementById('next-chat-link').href = 'messages.html?id=' + next.trainer_id;
+        document.getElementById('next-chat-link').href = '/client/messages?id=' + next.trainer_id;
     }
 
     // ── Render Bookings ───────────────────────────────────────────────
@@ -682,7 +894,7 @@
         if (upcoming.length === 0) {
             container.innerHTML = `
                 <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
-                    <p class="text-sm text-on-surface-variant">No upcoming sessions${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="onlifit.html" class="text-primary font-bold hover:underline">Book one now!</a></p>
+                    <p class="text-sm text-on-surface-variant">No upcoming sessions${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="/client/find-trainers" class="text-primary font-bold hover:underline">Book one now!</a></p>
                 </div>`;
             return;
         }
@@ -696,18 +908,18 @@
             <div class="booking-card bg-white rounded-2xl p-5 shadow-sm border border-outline-variant/20 anim-slide-up ${delayClass}">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                     <!-- Trainer Avatar -->
-                    <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center text-2xl shadow-sm">
-                        ${trainer?.avatar_url || '🏋️'}
+                    <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center overflow-hidden text-2xl shadow-sm">
+                        ${renderAvatarInner(trainer || {})}
                     </div>
                     <!-- Info -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-2 mb-1">
                             <div>
-                                <h4 class="font-headline font-bold text-on-surface text-base">${trainer?.name || 'Trainer'}</h4>
-                                <p class="text-xs text-on-surface-variant">${trainer?.specialty || 'Personal Training'}</p>
+                                <h4 class="font-headline font-bold text-on-surface text-base">${escapeHtml(trainer?.name || 'Trainer')}</h4>
+                                <p class="text-xs text-on-surface-variant">${escapeHtml(trainer?.specialty || getTrainerMeta(trainer || {}) || '—')}</p>
                             </div>
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${statusClass}">
-                                ${b.status || 'confirmed'}
+                                ${escapeHtml(b.status || 'confirmed')}
                             </span>
                         </div>
                         <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-on-surface-variant">
@@ -717,14 +929,14 @@
                             </span>
                             <span class="flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                ${b.time || '10:00 AM'}
+                                ${b.time ? escapeHtml(b.time) : 'TBD'}
                             </span>
                             <span class="flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">sell</span>
-                                ${b.plan_label || 'Session'}
+                                ${b.plan_label ? escapeHtml(b.plan_label) : '—'}
                             </span>
                             <span class="font-bold text-primary">
-                                ${formatPrice(b.price || 0)}
+                                ${b.price ? formatPrice(b.price) : '—'}
                             </span>
                         </div>
                     </div>
@@ -810,18 +1022,19 @@
         const trainersHTML = await Promise.all(trainerIds.slice(0, 4).map(async tid => {
             const trainer = await getTrainerById(tid);
             if (!trainer) return '';
+            const meta = getTrainerMeta(trainer);
+            const subtitle = trainer.specialty ? escapeHtml(trainer.specialty) : (Array.isArray(trainer.tags) && trainer.tags[0] ? escapeHtml(trainer.tags[0]) : '');
             return `
             <a href="trainer-profile.html?id=${tid}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-container-low transition-all group">
-                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center text-lg flex-shrink-0">
-                    ${trainer.avatar_url || '🏋️'}
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    ${renderAvatarInner(trainer)}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">${trainer.name}</p>
-                    <p class="text-[10px] text-on-surface-variant truncate">${trainer.specialty || 'Expert'}</p>
+                    <p class="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">${escapeHtml(trainer.name || 'Trainer')}</p>
+                    ${subtitle ? `<p class="text-[10px] text-on-surface-variant truncate">${subtitle}</p>` : (meta ? `<p class="text-[10px] text-on-surface-variant truncate">${escapeHtml(meta)}</p>` : '')}
                 </div>
-                <span class="flex items-center gap-0.5 text-xs font-bold text-on-surface">
-                    <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span>
-                    ${trainer.rating || '5.0'}
+                <span class="flex items-center gap-1 text-xs font-bold text-on-surface">
+                    ${renderRatingInline(trainer)}
                 </span>
             </a>`;
         }));
@@ -988,56 +1201,741 @@
 
 
 <script>
+/* --- Client dashboard SPA router + in-page views (messages/find/saved/settings) --- */
+
+// Saved Trainers (localStorage)
+const SAVED_TRAINERS_KEY = 'onlifit_saved_trainers';
+function getSavedTrainerIds() {
+    try {
+        return JSON.parse(localStorage.getItem(SAVED_TRAINERS_KEY) || '[]') || [];
+    } catch {
+        return [];
+    }
+}
+function setSavedTrainerIds(ids) {
+    try {
+        localStorage.setItem(SAVED_TRAINERS_KEY, JSON.stringify(Array.from(new Set(ids))));
+    } catch {}
+}
+function isTrainerSaved(id) {
+    return getSavedTrainerIds().includes(id);
+}
+function toggleSavedTrainer(id) {
+    const ids = getSavedTrainerIds();
+    const idx = ids.indexOf(id);
+    if (idx >= 0) ids.splice(idx, 1);
+    else ids.unshift(id);
+    setSavedTrainerIds(ids);
+    return ids.includes(id);
+}
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function normalizeTrainingMode(mode) {
+    const m = String(mode || '').toLowerCase();
+    if (m === 'both') return 'Online & Offline';
+    if (m === 'offline') return 'Offline';
+    if (m === 'online') return 'Online';
+    return '';
+}
+
+function getTrainerMeta(t) {
+    const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
+    const location = (cityState || t?.location || '').trim();
+    const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
+    return [location, mode].filter(Boolean).join(' • ');
+}
+
+function renderAvatarInner(t) {
+    const url = (t?.avatar_url || '').trim();
+    const name = (t?.name || 'Trainer').trim();
+    const initial = (name.charAt(0) || 'T').toUpperCase();
+
+    if (url && url.startsWith('http')) {
+        return `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" loading="lazy" />`;
+    }
+
+    return `<span class="font-black text-primary">${escapeHtml(initial)}</span>`;
+}
+
+function renderRatingInline(t) {
+    const rating = Number(t?.rating);
+    const count = Number(t?.review_count);
+
+    if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
+        return `<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1; color: #f59e0b;">star</span> ${rating.toFixed(1)}`;
+    }
+
+    return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant font-black uppercase tracking-wider">New</span>`;
+}
+
+function openTrainerProfile(trainerId, evt) {
+    try {
+        if (evt && evt.target && evt.target.closest && evt.target.closest('a,button,input,textarea,select,label')) {
+            return;
+        }
+    } catch {}
+    window.location.href = 'trainer-profile.html?id=' + encodeURIComponent(trainerId);
+}
+
+function trainerCardHTML(tRaw) {
+    const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : tRaw;
+    const id = t.id;
+    const name = escapeHtml(t.name || 'Trainer');
+    const meta = getTrainerMeta(t);
+    const subtitle = t.specialty ? escapeHtml(t.specialty) : (Array.isArray(t.tags) && t.tags[0] ? escapeHtml(t.tags[0]) : '');
+    const saved = isTrainerSaved(id);
+
+    const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
+        ? window.renderTrainerBadgesHtml(t, { variant: 'corner', size: 'sm' })
+        : '';
+
+    return `
+        <div onclick="openTrainerProfile(${JSON.stringify(id)}, event)" class="relative bg-white border border-outline-variant/20 rounded-2xl p-5 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+            ${badgeHtml}
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center overflow-hidden flex-shrink-0">
+                        ${renderAvatarInner(t)}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-headline font-bold text-on-surface truncate">${name}</p>
+                        ${subtitle ? `<p class="text-xs text-on-surface-variant truncate">${subtitle}</p>` : ''}
+                        ${meta ? `<p class="text-[10px] uppercase tracking-widest font-black text-on-surface-variant mt-1">${escapeHtml(meta)}</p>` : ''}
+                    </div>
+                </div>
+                <button type="button" class="px-3 py-2 rounded-xl text-xs font-bold ${saved ? 'bg-primary text-white' : 'bg-surface-container-low text-on-surface-variant hover:text-primary'} transition-all"
+                    onclick="handleToggleSavedTrainer(${JSON.stringify(id)})">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' ${saved ? 1 : 0};">favorite</span>
+                </button>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between">
+                <span class="flex items-center gap-1 text-xs font-bold text-on-surface">
+                    ${renderRatingInline(t)}
+                </span>
+                <div class="flex gap-2">
+                    <a href="/client/messages?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors">Message</a>
+                    <a href="trainer-profile.html?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-surface-container-low text-on-surface-variant rounded-xl text-xs font-bold hover:text-primary transition-colors">View</a>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function handleToggleSavedTrainer(trainerId) {
+    toggleSavedTrainer(trainerId);
+    // Refresh active views
+    if (window.location.pathname.startsWith('/client/saved-trainers')) {
+        onSavedTrainersRouteActivated();
+    }
+    if (window.location.pathname.startsWith('/client/find-trainers')) {
+        renderFindTrainers();
+    }
+}
+
+let findTrainersInitialized = false;
+async function renderFindTrainers() {
+    const resultsEl = document.getElementById('find-trainers-results');
+    const emptyEl = document.getElementById('find-trainers-empty');
+    if (!resultsEl || !emptyEl) return;
+
+    const q = (document.getElementById('trainer-search-input')?.value || '').trim();
+    const loc = (document.getElementById('trainer-location-input')?.value || '').trim();
+
+    resultsEl.innerHTML = '';
+    emptyEl.classList.add('hidden');
+
+    let trainers = await searchTrainers(q, loc);
+
+    const blackOnly = !!document.getElementById('trainer-black-only')?.checked;
+    if (blackOnly) {
+        trainers = (trainers || []).filter(t => {
+            const normalized = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(t) : t;
+            return !!normalized?.hasBlackStatus;
+        });
+    }
+
+    if (!trainers || trainers.length === 0) {
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+
+    resultsEl.innerHTML = trainers.slice(0, 30).map(trainerCardHTML).join('');
+}
+
+async function onFindTrainersRouteActivated() {
+    if (!findTrainersInitialized) {
+        const btn = document.getElementById('trainer-search-btn');
+        const q = document.getElementById('trainer-search-input');
+        const loc = document.getElementById('trainer-location-input');
+        const black = document.getElementById('trainer-black-only');
+
+        if (btn) btn.addEventListener('click', () => renderFindTrainers());
+        if (q) q.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFindTrainers(); });
+        if (loc) loc.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFindTrainers(); });
+        if (black) black.addEventListener('change', () => renderFindTrainers());
+
+        findTrainersInitialized = true;
+    }
+    await renderFindTrainers();
+}
+
+async function onSavedTrainersRouteActivated() {
+    const container = document.getElementById('saved-trainers-results');
+    const empty = document.getElementById('saved-trainers-empty');
+    if (!container || !empty) return;
+
+    const ids = getSavedTrainerIds();
+    if (!ids.length) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+
+    const trainers = await getTrainers();
+    const map = new Map((trainers || []).map(t => [t.id, t]));
+    const saved = ids.map(id => map.get(id)).filter(Boolean);
+
+    container.innerHTML = saved.length ? saved.map(trainerCardHTML).join('') : '';
+    if (!saved.length) empty.classList.remove('hidden');
+}
+
+// Settings view
+function fillSettingsFields() {
+    if (!user) return;
+    const nameEl = document.getElementById('client-setting-name');
+    const emailEl = document.getElementById('client-setting-email');
+    const phoneEl = document.getElementById('client-setting-phone');
+    const locEl = document.getElementById('client-setting-location');
+
+    if (nameEl) nameEl.value = user.name || user.user_metadata?.name || '';
+    if (emailEl) emailEl.value = user.email || '';
+    if (phoneEl) phoneEl.value = user.phone || '';
+    if (locEl) locEl.value = user.location || '';
+}
+
+async function saveClientSettings() {
+    if (!user) return;
+
+    const statusEl = document.getElementById('client-settings-status');
+    const btn = document.getElementById('client-settings-save');
+
+    const name = (document.getElementById('client-setting-name')?.value || '').trim();
+    const phone = (document.getElementById('client-setting-phone')?.value || '').trim();
+    const location = (document.getElementById('client-setting-location')?.value || '').trim();
+
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = 'Saving...';
+
+    const result = await updateUserProfile(user.id, { name, phone, location });
+    if (result?.success) {
+        user.name = name;
+        user.phone = phone;
+        user.location = location;
+        if (statusEl) statusEl.textContent = 'Saved!';
+        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
+        if (name) document.getElementById('sidebar-name').textContent = name;
+    } else {
+        if (statusEl) statusEl.textContent = 'Save failed';
+        alert('Failed to save settings: ' + (result?.error || 'Unknown error'));
+    }
+
+    if (btn) btn.disabled = false;
+}
+
+async function changeClientPassword() {
+    const statusEl = document.getElementById('client-password-status');
+    const noteEl = document.getElementById('client-password-note');
+    const btn = document.getElementById('client-password-save');
+
+    const bypass = (typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS);
+    if (bypass) {
+        if (noteEl) noteEl.textContent = 'Password updates are disabled while AUTH_BYPASS is enabled (preview mode).';
+        if (statusEl) statusEl.textContent = '';
+        return;
+    }
+
+    const newPw = (document.getElementById('client-setting-new-password')?.value || '').trim();
+    const confirmPw = (document.getElementById('client-setting-confirm-password')?.value || '').trim();
+
+    if (!newPw || newPw.length < 6) {
+        if (statusEl) statusEl.textContent = 'Password must be at least 6 characters.';
+        return;
+    }
+    if (newPw !== confirmPw) {
+        if (statusEl) statusEl.textContent = 'Passwords do not match.';
+        return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = 'Updating...';
+
+    try {
+        const { error } = await supabaseClient.auth.updateUser({ password: newPw });
+        if (error) throw error;
+
+        const newPwEl = document.getElementById('client-setting-new-password');
+        const confirmEl = document.getElementById('client-setting-confirm-password');
+        if (newPwEl) newPwEl.value = '';
+        if (confirmEl) confirmEl.value = '';
+
+        if (statusEl) statusEl.textContent = 'Password updated.';
+        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2500);
+    } catch (e) {
+        console.error('Password update error:', e);
+        if (statusEl) statusEl.textContent = 'Update failed.';
+        alert('Failed to update password: ' + (e?.message || 'Unknown error'));
+    }
+
+    if (btn) btn.disabled = false;
+}
+
+async function onSettingsRouteActivated() {
+    if (!user) user = await getCurrentUser();
+    fillSettingsFields();
+
+    const bypass = (typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS);
+    const noteEl = document.getElementById('client-password-note');
+    const btn = document.getElementById('client-password-save');
+    const pw1 = document.getElementById('client-setting-new-password');
+    const pw2 = document.getElementById('client-setting-confirm-password');
+
+    if (bypass) {
+        if (noteEl) noteEl.textContent = 'Password updates are disabled while AUTH_BYPASS is enabled (preview mode).';
+        if (btn) btn.disabled = true;
+        if (pw1) pw1.disabled = true;
+        if (pw2) pw2.disabled = true;
+    } else {
+        if (noteEl) noteEl.textContent = 'Update your dashboard password (min 6 characters).';
+        if (btn) btn.disabled = false;
+        if (pw1) pw1.disabled = false;
+        if (pw2) pw2.disabled = false;
+
+        // Enter-to-submit
+        [pw1, pw2].filter(Boolean).forEach(el => {
+            el.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    changeClientPassword();
+                }
+            };
+        });
+    }
+}
+
+// Messages view (in-dashboard)
+let currentContactId = null;
+let typingTimeout = null;
+let typingChannel = null;
+let messagesChannel = null;
+let isTyping = false;
+let messagesInitialized = false;
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `
+        <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined">${type === 'error' ? 'error' : 'info'}</span>
+            <span>${escapeHtml(message)}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+async function loadContacts() {
+    const list = document.getElementById('contacts-list');
+    if (!list || !user) return;
+
+    const allTrainers = await getTrainers();
+    const bookings = await getBookingsForUser(user.id);
+
+    const contactIds = [...new Set(bookings.map(b => user.role === 'trainer' ? b.client_id : b.trainer_id))];
+
+    let contacts = [];
+    if (contactIds.length > 0) {
+        for (const id of contactIds) {
+            let person = allTrainers.find(t => t.id === id);
+            if (!person) person = await getUserById(id);
+            if (person) contacts.push(person);
+        }
+    } else {
+        contacts = allTrainers.slice(0, 8);
+    }
+
+    const lastMessages = await getLastMessagesForContacts(user.id, contacts.map(c => c.id));
+
+    contacts.sort((a, b) => {
+        const aTime = lastMessages[a.id]?.timestamp || 0;
+        const bTime = lastMessages[b.id]?.timestamp || 0;
+        return new Date(bTime) - new Date(aTime);
+    });
+
+    const q = (document.getElementById('contacts-search')?.value || '').trim().toLowerCase();
+    const filtered = q ? contacts.filter(c => (c.name || '').toLowerCase().includes(q)) : contacts;
+
+    list.innerHTML = filtered.map(c => {
+        const lastMsg = lastMessages[c.id];
+        const unreadCount = lastMsg?.unreadCount || 0;
+        const lastMsgText = lastMsg?.text || 'No messages yet';
+        const lastMsgTime = lastMsg?.timestamp ? formatTimestamp(lastMsg.timestamp) : '';
+
+        return `
+        <div onclick="selectChat('${c.id}', '${escapeHtml(c.name || 'User')}', '${escapeHtml(c.avatar_url || '👤')}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
+            <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform relative">
+                ${c.avatar_url || '👤'}
+                ${unreadCount > 0 ? `<span class=\"absolute -top-1 -right-1 unread-badge\">${unreadCount}</span>` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex justify-between items-start mb-0.5">
+                    <h4 class="font-bold text-sm truncate group-hover:text-primary transition-colors">${escapeHtml(c.name || 'User')}</h4>
+                    <span class="text-[9px] uppercase font-bold text-on-surface-variant opacity-40">${escapeHtml(lastMsgTime)}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant truncate ${unreadCount > 0 ? 'font-semibold' : 'opacity-70'}">${escapeHtml(lastMsgText)}</p>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return 'Now';
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString();
+}
+
+async function selectChat(id, name, avatar) {
+    if (!user) return;
+    currentContactId = id;
+
+    document.getElementById('no-chat-state')?.classList.add('hidden');
+    document.getElementById('chat-header')?.classList.remove('hidden');
+    document.getElementById('message-input-area')?.classList.remove('hidden');
+
+    document.getElementById('contacts-sidebar')?.classList.add('hidden', 'md:flex');
+    const chatView = document.getElementById('chat-view');
+    chatView?.classList.remove('hidden');
+    chatView?.classList.add('flex');
+
+    const nameEl = document.getElementById('active-name');
+    const avatarEl = document.getElementById('active-avatar');
+    if (nameEl) nameEl.textContent = name;
+    if (avatarEl) avatarEl.textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : '👤';
+
+    if (typingChannel) typingChannel.unsubscribe();
+    typingChannel = subscribeToTyping(user.id, id, (isTypingNow) => {
+        const indicator = document.getElementById('typing-indicator');
+        const status = document.getElementById('active-status');
+        if (!indicator || !status) return;
+        if (isTypingNow) {
+            indicator.classList.remove('hidden');
+            status.classList.add('hidden');
+        } else {
+            indicator.classList.add('hidden');
+            status.classList.remove('hidden');
+        }
+    });
+
+    await loadContacts();
+    await loadMessages();
+    await markMessagesAsRead(id, user.id);
+}
+
+function closeChat() {
+    document.getElementById('contacts-sidebar')?.classList.remove('hidden', 'md:flex');
+    const chatView = document.getElementById('chat-view');
+    chatView?.classList.add('hidden');
+    chatView?.classList.remove('flex');
+}
+
+async function loadMessages() {
+    if (!user || !currentContactId) return;
+    const historyEl = document.getElementById('chat-history');
+    if (!historyEl) return;
+
+    const messages = await getMessages(user.id, currentContactId);
+
+    historyEl.innerHTML = messages.map(m => {
+        const isMe = m.sender_id === user.id;
+        const status = m.status || 'sent';
+        const isRead = m.read;
+
+        let statusIcon = '';
+        if (isMe) {
+            if (status === 'seen' || isRead) statusIcon = '<span class="msg-status seen">✓✓</span>';
+            else if (status === 'delivered') statusIcon = '<span class="msg-status">✓✓</span>';
+            else statusIcon = '<span class="msg-status">✓</span>';
+        }
+
+        return `
+            <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-[80%]">
+                    <div class="px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white chat-bubble-sent shadow-lg shadow-primary/10' : 'bg-surface-container-low text-on-surface chat-bubble-received border border-outline-variant/30'}">
+                        ${escapeHtml(m.text)}
+                    </div>
+                    <p class="text-[9px] font-bold text-on-surface-variant opacity-40 mt-1 uppercase tracking-tighter ${isMe ? 'text-right' : 'text-left'} flex ${isMe ? 'justify-end' : 'justify-start'} items-center gap-1">
+                        ${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        ${statusIcon}
+                    </p>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    historyEl.scrollTop = historyEl.scrollHeight;
+}
+
+async function handleSend() {
+    if (!user || !currentContactId) return;
+    const input = document.getElementById('msg-input');
+    const text = input?.value?.trim();
+    if (!text) return;
+
+    input.value = '';
+    await setTypingStatus(user.id, currentContactId, false);
+
+    try {
+        const sent = await sendMessage(user.id, currentContactId, text);
+        if (!sent) showToast('Failed to send message. Please try again.', 'error');
+    } catch (error) {
+        console.error('Send error:', error);
+        showToast('Failed to send message. Please try again.', 'error');
+    }
+}
+
+function handleTyping() {
+    if (!user || !currentContactId) return;
+
+    if (typingTimeout) clearTimeout(typingTimeout);
+
+    if (!isTyping) {
+        isTyping = true;
+        setTypingStatus(user.id, currentContactId, true);
+    }
+
+    typingTimeout = setTimeout(async () => {
+        isTyping = false;
+        await setTypingStatus(user.id, currentContactId, false);
+    }, 2000);
+}
+
+async function ensureMessagesInitialized() {
+    if (messagesInitialized) return;
+
+    if (!user) user = await getCurrentUser();
+
+    const msgInput = document.getElementById('msg-input');
+    if (msgInput) {
+        msgInput.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        };
+        msgInput.oninput = handleTyping;
+    }
+
+    const searchInput = document.getElementById('contacts-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => loadContacts());
+    }
+
+    if (user && !messagesChannel) {
+        messagesChannel = supabaseClient
+            .channel('messages-all')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `receiver_id=eq.${user.id}`
+            }, () => {
+                if (currentContactId) {
+                    loadMessages();
+                    markMessagesAsRead(currentContactId, user.id);
+                }
+                loadContacts();
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `sender_id=eq.${user.id}`
+            }, () => {
+                if (currentContactId) loadMessages();
+                loadContacts();
+            })
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'messages'
+            }, () => {
+                if (currentContactId) loadMessages();
+            })
+            .subscribe();
+    }
+
+    messagesInitialized = true;
+}
+
+async function onMessagesRouteActivated() {
+    await ensureMessagesInitialized();
+    await loadContacts();
+
+    const params = new URLSearchParams(window.location.search);
+    const contactId = params.get('id');
+    if (contactId && contactId !== currentContactId) {
+        const trainer = await getTrainerById(contactId);
+        if (trainer) {
+            await selectChat(trainer.id, trainer.name, trainer.avatar_url || trainer.avatar);
+        } else {
+            const contact = await getUserById(contactId);
+            if (contact) await selectChat(contact.id, contact.name, contact.avatar_url);
+        }
+    }
+}
+
+// Router (pathname-based, no reload)
 class DashboardRouter {
     constructor() {
         this.loader = document.getElementById('page-loader');
         this.views = document.querySelectorAll('.route-view');
         this.navLinks = document.querySelectorAll('.sidebar-link');
-        
-        window.addEventListener('hashchange', () => this.handleRoute());
-        window.addEventListener('load', () => this.handleRoute());
+
+        window.addEventListener('popstate', () => this.handleRoute());
+
+        window.addEventListener('load', () => {
+            if (window.location.protocol !== 'file:' && window.location.hash) {
+                const hashRoute = window.location.hash.replace('#', '');
+                if (hashRoute) {
+                    history.replaceState(null, '', '/client/' + hashRoute + window.location.search);
+                }
+            }
+            this.handleRoute();
+        });
+
+        document.body.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href') || '';
+            if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+
+            if (link.classList.contains('sidebar-link')) {
+                e.preventDefault();
+                const route = link.getAttribute('data-route') || href.replace(/^\/client\/?/i, '');
+                const search = window.location.protocol === 'file:' ? '' : new URL(href, window.location.origin).search;
+                this.navigate(route, search);
+                return;
+            }
+
+            if (href.startsWith('/client/')) {
+                e.preventDefault();
+                const isFile = window.location.protocol === 'file:';
+                if (isFile) {
+                    const route = href.replace(/^\/client\/?/i, '').split('?')[0] || 'overview';
+                    window.location.hash = route;
+                    return;
+                }
+                history.pushState(null, '', href);
+                this.handleRoute();
+            }
+        });
     }
 
     async handleRoute() {
-        const path = window.location.hash.replace('#', '') || 'overview';
-        const targetView = document.getElementById('view-' + path);
+        const isFile = window.location.protocol === 'file:';
 
+        let route = 'overview';
+        if (isFile) {
+            route = (window.location.hash || '#overview').replace('#', '') || 'overview';
+        } else {
+            const path = window.location.pathname;
+            route = path.replace(/^\/client\/?/i, '');
+            if (!route || route === 'client' || route === 'client-dashboard.html' || route.endsWith('.html')) {
+                route = 'overview';
+            }
+        }
+
+        const allowed = new Set(['overview', 'bookings', 'messages', 'find-trainers', 'saved-trainers', 'settings']);
+        if (!allowed.has(route)) route = 'overview';
+
+        const targetView = document.getElementById('view-' + route);
         if (!targetView) return;
 
-        // Show loading state & hide all views
-        this.loader.classList.remove('hidden');
+        this.loader?.classList.remove('hidden');
         this.views.forEach(view => {
             view.classList.add('hidden');
             view.classList.remove('active-view');
         });
 
-        // Update Sidebar Active States
         this.navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === '#' + path) {
+            const linkRoute = link.getAttribute('data-route') || '';
+            if (linkRoute === route) {
                 link.classList.add('bg-primary-container', 'text-primary', 'active');
                 link.classList.remove('text-on-surface-variant');
-            } else if (href && href.startsWith('#')) {
+            } else {
                 link.classList.remove('bg-primary-container', 'text-primary', 'active');
                 link.classList.add('text-on-surface-variant');
             }
         });
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 120));
 
-        // Reveal the requested view smoothly
-        this.loader.classList.add('hidden');
+        this.loader?.classList.add('hidden');
         targetView.classList.remove('hidden');
-        
-        // Force reflow
+
         void targetView.offsetWidth;
         targetView.classList.add('active-view');
-        
-        // ensure mobile menu closes
+
         if (typeof closeSidebar === 'function') closeSidebar();
+
+        // Route hooks (lazy init)
+        try {
+            if (route === 'messages') await onMessagesRouteActivated();
+            if (route === 'find-trainers') await onFindTrainersRouteActivated();
+            if (route === 'saved-trainers') await onSavedTrainersRouteActivated();
+            if (route === 'settings') await onSettingsRouteActivated();
+        } catch (e) {
+            console.error('Route hook error:', e);
+        }
+    }
+
+    navigate(route, search = '') {
+        const isFile = window.location.protocol === 'file:';
+        const clean = (route || 'overview').replace(/^\//, '');
+
+        if (isFile) {
+            window.location.hash = clean;
+            return;
+        }
+
+        history.pushState(null, '', '/client/' + clean + (search || ''));
+        this.handleRoute();
     }
 }
+
 const router = new DashboardRouter();
 </script>
 </body></html>

@@ -594,7 +594,7 @@
                 
                 if (!user) {
                     alert('Please log in first');
-                    window.location.href = 'login.html?role=trainer';
+                    window.location.href = 'bookings.html';
                     return;
                 }
 
@@ -680,14 +680,12 @@
                     plans: {
                         hourly: {
                             label: 'Single Session',
-                            price: parseInt(document.getElementById('price_hourly').value) || 999,
+                            price: parseInt(document.getElementById('price_hourly').value, 10),
                             description: '1 hour personalized training'
                         }
                     },
                     onboarding_completed: true,
-                    profile_live: true,
-                    rating: 5.0,
-                    review_count: 0
+                    profile_live: true
                 };
 
                 // Add package pricing if provided
@@ -749,7 +747,7 @@
                 
                 if (!user) {
                     alert('Please log in as a trainer first');
-                    window.location.href = 'login.html?tab=signup&role=trainer';
+                    window.location.href = 'bookings.html';
                     return;
                 }
                 
@@ -777,7 +775,7 @@
             } catch (error) {
                 console.error('Error checking user:', error);
                 alert('Error loading page. Please try logging in again.');
-                window.location.href = 'login.html?role=trainer';
+                window.location.href = 'bookings.html';
             }
         };
 

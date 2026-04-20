@@ -2,6 +2,41 @@
 // GLOBAL OAUTH CATCHER: Run this immediately on ANY page load.
 // Important: do NOT strip `?code=` / `#access_token=` until a session is actually established,
 // otherwise we can lose the ability to exchange the code and end up “stuck” on the homepage.
+// Demo/preview mode disabled: always use real Supabase auth + data.
+const AUTH_BYPASS = false;
+
+function inferTemporaryRole() {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('bookings') || path.includes('trainer-onboarding') || path.includes('/trainer')) return 'trainer';
+    if (path.includes('admin')) return 'admin';
+    return 'client';
+}
+
+function buildTemporaryUser(role = inferTemporaryRole(), overrides = {}) {
+    const normalizedRole = role || 'client';
+    const defaultName = normalizedRole === 'trainer'
+        ? 'Trainer Preview'
+        : normalizedRole === 'admin'
+            ? 'Admin Preview'
+            : 'Client Preview';
+    const name = overrides.name || defaultName;
+
+    return {
+        id: overrides.id || `temp-${normalizedRole}`,
+        email: overrides.email || `${normalizedRole}@preview.onlifit.local`,
+        name,
+        phone: overrides.phone || null,
+        avatar_url: overrides.avatar_url || null,
+        role: overrides.role || normalizedRole,
+        user_metadata: {
+            name,
+            role: overrides.role || normalizedRole,
+            ...(overrides.user_metadata || {})
+        },
+        ...overrides
+    };
+}
+
 (async function () {
     try {
         const hasOAuthParams = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
@@ -28,6 +63,10 @@
  * Sign up a new user (Client or Trainer)
  */
 async function signUp(name, email, password, role, trainerData, phone) {
+    if (AUTH_BYPASS) {
+        return { success: true, user: buildTemporaryUser(role, { name, email, phone }) };
+    }
+
     try {
         console.log('=== AUTH.JS SIGNUP DEBUG ===');
         console.log('Received parameters:', { name, email, role, phone, trainerData });
@@ -75,6 +114,10 @@ async function signUp(name, email, password, role, trainerData, phone) {
  * Sign in with Google
  */
 async function signInWithGoogle(role = 'client', isSignup = false) {
+    if (AUTH_BYPASS) {
+        return { success: true, user: buildTemporaryUser(role) };
+    }
+
     try {
         console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
 
@@ -120,6 +163,12 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
  * Login an existing user
  */
 async function login(email, password) {
+    if (AUTH_BYPASS) {
+        const role = inferTemporaryRole();
+        const name = email?.split('@')[0] || 'Guest';
+        return { success: true, user: buildTemporaryUser(role, { name, email }) };
+    }
+
     try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
@@ -168,6 +217,11 @@ async function login(email, password) {
  * Log out the current user
  */
 async function logout() {
+    if (AUTH_BYPASS) {
+        window.location.href = 'onlifit.html';
+        return;
+    }
+
     await supabaseClient.auth.signOut();
     window.location.href = 'onlifit.html';
 }
@@ -175,7 +229,11 @@ async function logout() {
 /**
  * Get the currently logged-in user and their profile
  */
-async function getCurrentUser() {
+async function getCurrentUser(roleHint) {
+    if (AUTH_BYPASS) {
+        return buildTemporaryUser(roleHint || inferTemporaryRole());
+    }
+
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return null;
 
@@ -194,6 +252,18 @@ async function getCurrentUser() {
  * Handle OAuth callback - Check and set role from localStorage, then redirect
  */
 async function handleOAuthCallback(options = {}) {
+    if (AUTH_BYPASS) {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('code') || params.has('state') || window.location.hash.includes('access_token=')) {
+            params.delete('code');
+            params.delete('state');
+            params.delete('error');
+            params.delete('error_description');
+            window.history.replaceState({}, document.title, window.location.pathname + (params.toString() ? `?${params.toString()}` : ''));
+        }
+        return;
+    }
+
     const redirectEverywhere = !!options.redirectEverywhere;
 
     const oauthRoleRaw = localStorage.getItem('oauth_role');
@@ -318,10 +388,10 @@ async function handleOAuthCallback(options = {}) {
         if (oauthIsSignup && !profile?.onboarding_completed) {
             window.location.replace('trainer-onboarding.html');
         } else {
-            window.location.replace('bookings.html');
+            window.location.replace('/trainer/dashboard');
         }
     } else {
-        window.location.replace(oauthIsSignup ? 'onboarding.html' : 'client-dashboard.html');
+        window.location.replace(oauthIsSignup ? 'onboarding.html' : '/client/dashboard');
     }
 }
 
@@ -423,6 +493,10 @@ async function deleteAvatar(userId) {
  * Update user profile (e.g., during onboarding or settings)
  */
 async function updateUserProfile(userId, data) {
+    if (AUTH_BYPASS && (!userId || String(userId).startsWith('temp-'))) {
+        return { success: true };
+    }
+
     try {
         const { error } = await supabaseClient
             .from('profiles')
@@ -447,6 +521,10 @@ async function getUserById(id) {
 }
 
 async function requireAuth(requiredRole, redirectUrl) {
+    if (AUTH_BYPASS) {
+        return getCurrentUser(requiredRole || inferTemporaryRole());
+    }
+
     const user = await getCurrentUser();
     if (!user) {
         window.location.href = 'login.html?redirect=' + encodeURIComponent(redirectUrl || window.location.href);
@@ -454,7 +532,7 @@ async function requireAuth(requiredRole, redirectUrl) {
     }
     if (requiredRole && user.role !== requiredRole) {
         if (user.role === 'admin') window.location.href = 'admin-dashboard.html';
-        else window.location.href = user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html';
+        else window.location.href = user.role === 'trainer' ? '/trainer/dashboard' : '/client/dashboard';
         return null;
     }
     return user;
@@ -462,12 +540,17 @@ async function requireAuth(requiredRole, redirectUrl) {
 
 // ─── DATA ACCESS ──────────────────────────────────────────────────────────────
 
-const DUMMY_TRAINERS = [
-    { id: 'd1', name: 'Arjun Sharma', specialty: 'Strength & Conditioning', experience: '8+ years', rating: 4.9, review_count: 124, location: 'Mumbai', avatar_url: '🏋️', plans: { basic: {price: 999, label: '1 Session'}, standard: {price: 3499, label: '4 Sessions'} }, tags: ['Weight Loss', 'Hypertrophy'] },
-    { id: 'd2', name: 'Priya Patel', specialty: 'Yoga & Flexibility', experience: '5+ years', rating: 4.8, review_count: 98, location: 'Online', avatar_url: '🧘‍♀️', plans: { basic: {price: 799, label: '1 Session'}, standard: {price: 2999, label: '4 Sessions'} }, tags: ['Mobility', 'Mindfulness'] },
-    { id: 'd3', name: 'Vikram Singh', specialty: 'Athletic Performance', experience: '12+ years', rating: 5.0, review_count: 210, location: 'Delhi', avatar_url: '🏃', plans: { basic: {price: 1499, label: '1 Session'}, standard: {price: 4999, label: '4 Sessions'} }, tags: ['Explosive Power', 'Agility'] },
-    { id: 'd4', name: 'Neha Gupta', specialty: 'HIIT & Fat Loss', experience: '4+ years', rating: 4.7, review_count: 85, location: 'Online', avatar_url: '🔥', plans: { basic: {price: 899, label: '1 Session'}, standard: {price: 3199, label: '4 Sessions'} }, tags: ['Cardio', 'Endurance'] }
-];
+// NOTE: We intentionally do not ship any hardcoded/dummy trainer data.
+
+function isMissingColumnError(error, columnName) {
+    const msg = String(error?.message || '').toLowerCase();
+    return msg.includes('does not exist') && msg.includes(String(columnName).toLowerCase());
+}
+
+function normalizeTrainerList(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map(t => (typeof window.normalizeTrainerBadges === 'function' ? window.normalizeTrainerBadges(t) : t));
+}
 
 let _cachedTrainers = null;
 let _cachedTrainersTime = 0;
@@ -483,51 +566,74 @@ async function getTrainers() {
         const stored = localStorage.getItem('onlifit_trainers_cache');
         const storedTime = localStorage.getItem('onlifit_trainers_time');
         if (stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
-            _cachedTrainers = JSON.parse(stored);
+            _cachedTrainers = normalizeTrainerList(JSON.parse(stored));
             _cachedTrainersTime = parseInt(storedTime);
             return _cachedTrainers;
         }
     } catch (e) {}
 
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode';
+    const selectWithBadge = selectBase + ', has_black_status';
+
     try {
-        // 3. Fast Timeout for cold starts: max 2 seconds before returning fallback data
+        // 3. Fast timeout for cold starts: return cached/empty quickly (no dummy data)
         const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 2500));
-        
-        const fetchPromise = supabaseClient
-            .from('profiles')
-            .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-            .eq('role', 'trainer');
+
+        const fetchPromise = (async () => {
+            // Try including the badge column; if the project hasn't been migrated yet, fall back gracefully.
+            let res = await supabaseClient
+                .from('profiles')
+                .select(selectWithBadge)
+                .eq('role', 'trainer');
+
+            if (res?.error && isMissingColumnError(res.error, 'has_black_status')) {
+                res = await supabaseClient
+                    .from('profiles')
+                    .select(selectBase)
+                    .eq('role', 'trainer');
+            }
+
+            return res;
+        })();
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (response._timeout) {
-            console.warn("Supabase query took >2.5s. Using cache or DUMMY_TRAINERS to prevent blank screen.");
-            // Background fetch continues
+            console.warn('Supabase trainers query took >2.5s. Returning cached/empty and continuing fetch in background.');
             fetchPromise.then(res => {
-                if (res.data && res.data.length > 0) {
-                    _cachedTrainers = res.data;
+                if (res?.data && res.data.length > 0) {
+                    const normalized = normalizeTrainerList(res.data);
+                    _cachedTrainers = normalized;
                     _cachedTrainersTime = Date.now();
-                    localStorage.setItem('onlifit_trainers_cache', JSON.stringify(res.data));
+                    localStorage.setItem('onlifit_trainers_cache', JSON.stringify(normalized));
                     localStorage.setItem('onlifit_trainers_time', Date.now().toString());
                 }
-            }).catch(e => console.error("Background fetch error:", e));
+            }).catch(e => console.error('Background fetch error:', e));
 
-            return DUMMY_TRAINERS;
+            return _cachedTrainers || [];
         }
 
         const { data, error } = response;
-        if (error || !data || data.length === 0) {
-            return DUMMY_TRAINERS;
+        if (error) {
+            console.error('getTrainers error:', error);
+            return _cachedTrainers || [];
         }
 
+        if (!data || data.length === 0) {
+            return [];
+        }
+
+        const normalized = normalizeTrainerList(data);
+
         // Save to cache
-        _cachedTrainers = data;
+        _cachedTrainers = normalized;
         _cachedTrainersTime = Date.now();
-        localStorage.setItem('onlifit_trainers_cache', JSON.stringify(data));
+        localStorage.setItem('onlifit_trainers_cache', JSON.stringify(normalized));
         localStorage.setItem('onlifit_trainers_time', Date.now().toString());
-        return data;
+        return normalized;
     } catch (err) {
-        return DUMMY_TRAINERS;
+        console.error('getTrainers failed:', err);
+        return _cachedTrainers || [];
     }
 }
 
@@ -540,9 +646,6 @@ async function getTrainerById(id) {
         .single();
 
     if (error || !trainer) {
-        // Fallback to dummy data mapping
-        const dummy = DUMMY_TRAINERS.find(t => t.id === id);
-        if (dummy) return { ...dummy, reviews: [] };
         return null;
     }
 
@@ -572,7 +675,11 @@ async function getTrainerById(id) {
          console.warn("Failed fetching reviews:", e);
     }
 
-    return { ...trainer, reviews: reviews || [] };
+    const normalized = typeof window.normalizeTrainerBadges === 'function'
+        ? window.normalizeTrainerBadges(trainer)
+        : trainer;
+
+    return { ...normalized, reviews: reviews || [] };
 }
 
 // ─── REVIEW FUNCTIONS ──────────────────────────────────────────────────────────
@@ -636,32 +743,37 @@ async function searchTrainers(query, location) {
         return filtered;
     }
 
-    let q = supabaseClient
-        .from('profiles')
-        .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-        .eq('role', 'trainer');
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags';
+    const selectWithBadge = selectBase + ', has_black_status';
 
-    if (query) {
-        q = q.or(`name.ilike.%${query}%,specialty.ilike.%${query}%,bio.ilike.%${query}%`);
-    }
+    const buildQuery = (selectStr) => {
+        let q = supabaseClient
+            .from('profiles')
+            .select(selectStr)
+            .eq('role', 'trainer');
 
-    if (location) {
-        q = q.ilike('location', `%${location}%`);
-    }
-
-    const { data, error } = await q;
-    if (!data || data.length === 0) {
-        // Fallback to dummy data
-        let filtered = [...DUMMY_TRAINERS];
         if (query) {
-            filtered = filtered.filter(t => t.name.toLowerCase().includes(query.toLowerCase()) || t.specialty.toLowerCase().includes(query.toLowerCase()));
+            q = q.or(`name.ilike.%${query}%,specialty.ilike.%${query}%,bio.ilike.%${query}%`);
         }
+
         if (location) {
-            filtered = filtered.filter(t => t.location.toLowerCase().includes(location.toLowerCase()));
+            q = q.ilike('location', `%${location}%`);
         }
-        return filtered;
+
+        return q;
+    };
+
+    let { data, error } = await buildQuery(selectWithBadge);
+    if (error && isMissingColumnError(error, 'has_black_status')) {
+        ({ data, error } = await buildQuery(selectBase));
     }
-    return data;
+
+    if (error) {
+        console.error('searchTrainers error:', error);
+        return [];
+    }
+
+    return normalizeTrainerList(data || []);
 }
 
 async function getReviews(trainerId) {
@@ -674,7 +786,7 @@ async function getReviews(trainerId) {
 }
 
 async function getBookings() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) return [];
 
     const { data, error } = await supabaseClient
@@ -1015,15 +1127,20 @@ async function setTypingStatus(userId, chatWithId, isTyping) {
  * Subscribe to typing status
  */
 function subscribeToTyping(userId, contactId, callback) {
+    // Supabase Realtime `filter` supports a single condition (e.g. "col=eq.value").
+    // We filter by the contact (user_id) and then narrow down to the active chat in code.
     return supabaseClient
         .channel(`typing:${contactId}`)
         .on('postgres_changes', {
             event: '*',
             schema: 'public',
             table: 'typing_status',
-            filter: `user_id=eq.${contactId},chat_with=eq.${userId}`
+            filter: `user_id=eq.${contactId}`
         }, payload => {
-            callback(payload.new?.is_typing || false);
+            const row = payload.new;
+            if (!row) return callback(false);
+            if (row.chat_with !== userId) return; // Ignore typing meant for other conversations
+            callback(!!row.is_typing);
         })
         .subscribe();
 }
@@ -1071,14 +1188,147 @@ async function getLastMessagesForContacts(userId, contactIds) {
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
 
+// ─── PREMIUM BADGES (OnliFit Black + scalable) ─────────────────────────────────
+const ONLIFIT_BADGE_DEFS = {
+    black: {
+        id: 'black',
+        label: 'OnliFit Black',
+        icon: 'workspace_premium',
+        tooltip: 'Top 10% Trainers on OnliFit based on performance, ratings, and results.'
+    }
+};
+
+function ensureOnlifitBadgeStyles() {
+    try {
+        if (typeof document === 'undefined') return;
+        if (document.getElementById('onlifit-badge-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'onlifit-badge-styles';
+        style.textContent = `
+            .onlifit-badge{display:inline-flex;align-items:center;gap:6px;border-radius:9999px;line-height:1;font-weight:800;letter-spacing:.04em;text-transform:uppercase;user-select:none;white-space:nowrap}
+            .onlifit-badge__icon{font-size:16px;line-height:1;opacity:.95}
+
+            .onlifit-badge--black{background:#000;color:#FFD700;box-shadow:0 0 0 1px rgba(255,215,0,.25),0 14px 28px rgba(0,0,0,.28),0 0 18px rgba(255,215,0,.18)}
+
+            .onlifit-badge--xs{font-size:10px;padding:5px 9px}
+            .onlifit-badge--sm{font-size:11px;padding:6px 10px}
+            .onlifit-badge--md{font-size:12px;padding:7px 12px}
+
+            .onlifit-badge--corner{position:absolute;top:12px;left:12px;z-index:5}
+
+            .onlifit-tooltip{position:relative}
+            .onlifit-tooltip::after{content:attr(data-tooltip);position:absolute;left:0;top:calc(100% + 10px);min-width:240px;max-width:320px;padding:10px 12px;border-radius:12px;background:rgba(17,17,17,.96);color:#fff;font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;line-height:1.35;box-shadow:0 16px 40px rgba(0,0,0,.35);opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+            .onlifit-tooltip::before{content:"";position:absolute;left:18px;top:calc(100% + 2px);border:8px solid transparent;border-bottom-color:rgba(17,17,17,.96);opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+            .onlifit-tooltip:hover::after,.onlifit-tooltip:hover::before{opacity:1;transform:translateY(0)}
+
+            @media (max-width: 640px){
+                .onlifit-badge--corner{top:10px;left:10px}
+                .onlifit-badge__icon{font-size:15px}
+                .onlifit-badge--sm{font-size:10px;padding:5px 9px}
+            }
+        `;
+        document.head.appendChild(style);
+    } catch (e) {
+        // Non-fatal
+    }
+}
+
+function normalizeTrainerBadges(record) {
+    if (!record || typeof record !== 'object') return record;
+    const hasBlackStatus = Boolean(
+        record.hasBlackStatus ??
+        record.has_black_status ??
+        record.has_black ??
+        record.is_black
+    );
+    return { ...record, hasBlackStatus };
+}
+
+function getTrainerBadgeIds(trainer) {
+    const t = normalizeTrainerBadges(trainer);
+    const ids = [];
+    if (t?.hasBlackStatus) ids.push('black');
+    return ids;
+}
+
+function renderOnlifitBadgeHtml(badgeId, options = {}) {
+    ensureOnlifitBadgeStyles();
+
+    const def = ONLIFIT_BADGE_DEFS[badgeId];
+    if (!def) return '';
+
+    const size = options.size || 'sm'; // xs|sm|md
+    const variant = options.variant || 'inline'; // inline|corner
+
+    const sizeClass = size === 'xs' ? 'onlifit-badge--xs' : size === 'md' ? 'onlifit-badge--md' : 'onlifit-badge--sm';
+    const variantClass = variant === 'corner' ? 'onlifit-badge--corner' : '';
+
+    return `
+        <span class="onlifit-badge onlifit-badge--black ${sizeClass} ${variantClass} onlifit-tooltip" data-tooltip="${def.tooltip}" title="${def.tooltip}" role="note">
+            <span class="material-symbols-outlined onlifit-badge__icon" style="font-variation-settings: 'FILL' 1;">${def.icon}</span>
+            <span>${def.label}</span>
+        </span>
+    `;
+}
+
+function renderTrainerBadgesHtml(trainer, options = {}) {
+    const ids = getTrainerBadgeIds(trainer);
+    if (!ids.length) return '';
+    return ids.map(id => renderOnlifitBadgeHtml(id, options)).join('');
+}
+
+// Make available to all pages
+window.normalizeTrainerBadges = normalizeTrainerBadges;
+window.renderOnlifitBadgeHtml = renderOnlifitBadgeHtml;
+window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
+
 async function renderAuthNav() {
     const user = await getCurrentUser();
     const navAuthContainer = document.getElementById('nav-auth') || document.getElementById('auth-nav');
     const mobileNavAuthContainer = document.getElementById('mobile-nav-auth');
 
+    if (AUTH_BYPASS) {
+        const dashboardHref = user.role === 'admin'
+            ? 'admin-dashboard.html'
+            : user.role === 'trainer'
+                ? '/trainer/dashboard'
+                : '/client/dashboard';
+        const desktopHtml = `
+            <div class="flex items-center gap-3">
+                <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                    <span>Dashboard</span>
+                </a>
+                <span class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant">Guest mode</span>
+            </div>
+        `;
+        const mobileHtml = `
+            <a href="${dashboardHref}" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all flex justify-center items-center gap-2">
+                <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+            </a>
+            <span class="w-full text-center px-6 py-3 text-xs font-black uppercase tracking-widest rounded-xl bg-surface-container text-on-surface-variant">Guest mode</span>
+        `;
+        if (navAuthContainer) navAuthContainer.innerHTML = desktopHtml;
+        if (mobileNavAuthContainer) mobileNavAuthContainer.innerHTML = mobileHtml;
+        return;
+    }
+
     if (user) {
         const notifications = await getNotifications(user.id);
         const unreadCount = notifications.filter(n => !n.read).length;
+
+        const dashboardHref = user.role === 'admin'
+            ? 'admin-dashboard.html'
+            : user.role === 'trainer'
+                ? '/trainer/dashboard'
+                : '/client/dashboard';
+
+        const messagesHref = user.role === 'trainer'
+            ? '/trainer/messages'
+            : user.role === 'client'
+                ? '/client/messages'
+                : 'messages.html';
 
         const desktopHtml = `
             <div class="flex items-center justify-end gap-3 sm:gap-6 w-full">
@@ -1089,7 +1339,7 @@ async function renderAuthNav() {
                 </a>
 
                 <!-- Messages -->
-                <a href="messages.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
+                <a href="${messagesHref}" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
                     <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
                 </a>
 
@@ -1097,7 +1347,7 @@ async function renderAuthNav() {
                 <div class="h-6 w-[1px] bg-outline-variant hidden sm:block"></div>
 
                 <!-- Dashboard link (Grid + Text) -->
-                <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
+                <a href="${dashboardHref}" 
                    class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
                     <span class="material-symbols-outlined text-[20px]">grid_view</span>
                     <span>Dashboard</span>
@@ -1115,7 +1365,7 @@ async function renderAuthNav() {
         
         const mobileHtml = `
             <!-- Dashboard link (Grid + Text) -->
-            <a href="${user.role === 'admin' ? 'admin-dashboard.html' : (user.role === 'trainer' ? 'bookings.html' : 'client-dashboard.html')}" 
+            <a href="${dashboardHref}" 
                 class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all flex justify-center items-center gap-2">
                 <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
             </a>
@@ -1138,6 +1388,8 @@ async function renderAuthNav() {
         `;
         if (navAuthContainer) navAuthContainer.innerHTML = desktopLoggedOut;
         if (mobileNavAuthContainer) mobileNavAuthContainer.innerHTML = mobileLoggedOut;
+    }
+}
 
 function initData() {
     // Supabase handles data persistence. This is a placeholder for legacy compatibility.
@@ -1146,12 +1398,6 @@ function initData() {
 // Init on load
 // Note: We don't call renderAuthNav here because it's async now.
 // Pages should call as needed.
-
-
-
-
-    }
-}
 
 // Auto-refresh header/nav on auth changes (helps after OAuth redirects).
 try {

@@ -1132,6 +1132,67 @@
 
     <script src="supabase-client.js"></script>
     <script>
+        const AUTH_BYPASS = false;
+
+        function normalizeStatus(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function toNumber(value) {
+            if (value == null) return 0;
+            const n = typeof value === 'string' ? parseFloat(value) : Number(value);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function formatINR(value) {
+            return `₹${toNumber(value).toLocaleString('en-IN')}`;
+        }
+
+        function getTrainerSpecialty(trainer) {
+            return trainer?.specialty || trainer?.specialization || trainer?.speciality || '';
+        }
+
+        function getTrainerVerificationStatus(trainer) {
+            const direct = trainer?.verification_status;
+            if (direct) return String(direct);
+            if (trainer?.kyc_verified && trainer?.certificates_verified) return 'verified';
+            return 'pending';
+        }
+
+        function getBookingAmount(booking) {
+            return toNumber(booking?.price ?? booking?.amount ?? 0);
+        }
+
+        function getBookingDate(booking) {
+            return booking?.date || booking?.booking_date || null;
+        }
+
+        function getBookingTime(booking) {
+            return booking?.time || booking?.booking_time || '';
+        }
+
+        function isUpcomingBooking(status) {
+            const s = normalizeStatus(status);
+            return ['upcoming', 'confirmed', 'pending', 'scheduled'].includes(s);
+        }
+
+        function isCompletedBooking(status) {
+            const s = normalizeStatus(status);
+            return ['completed', 'complete', 'done'].includes(s);
+        }
+
+        function isCancelledBooking(status) {
+            const s = normalizeStatus(status);
+            return ['cancelled', 'canceled'].includes(s);
+        }
+
+        function badgeClassForVerification(status) {
+            const s = normalizeStatus(status);
+            if (s === 'verified') return 'badge-verified';
+            if (s === 'rejected') return 'badge-rejected';
+            return 'badge-pending';
+        }
+
         // Mobile Sidebar Toggle
         const menuToggle = document.getElementById('mobile-menu-toggle');
         const sidebar = document.querySelector('.sidebar');
@@ -1184,17 +1245,50 @@
         });
 
         // Authentication Check
+        function showPreviewBanner() {
+            if (document.getElementById('admin-preview-banner')) return;
+
+            const banner = document.createElement('div');
+            banner.id = 'admin-preview-banner';
+            banner.style.cssText = [
+                'position: sticky',
+                'top: 0',
+                'z-index: 999',
+                'background: #FFF7ED',
+                'border-bottom: 1px solid #FED7AA',
+                'color: #7C2D12',
+                'padding: 10px 14px',
+                'font-size: 13px',
+                'font-weight: 600'
+            ].join(';');
+            banner.textContent = 'Preview mode: admin actions are disabled until you log in.';
+
+            document.body.prepend(banner);
+        }
+
+        function ensureAdminAction() {
+            if (!window.adminUser) {
+                alert('Admin login required for this action. Open admin-login.html to log in.');
+                return false;
+            }
+            return true;
+        }
+
         async function checkAdminAuth() {
+            // Preview-friendly: allow opening the dashboard without forcing login.
+            // If an admin session exists, enable actions; otherwise run read-only.
+
+            window.adminUser = null;
+
             try {
                 const { data: { user }, error } = await supabase.auth.getUser();
-                
+
                 if (error || !user) {
-                    alert('Please log in to access the admin dashboard');
-                    window.location.href = 'login.html';
+                    showPreviewBanner();
+                    console.warn('Admin dashboard: no active session (preview mode).');
                     return;
                 }
 
-                // Fetch user profile to check role
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role, name, email')
@@ -1202,67 +1296,75 @@
                     .single();
 
                 if (profileError || !profile) {
-                    alert('Error loading profile');
-                    window.location.href = 'login.html';
+                    showPreviewBanner();
+                    console.warn('Admin dashboard: unable to load profile (preview mode).');
                     return;
                 }
 
-                // Check if user is admin
-                if (profile.role !== 'admin') {
-                    alert('Access denied. Admin privileges required.');
-                    // Redirect to appropriate dashboard based on role
-                    if (profile.role === 'trainer') {
-                        window.location.href = 'bookings.html';
-                    } else {
-                        window.location.href = 'client-dashboard.html';
-                    }
+                if (String(profile.role || '').toLowerCase() !== 'admin') {
+                    showPreviewBanner();
+                    console.warn('Admin dashboard: non-admin session (preview mode).');
                     return;
                 }
 
-                // Store admin info for later use
                 window.adminUser = {
                     id: user.id,
                     name: profile.name,
                     email: profile.email
                 };
 
+                // Remove banner if present
+                const banner = document.getElementById('admin-preview-banner');
+                if (banner) banner.remove();
+
                 console.log('Admin authenticated:', profile.name);
             } catch (err) {
                 console.error('Auth check error:', err);
-                alert('Authentication error');
-                window.location.href = 'login.html';
+                showPreviewBanner();
             }
         }
 
         // Load Dashboard
         async function loadDashboard() {
             try {
-                // Fetch statistics
-                const [trainersData, clientsData, bookingsData, revenueData] = await Promise.all([
-                    supabase.from('profiles').select('id, verification_status').eq('role', 'trainer'),
+                // Fetch statistics (use '*' to avoid 400s when optional columns differ)
+                const [trainersData, clientsData, bookingsData] = await Promise.all([
+                    supabase.from('profiles').select('*').eq('role', 'trainer'),
                     supabase.from('profiles').select('id').eq('role', 'client'),
-                    supabase.from('bookings').select('id, status, amount'),
-                    supabase.from('bookings').select('amount').eq('status', 'completed')
+                    supabase.from('bookings').select('*')
                 ]);
 
+                const trainers = trainersData.data || [];
+                const bookings = bookingsData.data || [];
+
                 // Calculate statistics
-                const totalTrainers = trainersData.data?.length || 0;
-                const pendingVerification = trainersData.data?.filter(t => t.verification_status === 'pending').length || 0;
+                const totalTrainers = trainers.length;
+                const pendingVerification = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'pending').length;
                 const totalClients = clientsData.data?.length || 0;
-                const totalBookings = bookingsData.data?.length || 0;
-                const upcomingBookings = bookingsData.data?.filter(b => b.status === 'upcoming').length || 0;
-                const totalRevenue = revenueData.data?.reduce((sum, b) => sum + (b.amount || 0), 0) || 0;
+                const totalBookings = bookings.length;
+
+                const upcomingBookings = bookings.filter(b => isUpcomingBooking(b.status)).length;
+
+                const completedRevenue = bookings
+                    .filter(b => isCompletedBooking(b.status))
+                    .reduce((sum, b) => sum + getBookingAmount(b), 0);
+
+                const confirmedRevenue = bookings
+                    .filter(b => normalizeStatus(b.status) === 'confirmed')
+                    .reduce((sum, b) => sum + getBookingAmount(b), 0);
+
+                const totalRevenue = completedRevenue > 0 ? completedRevenue : confirmedRevenue;
 
                 // Update stat cards
                 document.getElementById('stat-trainers').textContent = totalTrainers;
                 document.getElementById('stat-trainers-change').textContent = `${pendingVerification} pending verification`;
                 document.getElementById('stat-trainers-change').className = 'change';
-                
+
                 document.getElementById('stat-clients').textContent = totalClients;
                 document.getElementById('stat-bookings').textContent = totalBookings;
                 document.querySelector('#stat-bookings + .change').textContent = `${upcomingBookings} upcoming`;
-                
-                document.getElementById('stat-revenue').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+
+                document.getElementById('stat-revenue').textContent = formatINR(totalRevenue);
 
                 // Load recent activity
                 await loadRecentActivity();
@@ -1275,10 +1377,9 @@
 
         async function loadRecentActivity() {
             try {
-                // Fetch recent trainers
                 const { data: recentTrainers, error } = await supabase
                     .from('profiles')
-                    .select('name, email, created_at, verification_status')
+                    .select('*')
                     .eq('role', 'trainer')
                     .order('created_at', { ascending: false })
                     .limit(5);
@@ -1286,25 +1387,25 @@
                 if (error) throw error;
 
                 let html = '<table><thead><tr><th>Date</th><th>Trainer</th><th>Email</th><th>Status</th></tr></thead><tbody>';
-                
+
                 if (recentTrainers && recentTrainers.length > 0) {
                     recentTrainers.forEach(trainer => {
-                        const date = new Date(trainer.created_at).toLocaleDateString('en-IN');
-                        const badgeClass = trainer.verification_status === 'verified' ? 'badge-verified' : 
-                                         trainer.verification_status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+                        const date = trainer.created_at ? new Date(trainer.created_at).toLocaleDateString('en-IN') : '—';
+                        const status = getTrainerVerificationStatus(trainer);
+                        const badgeClass = badgeClassForVerification(status);
                         html += `
                             <tr>
                                 <td>${date}</td>
                                 <td>${trainer.name || 'N/A'}</td>
-                                <td>${trainer.email}</td>
-                                <td><span class="badge ${badgeClass}">${trainer.verification_status}</span></td>
+                                <td>${trainer.email || ''}</td>
+                                <td><span class="badge ${badgeClass}">${status}</span></td>
                             </tr>
                         `;
                     });
                 } else {
                     html += '<tr><td colspan="4" style="text-align: center; color: #718096;">No recent trainers</td></tr>';
                 }
-                
+
                 html += '</tbody></table>';
                 document.getElementById('recent-activity').innerHTML = html;
 
@@ -1321,7 +1422,7 @@
             try {
                 const { data: trainers, error } = await supabase
                     .from('profiles')
-                    .select('id, name, email, phone, specialization, verification_status, kyc_verified, certificates_verified, created_at')
+                    .select('*')
                     .eq('role', 'trainer')
                     .order('created_at', { ascending: false });
 
@@ -1330,16 +1431,23 @@
                 allTrainers = trainers || [];
                 renderTrainersTable(allTrainers);
 
-                // Setup search
-                document.getElementById('trainer-search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filtered = allTrainers.filter(t => 
-                        t.name?.toLowerCase().includes(searchTerm) ||
-                        t.email?.toLowerCase().includes(searchTerm) ||
-                        t.specialization?.toLowerCase().includes(searchTerm)
-                    );
-                    renderTrainersTable(filtered);
-                });
+                // Setup search (avoid re-binding on every load)
+                const searchEl = document.getElementById('trainer-search');
+                if (searchEl && !searchEl.dataset.bound) {
+                    searchEl.dataset.bound = '1';
+                    searchEl.addEventListener('input', function(e) {
+                        const searchTerm = (e.target.value || '').toLowerCase();
+                        const filtered = allTrainers.filter(t => {
+                            const spec = getTrainerSpecialty(t);
+                            return (
+                                t.name?.toLowerCase().includes(searchTerm) ||
+                                t.email?.toLowerCase().includes(searchTerm) ||
+                                spec?.toLowerCase().includes(searchTerm)
+                            );
+                        });
+                        renderTrainersTable(filtered);
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading trainers:', error);
@@ -1355,7 +1463,7 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Specialization</th>
+                            <th>Specialty</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -1365,15 +1473,15 @@
 
             if (trainers && trainers.length > 0) {
                 trainers.forEach(trainer => {
-                    const badgeClass = trainer.verification_status === 'verified' ? 'badge-verified' : 
-                                     trainer.verification_status === 'rejected' ? 'badge-rejected' : 'badge-pending';
+                    const status = getTrainerVerificationStatus(trainer);
+                    const badgeClass = badgeClassForVerification(status);
                     html += `
                         <tr>
                             <td><strong>${trainer.name || 'N/A'}</strong></td>
-                            <td>${trainer.email}</td>
+                            <td>${trainer.email || ''}</td>
                             <td>${trainer.phone || 'N/A'}</td>
-                            <td>${trainer.specialization || 'N/A'}</td>
-                            <td><span class="badge ${badgeClass}">${trainer.verification_status}</span></td>
+                            <td>${getTrainerSpecialty(trainer) || 'N/A'}</td>
+                            <td><span class="badge ${badgeClass}">${status}</span></td>
                             <td>
                                 <button class="btn btn-primary" style="padding: 8px 15px; font-size: 12px;" onclick="openTrainerModal('${trainer.id}')">
                                     View Details
@@ -1400,13 +1508,7 @@
                 const { data: bookings, error } = await supabase
                     .from('bookings')
                     .select(`
-                        id,
-                        created_at,
-                        date,
-                        price,
-                        commission,
-                        status,
-                        plan_label,
+                        *,
                         client:client_id(name, email),
                         trainer:trainer_id(name)
                     `)
@@ -1452,8 +1554,8 @@
                 return;
             }
 
-            const totalRevenue = revenue.reduce((sum, r) => sum + (r.price || 0), 0);
-            const totalCommission = revenue.reduce((sum, r) => sum + (Number(r.commission) || 0), 0);
+            const totalRevenue = revenue.reduce((sum, r) => sum + getBookingAmount(r), 0);
+            const totalCommission = revenue.reduce((sum, r) => sum + toNumber(r.commission), 0);
 
             let html = `
                 <div style="padding: 20px; border-bottom: 1px solid #E8E8E8; display: flex; gap: 40px;">
@@ -1486,7 +1588,7 @@
                         <td>${transaction.client?.name || 'N/A'}</td>
                         <td>${transaction.trainer?.name || 'N/A'}</td>
                         <td>${transaction.plan_label || 'N/A'}</td>
-                        <td><strong>₹${(transaction.price || 0).toLocaleString('en-IN')}</strong></td>
+                        <td><strong>${formatINR(getBookingAmount(transaction))}</strong></td>
                         <td style="color: green; font-weight: bold;">${commissionVal}</td>
                         <td><span class="badge ${badgeClass}">${transaction.status}</span></td>
                     </tr>
@@ -1505,13 +1607,7 @@
                 const { data: bookings, error } = await supabase
                     .from('bookings')
                     .select(`
-                        id,
-                        created_at,
-                        date,
-                        time,
-                        price,
-                        commission,
-                        status,
+                        *,
                         client:client_id(name, email),
                         trainer:trainer_id(name)
                     `)
@@ -1617,7 +1713,7 @@
                     trainer.certificate_urls.forEach((cert, index) => {
                         certificatesHTML += `
                             <div class="document-preview">
-                                <a href="${cert.url}" target="_blank">
+                                <a href="${cert.url}">
                                     <img src="${cert.url}" alt="${cert.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
                                 </a>
                                 <p><strong>${cert.name}</strong></p>
@@ -1649,8 +1745,8 @@
                                 <p style="font-size: 14px;">${trainer.phone || 'N/A'}</p>
                             </div>
                             <div>
-                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Specialization</label>
-                                <p style="font-size: 14px;">${trainer.specialization || 'N/A'}</p>
+                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Specialty</label>
+                                <p style="font-size: 14px;">${getTrainerSpecialty(trainer) || 'N/A'}</p>
                             </div>
                         </div>
                     </div>
@@ -1661,7 +1757,7 @@
                             <div class="document-grid">
                                 ${trainer.kyc_front_url ? `
                                     <div class="document-preview">
-                                        <a href="${trainer.kyc_front_url}" target="_blank">
+                                        <a href="${trainer.kyc_front_url}">
                                             <img src="${trainer.kyc_front_url}" alt="KYC Front">
                                         </a>
                                         <p><strong>ID Front</strong></p>
@@ -1669,7 +1765,7 @@
                                 ` : ''}
                                 ${trainer.kyc_back_url ? `
                                     <div class="document-preview">
-                                        <a href="${trainer.kyc_back_url}" target="_blank">
+                                        <a href="${trainer.kyc_back_url}">
                                             <img src="${trainer.kyc_back_url}" alt="KYC Back">
                                         </a>
                                         <p><strong>ID Back</strong></p>
@@ -1713,15 +1809,29 @@
                     <div style="padding: 15px; background: #f7fafc; border-radius: 8px;">
                         <p style="font-size: 13px; margin-bottom: 5px;"><strong>Overall Verification Status:</strong></p>
                         <p style="font-size: 16px;">
-                            <span class="badge ${trainer.verification_status === 'verified' ? 'badge-verified' : 
-                                              trainer.verification_status === 'rejected' ? 'badge-rejected' : 'badge-pending'}">
-                                ${trainer.verification_status.toUpperCase()}
-                            </span>
+                            ${(() => {
+                                const status = getTrainerVerificationStatus(trainer);
+                                const badgeClass = badgeClassForVerification(status);
+                                return `<span class="badge ${badgeClass}">${String(status).toUpperCase()}</span>`;
+                            })()}
                         </p>
                     </div>
+
+                    <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+                        <button class="btn btn-secondary" onclick="viewTrainerProfile('${trainer.id}')">View Profile</button>
+                        <button class="btn btn-danger" onclick="deleteTrainerPermanently('${trainer.id}')">Permanently Delete Trainer</button>
+                    </div>
+
+                    <details style="margin-top: 16px;">
+                        <summary style="cursor: pointer; font-weight: 600; color: #2d3748;">Raw trainer record</summary>
+                        <pre id="trainer-raw-json" style="margin-top: 10px; padding: 12px; background: #0B1220; color: #E2E8F0; border-radius: 8px; overflow: auto; font-size: 12px; line-height: 1.4;"></pre>
+                    </details>
                 `;
 
                 document.getElementById('trainer-modal-body').innerHTML = html;
+                const rawEl = document.getElementById('trainer-raw-json');
+                if (rawEl) rawEl.textContent = JSON.stringify(trainer, null, 2);
+                document.getElementById('trainer-modal').dataset.trainerId = trainer.id;
 
             } catch (error) {
                 console.error('Error loading trainer details:', error);
@@ -1733,8 +1843,52 @@
             document.getElementById('trainer-modal').classList.remove('active');
         }
 
+        function viewTrainerProfile(trainerId) {
+            // Same-tab navigation (no new tabs)
+            window.location.href = `trainer-profile.html?id=${encodeURIComponent(trainerId)}`;
+        }
+
+        async function deleteTrainerPermanently(trainerId) {
+            if (!ensureAdminAction()) return;
+
+            const confirmText = prompt('This will permanently delete the trainer (profile, bookings, chats, etc.). Type DELETE to confirm:');
+            if (confirmText !== 'DELETE') return;
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const accessToken = session?.access_token;
+                if (!accessToken) {
+                    alert('Admin session token missing. Please log in again.');
+                    return;
+                }
+
+                const resp = await fetch('/api/delete-trainer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({ trainerId })
+                });
+
+                const payload = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(payload?.error || 'Failed to delete trainer');
+                }
+
+                alert('Trainer permanently deleted.');
+                closeTrainerModal();
+                loadTrainers();
+                loadDashboard();
+            } catch (err) {
+                console.error('Delete trainer error:', err);
+                alert(err?.message || 'Error deleting trainer');
+            }
+        }
+
         // Verification Functions
         async function verifyKYC(trainerId) {
+            if (!ensureAdminAction()) return;
             if (!confirm('Approve this trainer\'s KYC documents?')) return;
 
             try {
@@ -1764,6 +1918,7 @@
         }
 
         async function rejectKYC(trainerId) {
+            if (!ensureAdminAction()) return;
             if (!confirm('Reject this trainer\'s KYC documents?')) return;
 
             try {
@@ -1790,6 +1945,7 @@
         }
 
         async function verifyCertificates(trainerId) {
+            if (!ensureAdminAction()) return;
             if (!confirm('Approve all certificates for this trainer?')) return;
 
             try {
@@ -1833,6 +1989,7 @@
         }
 
         async function rejectCertificates(trainerId) {
+            if (!ensureAdminAction()) return;
             if (!confirm('Reject certificates for this trainer?')) return;
 
             try {
@@ -1859,6 +2016,7 @@
         }
 
         async function updateOverallVerificationStatus(trainerId) {
+            if (!ensureAdminAction()) return;
             try {
                 const { data: trainer } = await supabase
                     .from('profiles')
@@ -1890,7 +2048,7 @@
             try {
                 const { data: clients, error } = await supabase
                     .from('profiles')
-                    .select('id, name, email, phone, account_status, total_spent, last_login_at, created_at')
+                    .select('*')
                     .eq('role', 'client')
                     .order('created_at', { ascending: false });
 
@@ -2093,6 +2251,7 @@
         }
 
         async function saveClientDetails(clientId) {
+            if (!ensureAdminAction()) return;
             try {
                 const name = document.getElementById('edit-client-name').value;
                 const email = document.getElementById('edit-client-email').value;
@@ -2519,6 +2678,7 @@
         }
 
         async function createPlan() {
+            if (!ensureAdminAction()) return;
             try {
                 const name = document.getElementById('new-plan-name').value;
                 const description = document.getElementById('new-plan-description').value;
@@ -2603,6 +2763,7 @@
         }
 
         async function createPromoCode() {
+            if (!ensureAdminAction()) return;
             try {
                 const code = document.getElementById('new-promo-code').value.toUpperCase();
                 const type = document.getElementById('new-promo-type').value;
@@ -2642,6 +2803,7 @@
         }
 
         async function togglePromoStatus(promoId, newStatus) {
+            if (!ensureAdminAction()) return;
             try {
                 const { error } = await supabase
                     .from('promo_codes')
@@ -2658,6 +2820,7 @@
         }
 
         async function togglePlanStatus(planId, newStatus) {
+            if (!ensureAdminAction()) return;
             try {
                 const { error } = await supabase
                     .from('subscription_plans')
@@ -2925,6 +3088,7 @@
         }
 
         async function replyToTicket(ticketId) {
+            if (!ensureAdminAction()) return;
             try {
                 const message = document.getElementById('ticket-reply').value;
                 const isInternal = document.getElementById('internal-note').checked;
@@ -2958,6 +3122,7 @@
         }
 
         async function updateTicket(ticketId) {
+            if (!ensureAdminAction()) return;
             try {
                 const status = document.getElementById('ticket-status').value;
                 const priority = document.getElementById('ticket-priority').value;
@@ -3040,7 +3205,7 @@
                 // Fetch bookings with revenue data
                 const { data: bookings, error } = await supabase
                     .from('bookings')
-                    .select('created_at, amount, status')
+                    .select('*')
                     .gte('created_at', startDate.toISOString())
                     .order('created_at', { ascending: true });
 
@@ -3069,7 +3234,7 @@
             const { bookings, subscriptions } = data;
 
             // Calculate stats
-            const totalRevenue = bookings.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+            const totalRevenue = bookings.reduce((sum, b) => sum + getBookingAmount(b), 0);
             const avgTransaction = bookings.length > 0 ? totalRevenue / bookings.length : 0;
             
             // Calculate MRR from subscriptions
@@ -3090,7 +3255,7 @@
             const revenueByDay = {};
             bookings.forEach(booking => {
                 const date = new Date(booking.created_at).toLocaleDateString('en-IN');
-                revenueByDay[date] = (revenueByDay[date] || 0) + (parseFloat(booking.amount) || 0);
+                revenueByDay[date] = (revenueByDay[date] || 0) + getBookingAmount(booking);
             });
 
             // Prepare chart data
@@ -3285,7 +3450,7 @@
             try {
                 const { data: allBookings, error } = await supabase
                     .from('bookings')
-                    .select('created_at, status, booking_date')
+                    .select('*')
                     .order('created_at', { ascending: true });
 
                 if (error) throw error;
@@ -3309,8 +3474,8 @@
 
             // Calculate stats
             const totalBookings = periodBookings.length;
-            const completedBookings = periodBookings.filter(b => b.status === 'completed').length;
-            const cancelledBookings = periodBookings.filter(b => b.status === 'cancelled').length;
+            const completedBookings = periodBookings.filter(b => isCompletedBooking(b.status)).length;
+            const cancelledBookings = periodBookings.filter(b => isCancelledBooking(b.status)).length;
             const cancellationRate = totalBookings > 0 ? 
                 ((cancelledBookings / totalBookings) * 100).toFixed(1) : 0;
 
@@ -3371,7 +3536,7 @@
             try {
                 const { data: trainers, error } = await supabase
                     .from('profiles')
-                    .select('id, name, verification_status')
+                    .select('*')
                     .eq('role', 'trainer');
 
                 if (error) throw error;
@@ -3404,7 +3569,7 @@
 
             // Calculate stats
             const totalTrainers = trainers.length;
-            const verifiedTrainers = trainers.filter(t => t.verification_status === 'verified').length;
+            const verifiedTrainers = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'verified').length;
             const verificationRate = totalTrainers > 0 ?
                 ((verifiedTrainers / totalTrainers) * 100).toFixed(1) : 0;
 
@@ -3620,6 +3785,7 @@
         }
 
         async function createNotification() {
+            if (!ensureAdminAction()) return;
             try {
                 const title = document.getElementById('notif-title').value;
                 const message = document.getElementById('notif-message').value;
@@ -3634,7 +3800,11 @@
                     return;
                 }
 
-                const { data: { user } } = await supabase.auth.getUser();
+                const user = window.adminUser;
+                if (!user) {
+                    alert('Not authenticated');
+                    return;
+                }
 
                 const notifData = {
                     title,
@@ -3674,6 +3844,7 @@
         }
 
         async function sendNotificationNow(notifId) {
+            if (!ensureAdminAction()) return;
             try {
                 const { error } = await supabase
                     .from('notifications')
@@ -3709,13 +3880,13 @@
                 return;
             }
 
-            const headers = ['Name', 'Email', 'Phone', 'Specialization', 'Verification Status', 'KYC Verified', 'Certificates Verified'];
+            const headers = ['Name', 'Email', 'Phone', 'Specialty', 'Verification Status', 'KYC Verified', 'Certificates Verified'];
             const rows = allTrainers.map(t => [
                 t.name || '',
                 t.email || '',
                 t.phone || '',
-                t.specialization || '',
-                t.verification_status || '',
+                getTrainerSpecialty(t) || '',
+                getTrainerVerificationStatus(t) || '',
                 t.kyc_verified ? 'Yes' : 'No',
                 t.certificates_verified ? 'Yes' : 'No'
             ]);
@@ -3734,8 +3905,8 @@
                 new Date(r.created_at).toLocaleDateString('en-IN'),
                 r.client?.name || 'N/A',
                 r.trainer?.name || 'N/A',
-                r.booking_type || 'N/A',
-                r.amount || 0,
+                r.plan_label || r.booking_type || 'N/A',
+                getBookingAmount(r),
                 r.status || ''
             ]);
 
@@ -3749,15 +3920,18 @@
             }
 
             const headers = ['Booking ID', 'Date', 'Time', 'Client', 'Trainer', 'Status', 'Amount (₹)'];
-            const rows = allBookings.map(b => [
-                b.id,
-                b.booking_date ? new Date(b.booking_date).toLocaleDateString('en-IN') : 'N/A',
-                b.booking_time || 'N/A',
-                b.client?.name || 'N/A',
-                b.trainer?.name || 'N/A',
-                b.status || '',
-                b.amount || 0
-            ]);
+            const rows = allBookings.map(b => {
+                const dateRaw = getBookingDate(b);
+                return [
+                    b.id,
+                    dateRaw ? new Date(dateRaw).toLocaleDateString('en-IN') : 'N/A',
+                    getBookingTime(b) || 'N/A',
+                    b.client?.name || 'N/A',
+                    b.trainer?.name || 'N/A',
+                    b.status || '',
+                    getBookingAmount(b)
+                ];
+            });
 
             downloadCSV('bookings_export.csv', headers, rows);
         }
@@ -3794,13 +3968,13 @@
             doc.text(`Total Trainers: ${allTrainers.length}`, 14, 34);
 
             // Table headers
-            const headers = [['Name', 'Email', 'Phone', 'Specialization', 'Status']];
+            const headers = [['Name', 'Email', 'Phone', 'Specialty', 'Status']];
             const data = allTrainers.map(t => [
                 t.name || 'N/A',
-                t.email,
+                t.email || '',
                 t.phone || 'N/A',
-                (t.specialization || 'N/A').substring(0, 20),
-                t.verification_status
+                (getTrainerSpecialty(t) || 'N/A').substring(0, 20),
+                getTrainerVerificationStatus(t)
             ]);
 
             doc.autoTable({
@@ -3824,7 +3998,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            const totalRevenue = allRevenue.reduce((sum, r) => sum + (r.amount || 0), 0);
+            const totalRevenue = allRevenue.reduce((sum, r) => sum + getBookingAmount(r), 0);
 
             // Title
             doc.setFontSize(18);
@@ -3841,9 +4015,9 @@
                 new Date(r.created_at).toLocaleDateString('en-IN'),
                 (r.client?.name || 'N/A').substring(0, 15),
                 (r.trainer?.name || 'N/A').substring(0, 15),
-                (r.booking_type || 'N/A').substring(0, 15),
-                '₹' + (r.amount || 0),
-                r.status
+                (r.plan_label || r.booking_type || 'N/A').substring(0, 15),
+                formatINR(getBookingAmount(r)),
+                r.status || ''
             ]);
 
             doc.autoTable({
@@ -3877,14 +4051,17 @@
 
             // Table
             const headers = [['Booking ID', 'Date', 'Client', 'Trainer', 'Status', 'Amount']];
-            const data = allBookings.map(b => [
-                b.id.substring(0, 8),
-                b.booking_date ? new Date(b.booking_date).toLocaleDateString('en-IN') : 'N/A',
-                (b.client?.name || 'N/A').substring(0, 15),
-                (b.trainer?.name || 'N/A').substring(0, 15),
-                b.status,
-                '₹' + (b.amount || 0)
-            ]);
+            const data = allBookings.map(b => {
+                const dateRaw = getBookingDate(b);
+                return [
+                    String(b.id || '').substring(0, 8),
+                    dateRaw ? new Date(dateRaw).toLocaleDateString('en-IN') : 'N/A',
+                    (b.client?.name || 'N/A').substring(0, 15),
+                    (b.trainer?.name || 'N/A').substring(0, 15),
+                    b.status || '',
+                    formatINR(getBookingAmount(b))
+                ];
+            });
 
             doc.autoTable({
                 startY: 40,
@@ -3966,12 +4143,7 @@
 
         // Logout
         async function handleLogout() {
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                alert('Error logging out');
-                return;
-            }
-            window.location.href = 'login.html';
+            window.location.href = 'onlifit.html';
         }
     </script>
 </body>

@@ -41,6 +41,9 @@ Here is the exact journey of what has been implemented to stabilize the platform
 *   Integrated **Google OAuth** alongside standard Email/Password via Supabase.
 *   Hardcoded rigid Supabase OAuth callback URLs specifically routing back to the core host to ensure Vercel preview environments wouldn't break the authentication whitelist.
 *   Fixed session loss issues: Previously, clicking certain links wiped session states. State management was moved tightly into `auth.js` via local storage syncing.
+*   **Temporary auth pause:** login and signup were disabled while OTP auth is being built. `login.html` now acts as a notice page, and shared auth rendering falls back to a guest-mode dashboard link.
+*   **Temporary bypass behavior:** `auth.js` now returns preview users so dashboards can load without a live Supabase session. `requireAuth()` no longer blocks the main app flow during this phase.
+*   **Dashboard routing cleanup:** removed login redirects from `client-dashboard.html`, `bookings.html`, `onboarding.html`, `trainer-onboarding.html`, `trainer-profile.html`, and `admin-dashboard.html` so pages remain editable and usable without authentication.
 
 ### Trainer Dashboard Overhaul
 *   **Merged Settings**: Extracted `settings.html` and absorbed it physically into `bookings.html` so the UI doesn't force jarring "Open in New Tab" (`target="_blank"`) layouts.
@@ -58,10 +61,12 @@ Here is the exact journey of what has been implemented to stabilize the platform
 If you need to edit something, look here first:
 
 *   **`auth.js`**: The central nervous system of the front end. Contains all core functions for `signInWithGoogle`, database user updates (`updateUserProfile`), catching OAuth tokens on load, and checking the current viewer's session.
+*   **`login.html`**: Temporary auth-disabled landing page while OTP auth is being implemented.
 *   **`supabase-client.js`**: Contains the hard-coded API Keys and initialization strings for connecting to our specific Supabase instance.
 *   **`client-dashboard.html`**: The main hub for regular users viewing their upcoming sessions.
 *   **`bookings.html`**: The main hub for **Trainers**. Includes the virtual SPA router (`DashboardRouter`) for jumping between Dashboard, Bookings list, and Profile Settings.
 *   **`trainer.html` / `trainers.html`**: The public viewing portals for finding trainers. Both actively listen to WebSocket events for live adjustments.
+*   **`admin-dashboard.html`** / **`admin-login.html`**: Admin access is temporarily bypassed for local editing access.
 *   **`vercel.json`**: Controls the live hosting production environment parameters (redirects, Security headers, HTTP Cache controls).
 
 ## 5. Helpful Commands & Scripts

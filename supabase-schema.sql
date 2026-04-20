@@ -13,6 +13,7 @@ CREATE TABLE profiles (
   
   -- Trainer-specific fields
   specialty TEXT,
+  has_black_status BOOLEAN DEFAULT FALSE,
   bio TEXT,
   location TEXT,
   rating DECIMAL DEFAULT 0,
