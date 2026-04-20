@@ -562,9 +562,12 @@ async function getTrainers() {
     }
 
     // 2. Check localStorage cache
+    const TRAINERS_CACHE_KEY = 'onlifit_trainers_cache_v2';
+    const TRAINERS_CACHE_TIME_KEY = 'onlifit_trainers_time_v2';
+
     try {
-        const stored = localStorage.getItem('onlifit_trainers_cache');
-        const storedTime = localStorage.getItem('onlifit_trainers_time');
+        const stored = localStorage.getItem(TRAINERS_CACHE_KEY);
+        const storedTime = localStorage.getItem(TRAINERS_CACHE_TIME_KEY);
         if (stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
             _cachedTrainers = normalizeTrainerList(JSON.parse(stored));
             _cachedTrainersTime = parseInt(storedTime);
@@ -605,8 +608,8 @@ async function getTrainers() {
                     const normalized = normalizeTrainerList(res.data);
                     _cachedTrainers = normalized;
                     _cachedTrainersTime = Date.now();
-                    localStorage.setItem('onlifit_trainers_cache', JSON.stringify(normalized));
-                    localStorage.setItem('onlifit_trainers_time', Date.now().toString());
+                    localStorage.setItem(TRAINERS_CACHE_KEY, JSON.stringify(normalized));
+                    localStorage.setItem(TRAINERS_CACHE_TIME_KEY, Date.now().toString());
                 }
             }).catch(e => console.error('Background fetch error:', e));
 
@@ -628,8 +631,8 @@ async function getTrainers() {
         // Save to cache
         _cachedTrainers = normalized;
         _cachedTrainersTime = Date.now();
-        localStorage.setItem('onlifit_trainers_cache', JSON.stringify(normalized));
-        localStorage.setItem('onlifit_trainers_time', Date.now().toString());
+        localStorage.setItem(TRAINERS_CACHE_KEY, JSON.stringify(normalized));
+        localStorage.setItem(TRAINERS_CACHE_TIME_KEY, Date.now().toString());
         return normalized;
     } catch (err) {
         console.error('getTrainers failed:', err);
