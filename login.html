@@ -1,55 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <base href="/">
+    <script>
+        document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');
+    </script>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Login / Sign Up | Onlifit</title>
-    
-    <!-- Performance: Preconnect to external domains -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    
-    <!-- Performance: Optimized fonts - removed unused weights -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
-    <!-- Tailwind CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+
     <link href="styles.css" rel="stylesheet" />
-    
+
     <style>
-        /* Font Size Reset - Standard 16px base */
-        html { font-size: 16px; }
-        body { font-size: 1rem; line-height: 1.5; }
-        
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        body {
+            font-family: Inter, sans-serif;
+            color: #000000;
+            background: #f5f5f5;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .auth-shell {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 1.5rem;
+        }
+
+        .auth-card {
+            width: min(100%, 30rem);
+            border: 1px solid #e8e8e8;
+            border-radius: 2rem;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem 2rem;
+        }
+
+        .auth-brand {
+            font-family: Poppins, sans-serif;
+            font-weight: 700;
+            font-size: 1.875rem;
+            color: #000000;
+            letter-spacing: -0.02em;
+        }
+
+        .auth-heading {
+            font-family: Poppins, sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #000000;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .auth-subtitle {
+            font-size: 0.875rem;
+            color: #666666;
+            margin: 0.5rem 0 1.5rem 0;
+        }
+
+        .mode-btn {
+            border-radius: 999px;
+            border: 1px solid #e8e8e8;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #000000;
+            background: transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+        }
+
+        .mode-btn.active {
+            background: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .mode-btn:hover:not(.active) {
+            border-color: #000000;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .auth-input {
+            width: 100%;
+            border: 1px solid #e8e8e8;
+            border-radius: 0.75rem;
+            padding: 0.75rem 0.875rem;
+            background: #ffffff;
+            font-size: 0.95rem;
+            color: #000000;
+            font-family: Inter, sans-serif;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .auth-input::placeholder {
+            color: #999999;
+        }
+
+        .auth-input:focus {
+            border-color: #000000;
+        }
+
+        .primary-btn {
+            width: 100%;
+            border: 0;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            background: #000000;
+            transition: background 0.2s ease;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+        }
+
+        .primary-btn:hover {
+            background: #1a1a1a;
+        }
+
+        .primary-btn:active {
+            background: #000000;
+        }
+
+        .google-btn {
+            width: 100%;
+            border: 1px solid #e8e8e8;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #000000;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+        }
+
+        .google-btn:hover {
+            background: #f5f5f5;
+            border-color: #000000;
+        }
+
+        .divider {
+            color: #999999;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            height: 1px;
+            flex: 1;
+            background: #e8e8e8;
+        }
+
+        .notice {
+            border-radius: 0.75rem;
+            border: 1px solid transparent;
+            padding: 0.75rem 0.9rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .notice.error {
+            background: #fff5f5;
+            border-color: #ffcccc;
+            color: #cc0000;
+        }
+
+        .notice.success {
+            background: #f0f9ff;
+            border-color: #b3e5fc;
+            color: #0066cc;
+        }
+
+        .auth-link {
+            color: #000000;
+            font-weight: 600;
+            text-decoration: none;
+            border: 0;
+            background: transparent;
+            padding: 0;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+            font-size: inherit;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        .switch-text {
+            font-size: 0.875rem;
+            color: #666666;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 420px) {
+            .auth-card {
+                padding: 1.75rem 1.25rem;
+            }
+            .auth-heading {
+                font-size: 1.25rem;
+            }
+        }
     </style>
 </head>
-<body class="bg-primary-container/20 font-body text-on-surface min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-lg w-full bg-surface rounded-3xl shadow-2xl p-8 md:p-10 border border-outline-variant/30 text-center">
-        <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold mb-4 inline-block">Onlifit</a>
-        <h1 class="text-3xl font-black font-headline text-on-surface mb-3">Authentication paused</h1>
-        <p class="text-on-surface-variant mb-8">
-            Login and signup are temporarily disabled while OTP auth is being built.
-        </p>
+<body>
+    <main class="auth-shell">
+        <section class="auth-card">
+            <a href="onlifit.html" class="auth-brand">Onlifit</a>
+            <h1 class="auth-heading">Access your account</h1>
+            <p class="auth-subtitle" id="auth-subtitle">Sign in to continue your fitness journey.</p>
 
-        <div class="grid gap-3">
-            <a href="client-dashboard.html" class="w-full py-3.5 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
-                Open Client Dashboard
-            </a>
-            <a href="bookings.html" class="w-full py-3.5 bg-surface-container-low border border-outline-variant/50 rounded-xl font-bold text-on-surface hover:bg-surface-container transition-all">
-                Open Trainer Dashboard
-            </a>
-            <a href="trainers.html" class="w-full py-3.5 bg-surface-container-low border border-outline-variant/50 rounded-xl font-bold text-on-surface hover:bg-surface-container transition-all">
-                Browse Trainers
-            </a>
-        </div>
+            <div id="auth-notice" class="hidden"></div>
 
-        <p class="text-center text-xs text-on-surface-variant mt-8 font-medium">
-            OTP auth will replace this page later.
-        </p>
-    </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;" id="auth-mode-switcher">
+                <button id="mode-signin" type="button" class="mode-btn active">Sign in</button>
+                <button id="mode-signup" type="button" class="mode-btn">Sign up</button>
+            </div>
+
+            <form id="email-auth-form" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div id="field-name-wrap" style="display: none;">
+                    <label for="auth-name" style="display: none;">Full name</label>
+                    <input id="auth-name" class="auth-input" type="text" autocomplete="name" placeholder="Full name" />
+                </div>
+
+                <div>
+                    <label for="auth-email" style="display: none;">Email</label>
+                    <input id="auth-email" class="auth-input" type="email" autocomplete="email" required placeholder="Email address" />
+                </div>
+
+                <div>
+                    <label for="auth-password" style="display: none;">Password</label>
+                    <input id="auth-password" class="auth-input" type="password" autocomplete="current-password" required minlength="6" placeholder="Password" />
+                </div>
+
+                <button id="email-submit-btn" class="primary-btn" type="submit">Sign in with Email</button>
+            </form>
+
+            <div style="margin-top: 0.75rem; text-align: right;">
+                <button id="forgot-password-link" type="button" class="auth-link" style="font-size: 0.8rem;">Forgot password?</button>
+            </div>
+
+            <div class="divider">or</div>
+
+            <button id="google-auth-btn" type="button" class="google-btn">
+                <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.22 3.61l6.9-6.9C35.91 2.3 30.4 0 24 0 14.62 0 6.51 5.38 2.56 13.22l8.04 6.24C12.51 13.72 17.78 9.5 24 9.5z"></path>
+                    <path fill="#4285F4" d="M46.5 24.55c0-1.64-.15-3.21-.42-4.73H24v9h12.68c-.55 2.96-2.2 5.46-4.68 7.14l7.19 5.58C43.45 37.45 46.5 31.59 46.5 24.55z"></path>
+                    <path fill="#FBBC05" d="M10.6 28.54a14.5 14.5 0 0 1 0-9.08l-8.04-6.24a24.02 24.02 0 0 0 0 21.56l8.04-6.24z"></path>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.92-2.14 15.9-5.82l-7.19-5.58c-2 1.35-4.56 2.14-8.71 2.14-6.22 0-11.49-4.22-13.4-9.96l-8.04 6.24C6.51 42.62 14.62 48 24 48z"></path>
+                </svg>
+                <span id="google-btn-label">Continue with Google</span>
+            </button>
+
+            <p class="switch-text">
+                <span id="switch-mode-label">Don't have an account?</span>
+                <button id="switch-mode-link" type="button" class="auth-link">Create one</button>
+            </p>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script src="login-google.js"></script>
 </body>
 </html>
