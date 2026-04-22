@@ -463,13 +463,13 @@
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-green-600 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
             </div>
-            <h2 class="text-3xl font-black font-headline mb-2">🎉 Your Profile is Live!</h2>
-            <p class="text-on-surface-variant mb-2">Congratulations! Your trainer profile has been created successfully.</p>
-            <p class="text-sm text-on-surface-variant mb-6">Clients can now find and book sessions with you. Our team will verify your KYC documents within 24-48 hours.</p>
+            <h2 class="text-3xl font-black font-headline mb-2">🎉 Application Submitted. Profile Is Live!</h2>
+            <p class="text-on-surface-variant mb-2">Your trainer application is now in AI review.</p>
+            <p class="text-sm text-on-surface-variant mb-6">We are validating your documents quickly. Once approved, you will be redirected automatically to your trainer dashboard.</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="bookings.html" class="inline-block px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                    Go to Dashboard →
-                </a>
+                <button type="button" id="approval-status-btn" class="inline-block px-8 py-3 bg-primary text-on-primary font-bold rounded-xl opacity-90 cursor-default">
+                    Waiting for approval...
+                </button>
                 <a href="trainer-profile.html" class="inline-block px-8 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-on-primary transition-all">
                     View My Profile
                 </a>
@@ -483,6 +483,54 @@
     <script>
         let currentStep = 1;
         const totalSteps = 5;
+        let approvalPollInterval = null;
+
+        function getTrainerDashboardHref() {
+            if (typeof getDashboardPathForRole === 'function') {
+                return getDashboardPathForRole('trainer');
+            }
+            return 'bookings.html';
+        }
+
+        function showPendingApprovalState() {
+            document.getElementById('onboarding-form').classList.add('hidden');
+            document.getElementById('success-message').classList.remove('hidden');
+            window.scrollTo(0, 0);
+            startApprovalPolling();
+        }
+
+        async function checkApprovalAndRedirect() {
+            try {
+                const user = await getCurrentUser();
+                if (!user) return;
+
+                const { data: profiles, error } = await supabase
+                    .from('profiles')
+                    .select('verification_status, onboarding_completed')
+                    .eq('id', user.id)
+                    .limit(1);
+
+                if (error || !Array.isArray(profiles) || profiles.length === 0) return;
+
+                const profile = profiles[0];
+                const status = String(profile.verification_status || '').toLowerCase();
+                if (profile.onboarding_completed && (status === 'approved' || status === 'verified')) {
+                    if (approvalPollInterval) {
+                        clearInterval(approvalPollInterval);
+                        approvalPollInterval = null;
+                    }
+                    window.location.href = getTrainerDashboardHref();
+                }
+            } catch (error) {
+                console.warn('Approval check failed:', error?.message || error);
+            }
+        }
+
+        function startApprovalPolling() {
+            if (approvalPollInterval) return;
+            checkApprovalAndRedirect();
+            approvalPollInterval = setInterval(checkApprovalAndRedirect, 15000);
+        }
 
         function updateProgress() {
             const progress = (currentStep / totalSteps) * 100;
@@ -594,7 +642,7 @@
                 
                 if (!user) {
                     alert('Please log in first');
-                    window.location.href = 'bookings.html';
+                    window.location.href = 'login.html';
                     return;
                 }
 
@@ -725,11 +773,7 @@
                 console.log('Profile updated successfully:', data);
 
                 // Show success message
-                document.getElementById('onboarding-form').classList.add('hidden');
-                document.getElementById('success-message').classList.remove('hidden');
-                
-                // Scroll to top
-                window.scrollTo(0, 0);
+                showPendingApprovalState();
                 
             } catch (error) {
                 console.error('Error saving profile:', error);
@@ -757,10 +801,16 @@
                     return;
                 }
                 
-                // If onboarding already completed, redirect to dashboard
+                // If onboarding is done, route based on approval status.
                 if (user.onboarding_completed) {
-                    console.log('Onboarding already completed, redirecting to dashboard');
-                    window.location.href = 'bookings.html';
+                    const status = String(user.verification_status || '').toLowerCase();
+                    if (status === 'approved' || status === 'verified') {
+                        console.log('Trainer approved, redirecting to dashboard');
+                        window.location.href = getTrainerDashboardHref();
+                    } else {
+                        console.log('Trainer pending approval, showing waiting state');
+                        showPendingApprovalState();
+                    }
                     return;
                 }
                 

@@ -11,6 +11,10 @@
         isBusy: false
     };
 
+    function isTrainerJoinUsSignupFlow() {
+        return state.mode === 'signup' && state.role === 'trainer' && state.source === 'join-us';
+    }
+
     function setNotice(message, type) {
         const notice = document.getElementById('auth-notice');
         if (!notice) return;
@@ -121,9 +125,16 @@
 
         try {
             if (isSignup) {
-                const result = await signUp(name, email, password, 'client', null, null);
+                const signupRole = isTrainerJoinUsSignupFlow() ? 'trainer' : 'client';
+                const result = await signUp(name, email, password, signupRole, null, null);
                 if (!result?.success) {
                     setNotice(result?.error || 'Sign up failed. Please try again.', 'error');
+                    return;
+                }
+
+                if (signupRole === 'trainer') {
+                    setNotice('Trainer account created. Redirecting to trainer application...', 'success');
+                    window.location.href = 'trainer-onboarding.html';
                     return;
                 }
 
@@ -140,6 +151,11 @@
             }
 
             const userRole = result?.user?.role || state.role || 'client';
+            const verificationStatus = String(result?.user?.verification_status || '').toLowerCase();
+            if (userRole === 'trainer' && verificationStatus && verificationStatus !== 'approved' && verificationStatus !== 'verified') {
+                window.location.href = 'trainer-onboarding.html';
+                return;
+            }
             window.location.href = getSafeDashboardHref(userRole);
         } finally {
             setBusy(false);
@@ -154,8 +170,11 @@
 
         try {
             const isSignup = state.mode === 'signup';
-            const targetRole = isSignup ? 'client' : state.role;
-            const options = isSignup ? { signupSource: 'public' } : { signupSource: state.source || 'direct' };
+            const isTrainerSignup = isSignup && isTrainerJoinUsSignupFlow();
+            const targetRole = isSignup ? (isTrainerSignup ? 'trainer' : 'client') : state.role;
+            const options = isSignup
+                ? { signupSource: isTrainerSignup ? 'join-us' : 'public' }
+                : { signupSource: state.source || 'direct' };
 
             const result = await signInWithGoogle(targetRole, isSignup, options);
             if (result && result.success === false) {
@@ -220,15 +239,16 @@
     }
 
     function init() {
-        if (state.role === 'trainer' && state.mode === 'signup') {
-            state.mode = 'signin';
-        }
-
         setupEvents();
         updateModeUi();
 
+        if (state.role === 'trainer' && state.source === 'join-us' && state.mode === 'signup') {
+            setNotice('Complete signup to start your trainer application.', 'success');
+            return;
+        }
+
         if (state.role === 'trainer') {
-            setNotice('Trainer account creation is not available on this page. Sign in if you already have an account.', 'error');
+            setNotice('Trainer signup is available only from Join Us. Sign in if you already have an account.', 'error');
         }
     }
 

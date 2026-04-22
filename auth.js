@@ -585,7 +585,7 @@ async function handleOAuthCallback(options = {}) {
     try {
         const { data: profiles } = await supabaseClient
             .from('profiles')
-            .select('role, onboarding_completed')
+            .select('role, onboarding_completed, verification_status')
             .eq('id', user.id);
         profile = (profiles && profiles.length > 0) ? profiles[0] : null;
     } catch (e) {
@@ -633,7 +633,7 @@ async function handleOAuthCallback(options = {}) {
                     role: roleForNewProfile,
                     phone: null
                 }])
-                .select('role, onboarding_completed');
+                .select('role, onboarding_completed, verification_status');
             profile = (insertedProfiles && insertedProfiles.length > 0) ? insertedProfiles[0] : profile;
         } catch (e) {
             // Non-fatal
@@ -655,7 +655,12 @@ async function handleOAuthCallback(options = {}) {
     if (finalRole === 'admin') {
         window.location.replace('admin-dashboard.html');
     } else if (finalRole === 'trainer') {
-        if (oauthIsSignup && !profile?.onboarding_completed) {
+        const verificationStatus = String(profile?.verification_status || '').toLowerCase();
+        const trainerApproved = verificationStatus === 'approved' || verificationStatus === 'verified';
+
+        if (!profile?.onboarding_completed) {
+            window.location.replace('trainer-onboarding.html');
+        } else if (!trainerApproved) {
             window.location.replace('trainer-onboarding.html');
         } else {
             window.location.replace(getDashboardPathForRole('trainer'));
