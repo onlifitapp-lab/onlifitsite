@@ -169,8 +169,9 @@
             const guestEmail = document.getElementById('guestEmail').value;
             const file = fileInput.files[0];
 
-            const { data: sessionData } = await supabaseClient.auth.getSession();
-            const token = sessionData?.session?.access_token;
+            const authHeader = typeof getApiAuthHeader === 'function'
+                ? await getApiAuthHeader()
+                : null;
             
             let uploadedFileUrl = null;
             let uploadedFileName = null;
@@ -200,13 +201,16 @@
 
             const response = await fetch('/api/create-ticket', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authHeader ? { 'Authorization': authHeader } : {})
+                },
                 body: JSON.stringify({
                     subject,
                     category,
                     message,
                     guestEmail: currentUser ? null : guestEmail,
-                    authHeader: token ? `Bearer ${token}` : null,
+                    authHeader,
                     // If we wanted to pass the file URL straight to the ticket API to link it
                     attachmentUrl: uploadedFileUrl,
                     attachmentName: uploadedFileName,

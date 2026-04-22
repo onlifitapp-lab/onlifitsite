@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Razorpay from 'razorpay';
+import { resolveRequestAuth } from './_auth.js';
 
 // Basic rate limiting map
 const rateLimitCache = new Map();
@@ -26,7 +27,18 @@ export default async function handler(req, res) {
             rateLimitCache.set(ip, { requests: [now] });
         }
 
-        const { clientId, trainerId, planType, details } = req.body;
+        const { trainerId, planType, details } = req.body || {};
+
+        const auth = await resolveRequestAuth(req);
+        if (!auth.authenticated) {
+            return res.status(auth.status || 401).json({ error: auth.error || 'Unauthorized' });
+        }
+
+        if (String(auth.role || '').toLowerCase() !== 'client') {
+            return res.status(403).json({ error: 'Only clients can create payment orders' });
+        }
+
+        const clientId = auth.userId;
 
         if (!clientId || !trainerId || !planType) {
             return res.status(400).json({ error: 'Missing required fields' });

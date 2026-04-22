@@ -16,6 +16,8 @@ CREATE TABLE profiles (
   has_black_status BOOLEAN DEFAULT FALSE,
   bio TEXT,
   location TEXT,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
   rating DECIMAL DEFAULT 0,
   review_count INTEGER DEFAULT 0,
   experience TEXT,

@@ -4,12 +4,221 @@
 // otherwise we can lose the ability to exchange the code and end up “stuck” on the homepage.
 // Demo/preview mode disabled: always use real Supabase auth + data.
 const AUTH_BYPASS = false;
+const ONLIFIT_CLERK_KEY_STORAGE = 'onlifit_clerk_publishable_key';
+const ONLIFIT_ROLE_STORAGE = 'onlifit_user_role';
+const ONLIFIT_OAUTH_SIGNUP_SOURCE = 'oauth_signup_source';
+const ONLIFIT_OAUTH_LOGIN_ROLE = 'oauth_login_role';
+const ONLIFIT_OAUTH_LOGIN_SOURCE = 'oauth_login_source';
+
+let _clerkLoadPromise = null;
+
+function normalizeUserRole(value, defaultRole = 'client') {
+    return value === 'trainer' || value === 'admin' || value === 'client'
+        ? value
+        : defaultRole;
+}
+
+function getStoredUserRole(defaultRole = 'client') {
+    return normalizeUserRole(localStorage.getItem(ONLIFIT_ROLE_STORAGE), defaultRole);
+}
+
+function getClerkPrimaryEmail(clerkUser) {
+    return clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress || '';
+}
+
+async function resolveClerkRole(clerkUser, roleHint) {
+    const hintedRole = normalizeUserRole(roleHint, '');
+    if (hintedRole) {
+        localStorage.setItem(ONLIFIT_ROLE_STORAGE, hintedRole);
+        return hintedRole;
+    }
+
+    const metadataRole = normalizeUserRole(
+        clerkUser?.unsafeMetadata?.role || clerkUser?.publicMetadata?.role || clerkUser?.privateMetadata?.role,
+        ''
+    );
+    if (metadataRole) {
+        localStorage.setItem(ONLIFIT_ROLE_STORAGE, metadataRole);
+        return metadataRole;
+    }
+
+    try {
+        if (typeof supabaseClient !== 'undefined') {
+            const clerkUserId = clerkUser?.id || '';
+
+            if (clerkUserId) {
+                const byClerkId = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('clerk_id', clerkUserId)
+                    .limit(1);
+
+                if (!byClerkId.error && Array.isArray(byClerkId.data) && byClerkId.data.length > 0) {
+                    const resolvedByClerkId = normalizeUserRole(byClerkId.data[0].role, 'client');
+                    localStorage.setItem(ONLIFIT_ROLE_STORAGE, resolvedByClerkId);
+                    return resolvedByClerkId;
+                }
+
+                const clerkIdError = String(byClerkId.error?.message || '').toLowerCase();
+                if (byClerkId.error && !clerkIdError.includes('clerk_id')) {
+                    console.warn('Clerk role lookup by clerk_id failed:', byClerkId.error?.message || byClerkId.error);
+                }
+            }
+
+            const primaryEmail = getClerkPrimaryEmail(clerkUser);
+            if (primaryEmail) {
+                const byEmail = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .ilike('email', primaryEmail)
+                    .limit(1);
+
+                if (!byEmail.error && Array.isArray(byEmail.data) && byEmail.data.length > 0) {
+                    const resolvedByEmail = normalizeUserRole(byEmail.data[0].role, 'client');
+                    localStorage.setItem(ONLIFIT_ROLE_STORAGE, resolvedByEmail);
+                    return resolvedByEmail;
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('Clerk role lookup failed, using local fallback.', error?.message || error);
+    }
+
+    const fallbackRole = 'client';
+    localStorage.setItem(ONLIFIT_ROLE_STORAGE, fallbackRole);
+    return fallbackRole;
+}
+
+function getConfiguredClerkPublishableKey() {
+    if (typeof window === 'undefined') return '';
+
+    const metaKey = document.querySelector('meta[name="clerk-publishable-key"]')?.content?.trim() || '';
+    const windowKey = (window.CLERK_PUBLISHABLE_KEY || '').trim();
+    const storedKey = (localStorage.getItem(ONLIFIT_CLERK_KEY_STORAGE) || '').trim();
+
+    return windowKey || metaKey || storedKey;
+}
+
+async function ensureClerkLoaded() {
+    if (typeof window === 'undefined') return null;
+
+    const publishableKey = getConfiguredClerkPublishableKey();
+    if (!publishableKey) return null;
+
+    if (_clerkLoadPromise) return _clerkLoadPromise;
+
+    _clerkLoadPromise = (async () => {
+        if (!window.Clerk) {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Failed to load Clerk script'));
+                document.head.appendChild(script);
+            });
+        }
+
+        await window.Clerk.load({ publishableKey });
+        return window.Clerk;
+    })();
+
+    try {
+        return await _clerkLoadPromise;
+    } catch (error) {
+        _clerkLoadPromise = null;
+        console.warn('Clerk init failed, falling back to Supabase auth only.', error?.message || error);
+        return null;
+    }
+}
+
+function buildClerkUser(clerkUser, roleHint) {
+    const fullName = clerkUser.fullName || [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || 'User';
+    const primaryEmail = getClerkPrimaryEmail(clerkUser) || null;
+    const primaryPhone = clerkUser.primaryPhoneNumber?.phoneNumber || null;
+    const role = normalizeUserRole(roleHint, getStoredUserRole('client'));
+
+    return {
+        id: clerkUser.id,
+        email: primaryEmail,
+        name: fullName,
+        phone: primaryPhone,
+        avatar_url: clerkUser.imageUrl || null,
+        role,
+        auth_provider: 'clerk',
+        user_metadata: {
+            name: fullName,
+            role
+        }
+    };
+}
+
+async function getCurrentClerkUser(roleHint) {
+    const clerk = await ensureClerkLoaded();
+    if (!clerk || !clerk.isSignedIn || !clerk.user) return null;
+    const resolvedRole = await resolveClerkRole(clerk.user, roleHint);
+    return buildClerkUser(clerk.user, resolvedRole);
+}
+
+async function getApiAccessToken() {
+    if (AUTH_BYPASS) return null;
+
+    try {
+        const clerk = await ensureClerkLoaded();
+        if (clerk?.isSignedIn && clerk.session?.getToken) {
+            const clerkToken = await clerk.session.getToken();
+            if (clerkToken) return clerkToken;
+        }
+    } catch (error) {
+        console.warn('Clerk API token resolution failed, falling back to Supabase token.', error?.message || error);
+    }
+
+    try {
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        return sessionData?.session?.access_token || null;
+    } catch {
+        return null;
+    }
+}
+
+async function getApiAuthHeader() {
+    const token = await getApiAccessToken();
+    return token ? `Bearer ${token}` : null;
+}
 
 function inferTemporaryRole() {
     const path = window.location.pathname.toLowerCase();
     if (path.includes('bookings') || path.includes('trainer-onboarding') || path.includes('/trainer')) return 'trainer';
     if (path.includes('admin')) return 'admin';
     return 'client';
+}
+
+function supportsCleanRoutes() {
+    if (typeof window === 'undefined') return false;
+    if (window.location.protocol === 'file:') return false;
+
+    const host = (window.location.hostname || '').toLowerCase();
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+
+    return host.endsWith('onlifit.in') || host.endsWith('vercel.app');
+}
+
+function resolveAppPath(cleanPath, htmlFallback) {
+    return supportsCleanRoutes() ? cleanPath : htmlFallback;
+}
+
+function getDashboardPathForRole(role) {
+    const normalized = normalizeUserRole(role, 'client');
+    if (normalized === 'admin') return 'admin-dashboard.html';
+    if (normalized === 'trainer') return resolveAppPath('/trainer/dashboard', 'bookings.html');
+    return resolveAppPath('/client/dashboard', 'client-dashboard.html');
+}
+
+function getMessagesPathForRole(role) {
+    const normalized = normalizeUserRole(role, 'client');
+    if (normalized === 'trainer') return resolveAppPath('/trainer/messages', 'messages.html');
+    if (normalized === 'client') return resolveAppPath('/client/messages', 'messages.html');
+    return 'messages.html';
 }
 
 function buildTemporaryUser(role = inferTemporaryRole(), overrides = {}) {
@@ -113,13 +322,23 @@ async function signUp(name, email, password, role, trainerData, phone) {
 /**
  * Sign in with Google
  */
-async function signInWithGoogle(role = 'client', isSignup = false) {
+async function signInWithGoogle(role = 'client', isSignup = false, options = {}) {
     if (AUTH_BYPASS) {
         return { success: true, user: buildTemporaryUser(role) };
     }
 
     try {
-        console.log('Google OAuth initiated with role:', role, 'isSignup:', isSignup);
+        const normalizedRole = normalizeUserRole(role, 'client');
+        const signupSource = String(options?.signupSource || '').toLowerCase();
+
+        if (isSignup && normalizedRole === 'trainer' && signupSource !== 'join-us') {
+            return {
+                success: false,
+                error: 'Trainer signup is only available from the Join Us page.'
+            };
+        }
+
+        console.log('Google OAuth initiated with role:', normalizedRole, 'isSignup:', isSignup, 'source:', signupSource);
 
         // Supabase URL Configuration (docs) uses the apex domain (`https://onlifit.in`).
         // If we send `redirectTo` for `www`, Supabase may reject it (not in allow-list)
@@ -129,16 +348,22 @@ async function signInWithGoogle(role = 'client', isSignup = false) {
         const authBase = (!isHttp)
             ? 'https://onlifit.in'
             : (isOnlifitDomain ? 'https://onlifit.in' : window.location.origin);
-        const redirectTo = `${authBase}/login`;
+        const redirectTo = `${authBase}/login.html`;
 
         // localStorage bridge is only for OAuth signups (role selection happens during signup).
         // For logins, role must be fetched from DB.
         if (isSignup) {
-            localStorage.setItem('oauth_role', role);
+            localStorage.setItem('oauth_role', normalizedRole);
             localStorage.setItem('oauth_is_signup', 'true');
+            localStorage.setItem(ONLIFIT_OAUTH_SIGNUP_SOURCE, signupSource || 'direct');
+            localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+            localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
         } else {
             localStorage.removeItem('oauth_role');
             localStorage.removeItem('oauth_is_signup');
+            localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+            localStorage.setItem(ONLIFIT_OAUTH_LOGIN_ROLE, normalizedRole);
+            localStorage.setItem(ONLIFIT_OAUTH_LOGIN_SOURCE, signupSource || 'direct');
         }
         
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
@@ -222,7 +447,13 @@ async function logout() {
         return;
     }
 
-    await supabaseClient.auth.signOut();
+    const clerk = await ensureClerkLoaded();
+
+    await Promise.allSettled([
+        supabaseClient.auth.signOut(),
+        clerk && clerk.isSignedIn ? clerk.signOut() : Promise.resolve()
+    ]);
+
     window.location.href = 'onlifit.html';
 }
 
@@ -234,18 +465,23 @@ async function getCurrentUser(roleHint) {
         return buildTemporaryUser(roleHint || inferTemporaryRole());
     }
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return null;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (user) {
+            const { data: profiles } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id);
 
-    const { data: profiles } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id);
+            // Handle no profile or multiple profiles
+            const profile = profiles && profiles.length > 0 ? profiles[0] : null;
+            return profile ? { ...user, ...profile } : user;
+        }
+    } catch (error) {
+        console.warn('Supabase getCurrentUser failed, trying Clerk fallback.', error?.message || error);
+    }
 
-    // Handle no profile or multiple profiles
-    const profile = profiles && profiles.length > 0 ? profiles[0] : null;
-
-    return profile ? { ...user, ...profile } : user;
+    return await getCurrentClerkUser(roleHint);
 }
 
 /**
@@ -269,6 +505,9 @@ async function handleOAuthCallback(options = {}) {
     const oauthRoleRaw = localStorage.getItem('oauth_role');
     const oauthIsSignup = localStorage.getItem('oauth_is_signup') === 'true';
     const oauthRole = oauthIsSignup ? (oauthRoleRaw || 'client') : null;
+    const oauthSignupSource = localStorage.getItem(ONLIFIT_OAUTH_SIGNUP_SOURCE) || '';
+    const oauthLoginRole = localStorage.getItem(ONLIFIT_OAUTH_LOGIN_ROLE) || 'client';
+    const oauthLoginSource = localStorage.getItem(ONLIFIT_OAUTH_LOGIN_SOURCE) || 'direct';
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
@@ -353,6 +592,34 @@ async function handleOAuthCallback(options = {}) {
         // Non-fatal
     }
 
+    if (oauthIsSignup && oauthRole === 'trainer' && oauthSignupSource !== 'join-us') {
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+        localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
+
+        await supabaseClient.auth.signOut();
+        window.location.replace('join-us.html?auth=trainer_only');
+        return;
+    }
+
+    if (!profile && !oauthIsSignup) {
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+        localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
+
+        await supabaseClient.auth.signOut();
+        if (oauthLoginRole === 'trainer' && oauthLoginSource === 'join-us') {
+            window.location.replace('login.html?tab=signup&role=trainer&source=join-us&reason=new-user');
+        } else {
+            window.location.replace('login.html?tab=signup&reason=new-user');
+        }
+        return;
+    }
+
     // Create profile if missing (mainly for first-time OAuth signups)
     if (!profile) {
         try {
@@ -376,6 +643,9 @@ async function handleOAuthCallback(options = {}) {
     // Clean up oauth local storage (only after session exists)
     localStorage.removeItem('oauth_role');
     localStorage.removeItem('oauth_is_signup');
+    localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+    localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+    localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
 
     const finalRole = profile?.role || oauthRole || user.user_metadata?.role || 'client';
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
@@ -388,10 +658,10 @@ async function handleOAuthCallback(options = {}) {
         if (oauthIsSignup && !profile?.onboarding_completed) {
             window.location.replace('trainer-onboarding.html');
         } else {
-            window.location.replace('/trainer/dashboard');
+            window.location.replace(getDashboardPathForRole('trainer'));
         }
     } else {
-        window.location.replace(oauthIsSignup ? 'onboarding.html' : '/client/dashboard');
+        window.location.replace(oauthIsSignup ? 'onboarding.html' : getDashboardPathForRole('client'));
     }
 }
 
@@ -531,8 +801,7 @@ async function requireAuth(requiredRole, redirectUrl) {
         return null;
     }
     if (requiredRole && user.role !== requiredRole) {
-        if (user.role === 'admin') window.location.href = 'admin-dashboard.html';
-        else window.location.href = user.role === 'trainer' ? '/trainer/dashboard' : '/client/dashboard';
+        window.location.href = getDashboardPathForRole(user.role);
         return null;
     }
     return user;
@@ -555,7 +824,18 @@ function normalizeTrainerList(list) {
 let _cachedTrainers = null;
 let _cachedTrainersTime = 0;
 
-async function getTrainers() {
+async function getTrainers(options = {}) {
+    const onUpdate = typeof options === 'function' ? options : options?.onUpdate;
+
+    const emitUpdate = (list) => {
+        if (typeof onUpdate !== 'function') return;
+        try {
+            onUpdate(list);
+        } catch (callbackError) {
+            console.error('getTrainers onUpdate callback failed:', callbackError);
+        }
+    };
+
     // 1. Check memory cache (fastest)
     if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
         return _cachedTrainers;
@@ -575,7 +855,7 @@ async function getTrainers() {
         }
     } catch (e) {}
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode';
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode, latitude, longitude';
     const selectWithBadge = selectBase + ', has_black_status';
 
     try {
@@ -610,6 +890,9 @@ async function getTrainers() {
                     _cachedTrainersTime = Date.now();
                     localStorage.setItem(TRAINERS_CACHE_KEY, JSON.stringify(normalized));
                     localStorage.setItem(TRAINERS_CACHE_TIME_KEY, Date.now().toString());
+                    emitUpdate(normalized);
+                } else {
+                    emitUpdate(_cachedTrainers || []);
                 }
             }).catch(e => console.error('Background fetch error:', e));
 
@@ -633,9 +916,11 @@ async function getTrainers() {
         _cachedTrainersTime = Date.now();
         localStorage.setItem(TRAINERS_CACHE_KEY, JSON.stringify(normalized));
         localStorage.setItem(TRAINERS_CACHE_TIME_KEY, Date.now().toString());
+        emitUpdate(normalized);
         return normalized;
     } catch (err) {
         console.error('getTrainers failed:', err);
+        emitUpdate(_cachedTrainers || []);
         return _cachedTrainers || [];
     }
 }
@@ -746,7 +1031,7 @@ async function searchTrainers(query, location) {
         return filtered;
     }
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags';
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude';
     const selectWithBadge = selectBase + ', has_black_status';
 
     const buildQuery = (selectStr) => {
@@ -816,21 +1101,23 @@ async function getBookingsForUser(userId) {
 
 async function createBooking(clientId, trainerId, planType, details) {
     try {
-        const { data: sessionData } = await supabaseClient.auth.getSession();
-        const token = sessionData?.session?.access_token;
+        const authHeader = await getApiAuthHeader();
+        if (!authHeader) {
+            throw new Error('You must be signed in to create a booking');
+        }
         
         // Let's call our newly created secure API endpoint on Vercel
         const response = await fetch('/api/create-booking', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': authHeader
             },
             body: JSON.stringify({
-                clientId: clientId,
                 trainerId: trainerId,
                 planType: planType,
                 details: details,
-                authHeader: `Bearer ${token}` // Pass the token to verify the user
+                authHeader: authHeader // Backward compatibility while APIs migrate
             })
         });
 
@@ -1286,17 +1573,90 @@ window.normalizeTrainerBadges = normalizeTrainerBadges;
 window.renderOnlifitBadgeHtml = renderOnlifitBadgeHtml;
 window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
 
+const OFFLINE_LOCATION_CACHE_KEY = 'onlifit_offline_location_v1';
+let offlineLocationRequestPromise = null;
+
+async function resolveOfflineSearchLocation() {
+    const cached = readOfflineLocationCache();
+    if (cached?.label) return cached;
+    if (offlineLocationRequestPromise) return offlineLocationRequestPromise;
+
+    offlineLocationRequestPromise = (async () => {
+        if (!navigator.geolocation) {
+            throw new Error('Geolocation is not available in this browser.');
+        }
+
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 6500,
+                maximumAge: 300000
+            });
+        });
+
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const label = await reverseGeocodeOfflineLocation(lat, lng);
+        const resolved = {
+            lat,
+            lng,
+            label: label || 'Your area'
+        };
+
+        saveOfflineLocationCache(resolved);
+        return resolved;
+    })();
+
+    try {
+        return await offlineLocationRequestPromise;
+    } finally {
+        offlineLocationRequestPromise = null;
+    }
+}
+
+async function reverseGeocodeOfflineLocation(lat, lng) {
+    const url = `https://photon.komoot.io/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lng)}&limit=1&lang=en`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const feature = data?.features?.[0];
+    const props = feature?.properties || {};
+    const cityBits = [props.city, props.town, props.village, props.suburb, props.county].filter(Boolean);
+    if (cityBits.length) {
+        return cityBits.slice(0, 2).join(', ');
+    }
+
+    return props.name || props.state || props.country || null;
+}
+
+function readOfflineLocationCache() {
+    try {
+        return JSON.parse(sessionStorage.getItem(OFFLINE_LOCATION_CACHE_KEY) || 'null');
+    } catch {
+        return null;
+    }
+}
+
+function saveOfflineLocationCache(value) {
+    try {
+        sessionStorage.setItem(OFFLINE_LOCATION_CACHE_KEY, JSON.stringify(value));
+    } catch {
+        // Non-fatal
+    }
+}
+
+window.resolveOfflineSearchLocation = resolveOfflineSearchLocation;
+window.getApiAccessToken = getApiAccessToken;
+window.getApiAuthHeader = getApiAuthHeader;
+
 async function renderAuthNav() {
     const user = await getCurrentUser();
     const navAuthContainer = document.getElementById('nav-auth') || document.getElementById('auth-nav');
     const mobileNavAuthContainer = document.getElementById('mobile-nav-auth');
 
     if (AUTH_BYPASS) {
-        const dashboardHref = user.role === 'admin'
-            ? 'admin-dashboard.html'
-            : user.role === 'trainer'
-                ? '/trainer/dashboard'
-                : '/client/dashboard';
+        const dashboardHref = getDashboardPathForRole(user.role);
         const desktopHtml = `
             <div class="flex items-center gap-3">
                 <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
@@ -1318,20 +1678,40 @@ async function renderAuthNav() {
     }
 
     if (user) {
+        if (user.auth_provider === 'clerk') {
+            const dashboardHref = user.role === 'admin'
+                ? 'admin-dashboard.html'
+                : user.role === 'trainer'
+                    ? 'bookings.html'
+                    : 'client-dashboard.html';
+
+            const desktopHtml = `
+                <div class="flex items-center gap-3">
+                    <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <button onclick="logout()" class="px-4 py-2 text-sm font-bold rounded-lg bg-primary text-on-primary hover:opacity-90 transition-all">Logout</button>
+                </div>
+            `;
+
+            const mobileHtml = `
+                <a href="${dashboardHref}" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all flex justify-center items-center gap-2">
+                    <span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+                </a>
+                <button onclick="logout()" class="w-full text-center px-6 py-3 text-base font-bold rounded-xl bg-primary text-on-primary hover:opacity-90 transition-all">Logout</button>
+            `;
+
+            if (navAuthContainer) navAuthContainer.innerHTML = desktopHtml;
+            if (mobileNavAuthContainer) mobileNavAuthContainer.innerHTML = mobileHtml;
+            return;
+        }
+
         const notifications = await getNotifications(user.id);
         const unreadCount = notifications.filter(n => !n.read).length;
 
-        const dashboardHref = user.role === 'admin'
-            ? 'admin-dashboard.html'
-            : user.role === 'trainer'
-                ? '/trainer/dashboard'
-                : '/client/dashboard';
-
-        const messagesHref = user.role === 'trainer'
-            ? '/trainer/messages'
-            : user.role === 'client'
-                ? '/client/messages'
-                : 'messages.html';
+        const dashboardHref = getDashboardPathForRole(user.role);
+        const messagesHref = getMessagesPathForRole(user.role);
 
         const desktopHtml = `
             <div class="flex items-center justify-end gap-3 sm:gap-6 w-full">

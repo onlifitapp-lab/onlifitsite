@@ -1,3 +1,5 @@
+import { extractBearerToken, getServiceSupabaseClient, resolveRequestAuth } from './_auth.js';
+
 // Simple in-memory KV store for rate limiting in serverless environments (Ephemeral but helps against burst spam per lambda container)
 const rateLimitCache = new Map();
 const MAX_TICKETS_PER_WINDOW = 3;
@@ -26,28 +28,25 @@ export default async function handler(req, res) {
             rateLimitCache.set(ip, { requests: [now] });
         }
 
-        const { subject, category, message, guestEmail, authHeader } = req.body;
+        const { subject, category, message, guestEmail } = req.body || {};
 
         if (!subject || !message) {
             return res.status(400).json({ error: 'Subject and message are required' });
         }
 
         // Initialize Secure Backend Supabase Client
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(
-            process.env.VITE_SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
+        const supabase = getServiceSupabaseClient();
 
         let userId = null;
+        const token = extractBearerToken(req);
 
-        // If logged in, get their user ID
-        if (authHeader) {
-            const token = authHeader.replace('Bearer ', '');
-            const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-            if (!authError && user) {
-                userId = user.id;
+        // If a token is provided, it must be valid (Supabase or Clerk).
+        if (token) {
+            const auth = await resolveRequestAuth(req);
+            if (!auth.authenticated) {
+                return res.status(auth.status || 401).json({ error: auth.error || 'Unauthorized' });
             }
+            userId = auth.userId;
         }
 
         // Include guest email in the message if they aren't logged in

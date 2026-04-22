@@ -486,15 +486,26 @@
             bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Processing...';
 
             try {
+                const authHeader = typeof getApiAuthHeader === 'function'
+                    ? await getApiAuthHeader()
+                    : null;
+
+                if (!authHeader) {
+                    throw new Error('Please sign in before booking a trainer');
+                }
+
                 // 1. Create Order via Vercel Backend
                 const response = await fetch('/api/create-order', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': authHeader
+                    },
                     body: JSON.stringify({
-                        clientId: user.id,
                         trainerId: trainer.id,
                         planType: selectedPlan,
-                        details: { date, time }
+                        details: { date, time },
+                        authHeader
                     })
                 });
                 

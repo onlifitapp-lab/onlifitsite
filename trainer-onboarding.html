@@ -747,7 +747,7 @@
                 
                 if (!user) {
                     alert('Please log in as a trainer first');
-                    window.location.href = 'bookings.html';
+                    window.location.href = 'login.html';
                     return;
                 }
                 
@@ -775,7 +775,7 @@
             } catch (error) {
                 console.error('Error checking user:', error);
                 alert('Error loading page. Please try logging in again.');
-                window.location.href = 'bookings.html';
+                window.location.href = 'login.html';
             }
         };
 

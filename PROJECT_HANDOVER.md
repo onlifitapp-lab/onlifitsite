@@ -31,6 +31,8 @@ To make the application feel instantaneous, we utilize a two-pronged data updati
 1.  **Optimistic UI Sync:** When a user edits their settings (e.g., changes their location), the local browser state and HTML DOM are updated *instantly* in 0.001s without waiting for the network response. The Supabase save happens invisibly in the background.
 2.  **Supabase Realtime WebSockets:** We enabled PostgreSQL logical replication. If a client is browsing the `trainers.html` (Find Trainers) directory, and a trainer updates their pricing or location, a WebSocket payload is pushed to the client immediately mapping the new data to the trainer's card without the user refreshing the page.
 
+**Realtime tables note:** realtime events only fire for tables included in the `supabase_realtime` publication. If you add new columns that must broadcast (e.g., `profiles.has_black_status`), re-add the table to the publication (drop/add) so new columns are included.
+
 ---
 
 ## 3. Major Features & Timeline of Changes
@@ -54,20 +56,45 @@ Here is the exact journey of what has been implemented to stabilize the platform
 *   Restructured the sidebar navigation arrays down to horizontally scrolling tab-bars on mobile viewports.
 *   Ensured `<main>` panels no longer squish or bleed out of the viewing frame by enforcing Tailwind flex-shrink behaviors and custom padding bounds.
 
+### Premium Badge System: “OnliFit Black”
+We added a premium trainer tier badge that can be used across multiple pages and is designed to be scalable for future badges (e.g., Coach+, Elite).
+
+*   **DB field:** `public.profiles.has_black_status BOOLEAN DEFAULT FALSE`
+    *   Toggle any trainer:
+        ```sql
+        update public.profiles set has_black_status = true where id = '<trainer_uuid>';
+        ```
+*   **Conditional UI:** badge renders only when `trainer.hasBlackStatus === true` (normalized from DB `has_black_status`).
+*   **Where it shows:**
+    *   `trainers.html` trainer cards (corner badge) + “Show only OnliFit Black” checkbox filter
+    *   `client-dashboard.html` → Find Trainers (corner badge) + “Show only OnliFit Black” checkbox filter
+    *   `trainer-profile.html` near trainer name + short description (“top 10%”)
+    *   `onlifit.html` homepage “Premium Trainers” cards (corner badge)
+*   **Implementation:** centralized in `auth.js`:
+    *   `ONLIFIT_BADGE_DEFS`, `normalizeTrainerBadges()`, `renderTrainerBadgesHtml()`
+    *   Styles are injected once via `ensureOnlifitBadgeStyles()` (avoids editing huge compiled CSS)
+
+### Caching Note (important for badge visibility)
+*   `auth.js` caches trainer lists in memory + `localStorage` for ~5 minutes (keys are versioned, currently `onlifit_trainers_cache_v2`).
+*   `vercel.json` is configured so **images are long-cached**, but **CSS/JS are not immutable** (so new JS changes like the badge ship immediately).
+
 ---
 
 ## 4. File Map: What Does What?
 
 If you need to edit something, look here first:
 
-*   **`auth.js`**: The central nervous system of the front end. Contains all core functions for `signInWithGoogle`, database user updates (`updateUserProfile`), catching OAuth tokens on load, and checking the current viewer's session.
+*   **`auth.js`**: The central nervous system of the front end. Contains all core functions for `signInWithGoogle`, database user updates (`updateUserProfile`), catching OAuth tokens on load, and checking the current viewer's session. It also contains the premium badge helpers (OnliFit Black) and trainer list caching.
 *   **`login.html`**: Temporary auth-disabled landing page while OTP auth is being implemented.
 *   **`supabase-client.js`**: Contains the hard-coded API Keys and initialization strings for connecting to our specific Supabase instance.
+*   **`onlifit.html`**: The effective homepage (Vercel rewrite `/` → `/onlifit.html`). Renders “Premium Trainers” dynamically via `getTrainers()`.
 *   **`client-dashboard.html`**: The main hub for regular users viewing their upcoming sessions.
 *   **`bookings.html`**: The main hub for **Trainers**. Includes the virtual SPA router (`DashboardRouter`) for jumping between Dashboard, Bookings list, and Profile Settings.
-*   **`trainer.html` / `trainers.html`**: The public viewing portals for finding trainers. Both actively listen to WebSocket events for live adjustments.
+*   **`trainer.html` / `trainers.html`**: The public viewing portals for finding trainers. These pages render trainer cards dynamically and can listen to realtime updates.
+*   **`trainer-profile.html`**: Public trainer profile page (supports OnliFit Black badge near the name).
+*   **`messages.html`**: Standalone messages page (loads `supabase-client.js` + `auth.js` for realtime chat features).
 *   **`admin-dashboard.html`** / **`admin-login.html`**: Admin access is temporarily bypassed for local editing access.
-*   **`vercel.json`**: Controls the live hosting production environment parameters (redirects, Security headers, HTTP Cache controls).
+*   **`vercel.json`**: Controls the live hosting production environment parameters (rewrites, security headers, and cache controls; note CSS/JS are not set to immutable).
 
 ## 5. Helpful Commands & Scripts
 We frequently utilized inline Node.js `cheerio` HTML parsers during development to dynamically inject IDs or classes safely across thousands of lines of HTML. While not in the active repos anymore, any repetitive mass HTML injection should ideally be done via small `.cjs` Node scripts.

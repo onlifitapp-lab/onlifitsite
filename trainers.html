@@ -57,23 +57,23 @@
             <p class="text-on-surface-variant text-lg mb-8 max-w-2xl mx-auto">Discover India's largest community of certified personal trainers</p>
             
             <!-- Search Bar -->
-            <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-2 border border-outline-variant/50 flex flex-col md:flex-row gap-2 mb-8">
-                <div class="flex-1 flex items-center gap-3 px-5 py-4 md:border-r border-outline-variant/30">
+            <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-2 border border-outline-variant/50 flex flex-col md:flex-row md:items-stretch gap-2 mb-8 overflow-hidden">
+                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-4 md:py-0 md:min-h-[72px] md:border-r border-outline-variant/30">
                     <input id="search-query" type="text" placeholder="Try 'Yoga' or 'Weight Loss'" 
                         class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
                 </div>
-                <div class="flex-1 flex items-center gap-3 px-5 py-4">
+                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-4 md:py-0 md:min-h-[72px]">
                     <select id="search-mode" onchange="toggleLocationInput()" 
-                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer">
+                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer h-12 md:h-auto">
                         <option value="online">Online</option>
                         <option value="offline">Offline</option>
                     </select>
                     <input id="search-location" type="text" placeholder="Pincode or City" 
                         style="display: none;"
-                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent h-12 md:h-auto" />
                 </div>
                 <button onclick="performSearch()" 
-                    class="bg-primary text-on-primary px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-all">
+                    class="bg-primary text-on-primary px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-all w-full md:w-auto md:min-h-[72px] flex items-center justify-center">
                     Search
                 </button>
             </div>
@@ -133,17 +133,67 @@
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
-        renderAuthNav();
+        requestAnimationFrame(() => {
+            void renderAuthNav();
+            void loadTrainers();
+        });
 
         let allTrainers = [];
         let currentFilter = 'all';
         let currentSort = 'rating';
         let showOnlyBlack = false;
+        let trainerRealtimeSubscribed = false;
 
         function toggleLocationInput() {
             const mode = document.getElementById('search-mode').value;
             const locationInput = document.getElementById('search-location');
             locationInput.style.display = mode === 'offline' ? 'block' : 'none';
+            if (mode === 'offline') {
+                void prefillOfflineLocation();
+            } else {
+                locationInput.placeholder = 'Pincode or City';
+            }
+        }
+
+        async function prefillOfflineLocation() {
+            const locationInput = document.getElementById('search-location');
+            if (!locationInput || locationInput.value.trim()) return;
+
+            locationInput.placeholder = 'Detecting your city...';
+            try {
+                const resolved = await requestOfflineSearchLocation();
+                if (document.getElementById('search-mode')?.value !== 'offline') return;
+                if (resolved?.label && !locationInput.value.trim()) {
+                    locationInput.value = resolved.label;
+                }
+            } catch {
+                locationInput.placeholder = 'Enter your city';
+                locationInput.focus();
+            }
+        }
+
+        async function requestOfflineSearchLocation() {
+            if (typeof window.resolveOfflineSearchLocation === 'function') {
+                return window.resolveOfflineSearchLocation();
+            }
+
+            if (!navigator.geolocation) {
+                throw new Error('Geolocation is not available in this browser.');
+            }
+
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 6500,
+                    maximumAge: 300000
+                });
+            });
+
+            return {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                label: 'Your area'
+            };
         }
 
         function formatPrice(price) {
@@ -153,6 +203,9 @@
         
 // --- REALTIME UPDATES ---
 function listenForTrainerUpdates() {
+    if (trainerRealtimeSubscribed) return;
+    trainerRealtimeSubscribed = true;
+
     supabase.channel('public-trainers-updates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, payload => {
             const row = payload.new || payload.old;
@@ -180,30 +233,42 @@ function listenForTrainerUpdates() {
 // ------------------------
 
 
+        function applyTrainerData(trainers) {
+            allTrainers = Array.isArray(trainers) ? [...trainers] : [];
+            if (allTrainers.length > 0) {
+                allTrainers.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+            }
+
+            applyAllFilters();
+            listenForTrainerUpdates();
+        }
+
         async function loadTrainers() {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
 
             try {
+                const blackOnly = document.getElementById('black-only');
+                if (blackOnly && !blackOnly.dataset.bound) {
+                    blackOnly.addEventListener('change', () => {
+                        showOnlyBlack = !!blackOnly.checked;
+                        applyAllFilters();
+                    });
+                    blackOnly.dataset.bound = '1';
+                }
+
                 // Prefer auth.js helper (caching + consistent shape)
                 if (typeof getTrainers === 'function') {
-                    allTrainers = await getTrainers();
+                    const initialTrainers = await getTrainers({
+                        onUpdate: (freshTrainers) => {
+                            applyTrainerData(freshTrainers);
+                        }
+                    });
 
-                    if (allTrainers && allTrainers.length > 0) {
-                        allTrainers.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+                    if (Array.isArray(initialTrainers) && initialTrainers.length > 0) {
+                        applyTrainerData(initialTrainers);
                     }
 
-                    // Wire "OnliFit Black" filter checkbox
-                    const blackOnly = document.getElementById('black-only');
-                    if (blackOnly) {
-                        blackOnly.addEventListener('change', () => {
-                            showOnlyBlack = !!blackOnly.checked;
-                            applyAllFilters();
-                        });
-                    }
-
-                    applyAllFilters();
-                    listenForTrainerUpdates();
                     return;
                 }
 
@@ -215,19 +280,10 @@ function listenForTrainerUpdates() {
                     .order('rating', { ascending: false });
 
                 if (error) throw error;
-                allTrainers = data || [];
-
-                const blackOnly = document.getElementById('black-only');
                 if (blackOnly) {
-                    blackOnly.addEventListener('change', () => {
-                        showOnlyBlack = !!blackOnly.checked;
-                        applyAllFilters();
-                    });
                     showOnlyBlack = !!blackOnly.checked;
                 }
-
-                applyAllFilters();
-                listenForTrainerUpdates();
+                applyTrainerData(data || []);
             } catch (error) {
                 console.error('Error loading trainers:', error);
                 allTrainers = [];
@@ -252,9 +308,9 @@ function listenForTrainerUpdates() {
 
         function normalizeTrainingMode(mode) {
             const m = String(mode || '').toLowerCase();
-            if (m === 'both') return 'Online & Offline';
-            if (m === 'offline') return 'Offline';
-            if (m === 'online') return 'Online';
+            if (m === 'both') return 'face to face & online';
+            if (m === 'offline') return 'face to face';
+            if (m === 'online') return 'online';
             return '';
         }
 
@@ -262,7 +318,8 @@ function listenForTrainerUpdates() {
             const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
             const location = (cityState || t?.location || '').trim();
             const mode = normalizeTrainingMode(t?.training_mode);
-            return [location, mode].filter(Boolean).join(' • ');
+            if (location && mode) return `${location} (${mode})`;
+            return location || mode;
         }
 
         function renderTrainerAvatar(t) {
@@ -282,18 +339,42 @@ function listenForTrainerUpdates() {
             const count = Number(t?.review_count);
 
             if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
-                return `<div class="flex items-center gap-1 bg-tertiary text-on-tertiary px-2 py-0.5 rounded text-xs font-bold">${rating.toFixed(1)} <span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span></div>`;
+                const ratingText = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+                return `
+                    <div class="mb-3">
+                        <div class="text-sm font-bold text-on-surface leading-none">${escapeHtml(ratingText)}</div>
+                        <div class="text-xs text-on-surface-variant font-medium mt-1">(${count} review${count === 1 ? '' : 's'})</div>
+                    </div>
+                `;
             }
 
-            return `<div class="flex items-center gap-1 bg-white/90 text-on-surface px-2 py-0.5 rounded text-xs font-bold">New</div>`;
+            return `
+                <div class="mb-3">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold uppercase tracking-wider">
+                        New
+                    </span>
+                </div>
+            `;
         }
 
         function renderTrainerPriceLine(t) {
             const p = getHourlyPrice(t);
             if (p) {
-                return `<span class="text-primary font-bold text-xl">${formatPrice(p)}</span><span class="text-on-surface-variant text-sm">/hour</span>`;
+                return `<span class="text-primary font-bold text-xl">${formatPrice(p)}</span><span class="text-on-surface-variant text-sm">/hr</span>`;
             }
             return `<span class="text-primary font-bold">View pricing</span>`;
+        }
+
+        function renderTrainerBadgeLine(t) {
+            const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
+                ? window.renderTrainerBadgesHtml(t, { variant: 'inline', size: 'sm' })
+                : '';
+
+            return badgeHtml ? `<div class="mb-3">${badgeHtml}</div>` : '';
+        }
+
+        function renderTrainerOfferLine() {
+            return `<p class="mt-2 text-sm font-semibold text-primary">1st free class</p>`;
         }
 
         function renderTrainers(trainers) {
@@ -317,40 +398,31 @@ function listenForTrainerUpdates() {
             grid.innerHTML = trainers.map(tRaw => {
                 const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : tRaw;
                 const meta = getTrainerMeta(t);
-                const specialty = (t?.specialty || '').trim();
                 const bio = (t?.bio || '').trim();
-                const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
-                    ? window.renderTrainerBadgesHtml(t, { variant: 'corner', size: 'sm' })
-                    : '';
+                const specialty = (t?.specialty || '').trim();
+                const description = bio || specialty || '';
 
                 return `
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-outline-variant/20" onclick="window.location.href='trainer-profile.html?id=${t.id}'">
                         <div class="relative h-64 bg-gradient-to-br from-primary/10 to-secondary/5 flex items-center justify-center overflow-hidden">
-                            ${badgeHtml}
                             ${renderTrainerAvatar(t)}
-                            <div class="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-md p-4 rounded-lg">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-on-surface font-headline font-bold text-xl">${escapeHtml(t?.name || 'Trainer')}</span>
-                                    ${renderTrainerRatingChip(t)}
-                                </div>
-                            </div>
                         </div>
-                        <div class="px-4 pb-4 pt-4">
+                        <div class="p-5 flex flex-col">
+                            <h3 class="font-headline font-bold text-xl text-on-surface mb-1 group-hover:text-primary transition-colors">${escapeHtml(t?.name || 'Trainer')}</h3>
                             ${meta ? `
-                                <p class="text-on-surface-variant text-sm mb-3 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <p class="text-on-surface-variant text-sm mb-3">
                                     ${escapeHtml(meta)}
                                 </p>
                             ` : ''}
 
-                            ${specialty ? `<h3 class="font-headline text-lg font-bold text-on-surface mb-1">${escapeHtml(specialty)}</h3>` : ''}
+                            ${renderTrainerRatingChip(t)}
+                            ${renderTrainerBadgeLine(t)}
+                            ${description ? `<p class="text-sm text-on-surface-variant mb-4 line-clamp-2 flex-grow">${escapeHtml(description)}</p>` : ''}
 
-                            ${bio ? `<p class="text-on-surface-variant text-sm mb-4 line-clamp-2">${escapeHtml(bio)}</p>` : ''}
-
-                            <div class="mb-4">${renderTrainerPriceLine(t)}</div>
-                            <button class="w-full py-3 bg-secondary/5 text-secondary font-bold rounded-full group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-300">
-                                View Profile
-                            </button>
+                            <div class="mt-auto pt-3">
+                                <div class="flex items-baseline gap-1">${renderTrainerPriceLine(t)}</div>
+                                ${renderTrainerOfferLine()}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -449,6 +521,22 @@ function listenForTrainerUpdates() {
         }
 
         async function performSearch() {
+            const mode = document.getElementById('search-mode')?.value || 'online';
+            const locationInput = document.getElementById('search-location');
+            if (mode === 'offline' && locationInput && !locationInput.value.trim()) {
+                try {
+                    const resolved = await requestOfflineSearchLocation();
+                    if (resolved?.label) {
+                        locationInput.value = resolved.label;
+                    } else {
+                        locationInput.focus();
+                        return;
+                    }
+                } catch {
+                    locationInput.focus();
+                    return;
+                }
+            }
             applyAllFilters();
         }
 
@@ -472,8 +560,6 @@ function listenForTrainerUpdates() {
             applyAllFilters();
         }
 
-        // Load trainers on page load
-        loadTrainers();
     </script>
 </body>
 </html>

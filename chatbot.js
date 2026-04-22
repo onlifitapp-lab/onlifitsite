@@ -308,12 +308,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ticketData.message = message;
             
             // Check if they are logged in via Supabase (from localStorage/token)
-            const sessionData = await window.supabaseClient?.auth?.getSession();
-            if (!sessionData?.data?.session) {
+            const authHeader = typeof window.getApiAuthHeader === 'function'
+                ? await window.getApiAuthHeader()
+                : null;
+
+            if (!authHeader) {
                 ticketStep = 3;
                 setTimeout(() => appendMessage('bot', 'Since you are not logged in, please provide your <strong>Email Address</strong> so we can reply to you.'), 400);
             } else {
-                submitTicket(sessionData.data.session.access_token);
+                submitTicket(authHeader);
             }
         } else if (ticketStep === 3) {
             ticketData.email = message;
@@ -321,18 +324,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function submitTicket(token) {
+    async function submitTicket(authHeader) {
         appendMessage('bot', '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> Creating your ticket securely...');
         
         try {
             const res = await fetch('/api/create-ticket', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authHeader ? { 'Authorization': authHeader } : {})
+                },
                 body: JSON.stringify({
                     subject: ticketData.subject,
                     message: ticketData.message,
                     guestEmail: ticketData.email,
-                    authHeader: token ? `Bearer ${token}` : null
+                    authHeader
                 })
             });
 
