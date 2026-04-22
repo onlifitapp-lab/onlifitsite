@@ -688,7 +688,7 @@
             const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
             const location = (cityState || t?.location || '').trim();
             const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
-            return [location, mode].filter(Boolean).join(' • ');
+            return [location, mode].filter(Boolean).join(' â€¢ ');
         }
 
         function getHourlyPrice(t) {
