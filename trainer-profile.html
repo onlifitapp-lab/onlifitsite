@@ -35,8 +35,7 @@
         .shadow-ambient {
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
         }
-    </style>
-      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        </style>
     <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
         <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
@@ -175,6 +174,23 @@
     <script>
         let trainer = null;
         let selectedPlan = null;
+        let razorpayScriptPromise = null;
+
+        function loadRazorpayScript() {
+            if (window.Razorpay) return Promise.resolve();
+            if (razorpayScriptPromise) return razorpayScriptPromise;
+
+            razorpayScriptPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.async = true;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error('Failed to load payment SDK.'));
+                document.head.appendChild(script);
+            });
+
+            return razorpayScriptPromise;
+        }
 
         // Show loading skeleton
         function showLoadingSkeleton() {
@@ -220,8 +236,8 @@
             }
         }
 
-        // Initialize Page Content
-        window.onload = async function () {
+        // Initialize page as soon as DOM is ready. This avoids waiting for all assets.
+        document.addEventListener('DOMContentLoaded', async () => {
             showLoadingSkeleton();
             
             // Run auth nav and trainer fetch in parallel
@@ -249,12 +265,11 @@
                 return;
             }
 
-            // Track profile visits (used for trainer dashboard insights).
-            // Safe to fail silently if the table/policies aren't set up yet.
-            await trackProfileVisit(trainer.id);
+            // Track profile visits in the background (non-blocking for UI rendering).
+            trackProfileVisit(trainer.id);
 
             renderTrainerProfile();
-        };
+        });
 
         function renderTrainerProfile() {
             // Update page title
@@ -486,6 +501,8 @@
             bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Processing...';
 
             try {
+                await loadRazorpayScript();
+
                 const authHeader = typeof getApiAuthHeader === 'function'
                     ? await getApiAuthHeader()
                     : null;
