@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="light" lang="en"><head>
+﻿<!DOCTYPE html><html class="light" lang="en"><head>
 <script>
     document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');
 </script>
@@ -184,7 +184,7 @@
                     <a href="/trainer/bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">View all</a>
                 </div>
                 <div id="next-sessions-list" class="divide-y divide-outline-variant/20">
-                    <div class="p-6 text-sm text-on-surface-variant">Loading…</div>
+                    <div class="p-6 text-sm text-on-surface-variant">Loadingâ€¦</div>
                 </div>
             </div>
 
@@ -196,7 +196,7 @@
                 <div class="p-6 space-y-4">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Avg Rating</span>
-                        <span class="text-lg font-black font-headline" id="stat-avg-rating">—</span>
+                        <span class="text-lg font-black font-headline" id="stat-avg-rating">â€”</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Reviews</span>
@@ -205,7 +205,7 @@
                     <div class="h-px bg-outline-variant/20"></div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Booking Value (30d)</span>
-                        <span class="text-sm font-black" id="stat-revenue-30d">—</span>
+                        <span class="text-sm font-black" id="stat-revenue-30d">â€”</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">New Bookings (7d)</span>
@@ -232,7 +232,7 @@
                 </div>
                 <div class="w-full md:w-80 relative">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                    <input id="bookings-search" type="text" placeholder="Search by client or planâ€¦" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                 </div>
             </div>
 
@@ -243,7 +243,7 @@
         <div id="trainer-bookings-empty" class="hidden bg-white rounded-2xl p-10 border border-dashed border-outline-variant/40 text-center mt-6">
             <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">event</span>
             <h3 class="text-xl font-bold font-headline">No bookings found</h3>
-            <p class="text-sm text-on-surface-variant mt-2">When clients book you, they’ll appear here.</p>
+            <p class="text-sm text-on-surface-variant mt-2">When clients book you, theyâ€™ll appear here.</p>
         </div>
     </section>
 
@@ -258,7 +258,7 @@
                 <div class="p-6 border-b border-outline-variant/50">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                        <input id="contacts-search" type="text" placeholder="Search contactsâ€¦" class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                     </div>
                 </div>
                 <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30"></div>
@@ -293,9 +293,92 @@
                 </div>
 
                 <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                    <div class="mb-4 rounded-xl border border-outline-variant/40 bg-surface-container-low p-3">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Coach Assistant</p>
+                                <p class="text-sm font-semibold text-on-surface">Quick BMI + TDEE for this client</p>
+                            </div>
+                            <button type="button" id="calc-helper-toggle" class="px-4 py-2 rounded-lg bg-white border border-outline-variant text-xs font-black uppercase tracking-widest text-on-surface hover:border-primary hover:text-primary transition-colors">Open Tool</button>
+                        </div>
+
+                        <div id="calc-helper-panel" class="hidden mt-3 border-t border-outline-variant/30 pt-3 space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Units</label>
+                                    <select id="calc-unit" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                                        <option value="metric" selected>Metric (kg/cm)</option>
+                                        <option value="imperial">Imperial (lb/ft+in)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Age</label>
+                                    <input id="calc-age" type="number" min="1" placeholder="e.g. 28" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Gender</label>
+                                    <select id="calc-gender" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                                        <option value="male" selected>Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div id="calc-height-metric-wrap">
+                                    <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Height (cm)</label>
+                                    <input id="calc-height-cm" type="number" min="1" placeholder="e.g. 172" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                                </div>
+                                <div id="calc-height-imperial-wrap" class="hidden md:col-span-2 grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Height (ft)</label>
+                                        <input id="calc-height-ft" type="number" min="0" placeholder="5" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Inches (in)</label>
+                                        <input id="calc-height-in" type="number" min="0" placeholder="9" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label id="calc-weight-label" class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Weight (kg)</label>
+                                    <input id="calc-weight" type="number" min="1" placeholder="e.g. 70" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">Activity</label>
+                                    <select id="calc-activity" class="w-full px-3 py-2 rounded-lg border border-outline-variant bg-white text-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                                        <option value="1.2">Sedentary</option>
+                                        <option value="1.375">Light (1-2 days/week)</option>
+                                        <option value="1.55" selected>Moderate (3-5 days/week)</option>
+                                        <option value="1.725">Heavy (6-7 days/week)</option>
+                                        <option value="1.9">Athlete (2x/day)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end gap-2">
+                                    <button type="button" id="calc-from-profile-btn" class="px-3 py-2 rounded-lg bg-white border border-outline-variant text-xs font-black uppercase tracking-widest text-on-surface hover:border-primary hover:text-primary transition-colors">Use Client Profile</button>
+                                    <button type="button" id="calc-run-btn" class="px-3 py-2 rounded-lg bg-primary text-on-primary text-xs font-black uppercase tracking-widest hover:opacity-90 transition-opacity">Calculate</button>
+                                </div>
+                            </div>
+
+                            <div id="calc-output" class="hidden rounded-lg bg-white border border-outline-variant/40 p-3">
+                                <p class="text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Result</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                    <div class="rounded-md bg-surface-container-low p-2"><span class="block text-on-surface-variant">BMI</span><span id="calc-out-bmi" class="font-black text-on-surface">-</span></div>
+                                    <div class="rounded-md bg-surface-container-low p-2"><span class="block text-on-surface-variant">Category</span><span id="calc-out-category" class="font-black text-on-surface">-</span></div>
+                                    <div class="rounded-md bg-surface-container-low p-2"><span class="block text-on-surface-variant">Maintain</span><span id="calc-out-maintain" class="font-black text-on-surface">-</span></div>
+                                    <div class="rounded-md bg-surface-container-low p-2"><span class="block text-on-surface-variant">Fat Loss</span><span id="calc-out-loss" class="font-black text-on-surface">-</span></div>
+                                </div>
+                                <div class="mt-2 text-xs"><span class="text-on-surface-variant">Muscle Gain:</span> <span id="calc-out-gain" class="font-black text-on-surface">-</span></div>
+                                <button type="button" id="calc-insert-btn" class="mt-3 px-4 py-2 rounded-lg bg-secondary text-on-secondary text-xs font-black uppercase tracking-widest hover:opacity-90 transition-opacity">Insert Into Message</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="flex gap-3 items-end">
                         <div class="flex-1 relative">
-                            <textarea id="msg-input" placeholder="Type your message…" rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
+                            <textarea id="msg-input" placeholder="Type your messageâ€¦" rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
                             <button onclick="handleSend()" class="absolute right-3 bottom-2 text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">send</span></button>
                         </div>
                     </div>
@@ -312,11 +395,11 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
-                <h3 class="text-2xl font-black font-headline" id="insight-value-7d">—</h3>
+                <h3 class="text-2xl font-black font-headline" id="insight-value-7d">â€”</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (7d)</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
-                <h3 class="text-2xl font-black font-headline" id="insight-value-30d">—</h3>
+                <h3 class="text-2xl font-black font-headline" id="insight-value-30d">â€”</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (30d)</p>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
@@ -483,7 +566,7 @@
                                 <input type="text" id="basic-label" placeholder="e.g., 1 Hour Session" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                             <div class="w-32">
-                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (â‚¹)</label>
                                 <input type="number" id="basic-price" placeholder="999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
@@ -495,7 +578,7 @@
                                 <input type="text" id="standard-label" placeholder="e.g., 1 Week (5 Sessions)" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                             <div class="w-32">
-                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (â‚¹)</label>
                                 <input type="number" id="standard-price" placeholder="3499" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
@@ -507,7 +590,7 @@
                                 <input type="text" id="premium-label" placeholder="e.g., 1 Month Unlimited" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                             <div class="w-32">
-                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (â‚¹)</label>
                                 <input type="number" id="premium-price" placeholder="9999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
@@ -519,12 +602,12 @@
                                 <input type="text" id="transformation-label" placeholder="e.g., 3-Month Transformation" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                             <div class="w-32">
-                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
+                                <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (â‚¹)</label>
                                 <input type="number" id="transformation-price" placeholder="25999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
                     </div>
-                    <p class="text-xs text-on-surface-variant mt-2">Tip: Offer flexible packages — hourly for beginners, weekly for regular clients, monthly for committed clients, and transformation programs for serious fitness goals.</p>
+                    <p class="text-xs text-on-surface-variant mt-2">Tip: Offer flexible packages â€” hourly for beginners, weekly for regular clients, monthly for committed clients, and transformation programs for serious fitness goals.</p>
                 </div>
 
                 <!-- Certifications Section -->
@@ -583,9 +666,9 @@
 
 
 
-    // ────────────────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Trainer Dashboard SPA (real data, no new tabs)
-    // ────────────────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     let user = null; // Used by settings code below
     let trainerUser = null;
@@ -601,6 +684,7 @@
     let activeChatContact = null;
     let typingSub = null;
     let messagesRealtimeChannel = null;
+    let trainerCalcResult = null;
 
     let bootPromise = null;
 
@@ -615,11 +699,11 @@
 
     function formatCurrencyINR(value) {
         const num = Number(value);
-        if (!Number.isFinite(num)) return '—';
+        if (!Number.isFinite(num)) return 'â€”';
         try {
             return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
         } catch {
-            return `₹${Math.round(num)}`;
+            return `â‚¹${Math.round(num)}`;
         }
     }
 
@@ -756,11 +840,11 @@
                 if (avgRatingEl) avgRatingEl.textContent = avg.toFixed(1);
                 if (reviewCountEl) reviewCountEl.textContent = String(reviews.length);
             } else {
-                if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : '—');
+                if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : 'â€”');
                 if (reviewCountEl) reviewCountEl.textContent = String(trainerUser.review_count ?? 0);
             }
         } catch {
-            if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : '—');
+            if (avgRatingEl) avgRatingEl.textContent = (trainerUser.rating ? Number(trainerUser.rating).toFixed(1) : 'â€”');
             if (reviewCountEl) reviewCountEl.textContent = String(trainerUser.review_count ?? 0);
         }
 
@@ -835,8 +919,8 @@
             return `
                 <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="min-w-0">
-                        <div class="font-bold text-on-surface truncate">${escapeHtml(clientName)} • <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
-                        <div class="text-xs text-on-surface-variant mt-1">${escapeHtml(when)} • ${value}</div>
+                        <div class="font-bold text-on-surface truncate">${escapeHtml(clientName)} â€¢ <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
+                        <div class="text-xs text-on-surface-variant mt-1">${escapeHtml(when)} â€¢ ${value}</div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">${status}</span>
@@ -928,7 +1012,7 @@
                         ${avatar}
                         <div class="min-w-0">
                             <div class="font-bold text-on-surface truncate">${escapeHtml(clientName)}</div>
-                            <div class="text-xs text-on-surface-variant mt-1 truncate">${escapeHtml(label)} • ${escapeHtml(when)} • ${value}</div>
+                            <div class="text-xs text-on-surface-variant mt-1 truncate">${escapeHtml(label)} â€¢ ${escapeHtml(when)} â€¢ ${value}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
@@ -988,7 +1072,208 @@
                     setTypingStatus(trainerUser.id, activeChatContactId, false);
                 }, 800);
             });
+
+            msgInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
         }
+
+        const helperToggle = document.getElementById('calc-helper-toggle');
+        if (helperToggle && !helperToggle.dataset.bound) {
+            helperToggle.dataset.bound = '1';
+            helperToggle.addEventListener('click', () => {
+                const panel = document.getElementById('calc-helper-panel');
+                if (!panel) return;
+                const open = panel.classList.toggle('hidden');
+                helperToggle.textContent = open ? 'Open Tool' : 'Close Tool';
+            });
+        }
+
+        const unitSelect = document.getElementById('calc-unit');
+        if (unitSelect && !unitSelect.dataset.bound) {
+            unitSelect.dataset.bound = '1';
+            unitSelect.addEventListener('change', (e) => setTrainerCalcUnit(e.target.value));
+        }
+
+        const runBtn = document.getElementById('calc-run-btn');
+        if (runBtn && !runBtn.dataset.bound) {
+            runBtn.dataset.bound = '1';
+            runBtn.addEventListener('click', calculateTrainerStats);
+        }
+
+        const fromProfileBtn = document.getElementById('calc-from-profile-btn');
+        if (fromProfileBtn && !fromProfileBtn.dataset.bound) {
+            fromProfileBtn.dataset.bound = '1';
+            fromProfileBtn.addEventListener('click', fillCalcFromClientProfile);
+        }
+
+        const insertBtn = document.getElementById('calc-insert-btn');
+        if (insertBtn && !insertBtn.dataset.bound) {
+            insertBtn.dataset.bound = '1';
+            insertBtn.addEventListener('click', insertCalcResultIntoMessage);
+        }
+
+        setTrainerCalcUnit('metric');
+    }
+
+    function setTrainerCalcUnit(unit) {
+        const metricWrap = document.getElementById('calc-height-metric-wrap');
+        const imperialWrap = document.getElementById('calc-height-imperial-wrap');
+        const weightLabel = document.getElementById('calc-weight-label');
+        const weightInput = document.getElementById('calc-weight');
+
+        if (!metricWrap || !imperialWrap || !weightLabel || !weightInput) return;
+
+        if (unit === 'imperial') {
+            metricWrap.classList.add('hidden');
+            imperialWrap.classList.remove('hidden');
+            imperialWrap.classList.add('grid');
+            weightLabel.textContent = 'Weight (lb)';
+            weightInput.placeholder = 'e.g. 154';
+        } else {
+            metricWrap.classList.remove('hidden');
+            imperialWrap.classList.add('hidden');
+            imperialWrap.classList.remove('grid');
+            weightLabel.textContent = 'Weight (kg)';
+            weightInput.placeholder = 'e.g. 70';
+        }
+    }
+
+    function getBmiCategory(bmi) {
+        if (bmi < 18.5) return 'Underweight';
+        if (bmi < 25) return 'Normal';
+        if (bmi < 30) return 'Overweight';
+        return 'Obese';
+    }
+
+    function calculateTrainerStats() {
+        const unit = String(document.getElementById('calc-unit')?.value || 'metric');
+        const age = parseFloat(document.getElementById('calc-age')?.value);
+        const gender = String(document.getElementById('calc-gender')?.value || 'male');
+        const activity = parseFloat(document.getElementById('calc-activity')?.value);
+        const weightInput = parseFloat(document.getElementById('calc-weight')?.value);
+
+        if (!Number.isFinite(age) || age <= 0 || !Number.isFinite(weightInput) || weightInput <= 0 || !Number.isFinite(activity) || activity <= 0) {
+            alert('Please enter age, weight, and activity level correctly.');
+            return;
+        }
+
+        let heightCm = 0;
+        let weightKg = 0;
+        let bmi = 0;
+
+        if (unit === 'imperial') {
+            const ft = parseFloat(document.getElementById('calc-height-ft')?.value);
+            const inches = parseFloat(document.getElementById('calc-height-in')?.value);
+            if (!Number.isFinite(ft) || ft < 0 || !Number.isFinite(inches) || inches < 0) {
+                alert('Please enter valid height in ft and inches.');
+                return;
+            }
+
+            const totalInches = (ft * 12) + inches;
+            if (totalInches <= 0) {
+                alert('Height must be greater than zero.');
+                return;
+            }
+
+            heightCm = totalInches * 2.54;
+            weightKg = weightInput * 0.45359237;
+            bmi = (703 * weightInput) / (totalInches * totalInches);
+        } else {
+            const heightInput = parseFloat(document.getElementById('calc-height-cm')?.value);
+            if (!Number.isFinite(heightInput) || heightInput <= 0) {
+                alert('Please enter a valid height in cm.');
+                return;
+            }
+
+            heightCm = heightInput;
+            weightKg = weightInput;
+            const heightM = heightCm / 100;
+            bmi = weightKg / (heightM * heightM);
+        }
+
+        if (!Number.isFinite(bmi) || bmi <= 0) {
+            alert('Unable to calculate BMI. Please check values.');
+            return;
+        }
+
+        let bmr = 0;
+        if (gender === 'male') {
+            bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5;
+        } else {
+            bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161;
+        }
+
+        const tdee = Math.round(bmr * activity);
+        const loss = Math.max(1200, tdee - 500);
+        const gain = tdee + 300;
+        const bmiRounded = Number(bmi.toFixed(1));
+        const bmiCategory = getBmiCategory(bmiRounded);
+
+        trainerCalcResult = {
+            bmi: bmiRounded,
+            bmiCategory,
+            tdee,
+            loss,
+            gain
+        };
+
+        document.getElementById('calc-out-bmi').textContent = bmiRounded.toFixed(1);
+        document.getElementById('calc-out-category').textContent = bmiCategory;
+        document.getElementById('calc-out-maintain').textContent = `${tdee.toLocaleString()} kcal`;
+        document.getElementById('calc-out-loss').textContent = `${loss.toLocaleString()} kcal`;
+        document.getElementById('calc-out-gain').textContent = `${gain.toLocaleString()} kcal`;
+        document.getElementById('calc-output')?.classList.remove('hidden');
+    }
+
+    function fillCalcFromClientProfile() {
+        if (!activeChatContactId) {
+            alert('Open a client chat first.');
+            return;
+        }
+
+        const profile = trainerClientsById.get(activeChatContactId);
+        if (!profile) {
+            alert('Client profile not available yet.');
+            return;
+        }
+
+        const ageInput = document.getElementById('calc-age');
+        const genderInput = document.getElementById('calc-gender');
+
+        if (ageInput && Number.isFinite(Number(profile.age))) {
+            ageInput.value = String(profile.age);
+        }
+
+        if (genderInput && (profile.gender === 'male' || profile.gender === 'female')) {
+            genderInput.value = profile.gender;
+        }
+    }
+
+    function insertCalcResultIntoMessage() {
+        if (!trainerCalcResult) {
+            alert('Calculate first, then insert into message.');
+            return;
+        }
+
+        const input = document.getElementById('msg-input');
+        if (!input) return;
+
+        const clientName = activeChatContact?.name || 'there';
+        const summary = [
+            `Hi ${clientName}, based on your numbers:`,
+            `BMI: ${trainerCalcResult.bmi.toFixed(1)} (${trainerCalcResult.bmiCategory})`,
+            `Estimated maintenance calories: ${trainerCalcResult.tdee.toLocaleString()} kcal/day`,
+            `Fat loss target: ${trainerCalcResult.loss.toLocaleString()} kcal/day`,
+            `Muscle gain target: ${trainerCalcResult.gain.toLocaleString()} kcal/day`,
+            `These are estimates; we will fine-tune based on your weekly progress.`
+        ].join('\n');
+
+        input.value = input.value ? `${input.value.trim()}\n\n${summary}` : summary;
+        input.focus();
     }
 
     async function renderContacts() {
@@ -1217,7 +1502,7 @@
                     return `
                         <div class="p-5 flex items-center justify-between gap-3">
                             <div class="min-w-0">
-                                <div class="font-bold truncate">${escapeHtml(name)} • <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
+                                <div class="font-bold truncate">${escapeHtml(name)} â€¢ <span class="text-on-surface-variant font-semibold">${escapeHtml(label)}</span></div>
                                 <div class="text-xs text-on-surface-variant mt-1">Booked ${escapeHtml(created)}</div>
                             </div>
                             <div class="text-sm font-black">${value}</div>
@@ -1597,7 +1882,7 @@ window.addEventListener('load', () => { void bootTrainerDashboard(); });
             
             // Verification badge
             const verifiedBadge = cert.verified 
-                ? '<span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">✓ Verified</span>'
+                ? '<span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">âœ“ Verified</span>'
                 : '<span class="text-xs px-2 py-1 bg-outline-variant/20 text-on-surface-variant rounded-full">Pending Review</span>';
             
             return `
@@ -1609,9 +1894,9 @@ window.addEventListener('load', () => { void bootTrainerDashboard(); });
                     </div>
                     <div class="flex items-center gap-3 text-xs text-on-surface-variant ml-9">
                         <span>Uploaded: ${uploadDate}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>${fileSizeKB} KB</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span class="uppercase">${safeType}</span>
                     </div>
                     <div class="mt-2 ml-9">
@@ -1951,4 +2236,4 @@ function toggleLocationFields() {
         locFields.classList.add('hidden');
     }
 }
-</script></body></html>
+</script><script src="footer-component.js"></script></body></html>

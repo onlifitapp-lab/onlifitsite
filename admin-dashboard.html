@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -638,6 +638,9 @@
                 <div class="nav-item" data-tab="plans">
                     Plans
                 </div>
+                <div class="nav-item" data-tab="blogs">
+                    Blogs
+                </div>
                 <div class="nav-item" data-tab="support">
                     Support
                 </div>
@@ -677,8 +680,8 @@
                     </div>
                     <div class="stat-card">
                         <h3>Total Revenue</h3>
-                        <div class="value" id="stat-revenue">₹0</div>
-                        <div class="change">₹0 this month</div>
+                        <div class="value" id="stat-revenue">â‚¹0</div>
+                        <div class="change">â‚¹0 this month</div>
                     </div>
                 </div>
 
@@ -743,7 +746,7 @@
                     </div>
                     <div class="stat-card">
                         <h3>Total Revenue</h3>
-                        <div class="value" id="clients-total-revenue">₹0</div>
+                        <div class="value" id="clients-total-revenue">â‚¹0</div>
                         <div class="change">All-time client spending</div>
                     </div>
                 </div>
@@ -844,7 +847,7 @@
                     </div>
                     <div class="stat-card">
                         <h3>Monthly Revenue</h3>
-                        <div class="value" id="plans-monthly-revenue">₹0</div>
+                        <div class="value" id="plans-monthly-revenue">â‚¹0</div>
                         <div class="change">From subscriptions</div>
                     </div>
                 </div>
@@ -899,6 +902,86 @@
                                 <div class="spinner"></div>
                                 <p>Loading promo codes...</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blogs Tab -->
+            <div id="blogs" class="tab-content">
+                <div class="content-header">
+                    <h2>Blogs Management</h2>
+                </div>
+
+                <div class="data-table-container" style="margin-bottom: 24px;">
+                    <div class="table-header">
+                        <h3 style="margin: 0;">Add / Edit Blog</h3>
+                    </div>
+                    <div style="padding: 24px; display: grid; gap: 14px;">
+                        <input type="hidden" id="blog-edit-id" />
+
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Title</label>
+                                <input id="blog-title" type="text" class="search-bar" style="width: 100%;" placeholder="Blog title" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Category</label>
+                                <select id="blog-category" class="search-bar" style="width: 100%;">
+                                    <option value="Weight Loss">Weight Loss</option>
+                                    <option value="Muscle Gain">Muscle Gain</option>
+                                    <option value="Diet">Diet</option>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Subtitle / Description</label>
+                                <input id="blog-description" type="text" class="search-bar" style="width: 100%;" placeholder="Short hook line / description" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Read Time (optional)</label>
+                                <input id="blog-read-time" type="text" class="search-bar" style="width: 100%;" placeholder="e.g. 6 min read" />
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Featured Image Upload</label>
+                                <input id="blog-image-file" type="file" accept="image/*" class="search-bar" style="width: 100%; padding: 8px 10px;" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Or Image URL</label>
+                                <input id="blog-image-url" type="text" class="search-bar" style="width: 100%;" placeholder="https://..." />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Full Content (HTML or plain text)</label>
+                            <textarea id="blog-content" class="search-bar" style="width: 100%; min-height: 220px; resize: vertical;" placeholder="Write content. You can use HTML tags or plain text with lines."></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn btn-secondary" onclick="resetBlogForm()">Reset</button>
+                            <button class="btn btn-primary" onclick="saveBlogFromAdmin()">Publish</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="table-header">
+                        <input type="text" class="search-bar" id="blogs-search" placeholder="Search blogs...">
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="loadBlogsAdmin()">Refresh</button>
+                        </div>
+                    </div>
+                    <div id="blogs-table">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading blogs...</p>
                         </div>
                     </div>
                 </div>
@@ -984,17 +1067,17 @@
                     <div class="stats-grid">
                         <div class="stat-card">
                             <h3>Total Revenue</h3>
-                            <div class="value" id="analytics-total-revenue">₹0</div>
+                            <div class="value" id="analytics-total-revenue">â‚¹0</div>
                             <div class="change" id="analytics-revenue-change">Last 30 days</div>
                         </div>
                         <div class="stat-card">
                             <h3>Avg Transaction</h3>
-                            <div class="value" id="analytics-avg-transaction">₹0</div>
+                            <div class="value" id="analytics-avg-transaction">â‚¹0</div>
                             <div class="change">Per booking</div>
                         </div>
                         <div class="stat-card">
                             <h3>MRR</h3>
-                            <div class="value" id="analytics-mrr">₹0</div>
+                            <div class="value" id="analytics-mrr">â‚¹0</div>
                             <div class="change">Monthly Recurring Revenue</div>
                         </div>
                     </div>
@@ -1128,7 +1211,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Trainer Details</h3>
-                <button class="close-modal" onclick="closeTrainerModal()">×</button>
+                <button class="close-modal" onclick="closeTrainerModal()">Ã—</button>
             </div>
             <div class="modal-body" id="trainer-modal-body">
                 <!-- Dynamic content loaded here -->
@@ -1154,7 +1237,7 @@
         }
 
         function formatINR(value) {
-            return `₹${toNumber(value).toLocaleString('en-IN')}`;
+            return `â‚¹${toNumber(value).toLocaleString('en-IN')}`;
         }
 
         function getTrainerSpecialty(trainer) {
@@ -1241,6 +1324,7 @@
                 else if (tabId === 'revenue') loadRevenue();
                 else if (tabId === 'bookings') loadBookings();
                 else if (tabId === 'plans') loadPlansData();
+                else if (tabId === 'blogs') loadBlogsAdmin();
                 else if (tabId === 'support') loadSupportTickets();
                 else if (tabId === 'analytics') loadAnalytics();
                 else if (tabId === 'notifications') loadNotifications();
@@ -1254,25 +1338,10 @@
         });
 
         // Authentication Check
-        function showPreviewBanner() {
-            if (document.getElementById('admin-preview-banner')) return;
-
-            const banner = document.createElement('div');
-            banner.id = 'admin-preview-banner';
-            banner.style.cssText = [
-                'position: sticky',
-                'top: 0',
-                'z-index: 999',
-                'background: #FFF7ED',
-                'border-bottom: 1px solid #FED7AA',
-                'color: #7C2D12',
-                'padding: 10px 14px',
-                'font-size: 13px',
-                'font-weight: 600'
-            ].join(';');
-            banner.textContent = 'Preview mode: admin actions are disabled until you log in.';
-
-            document.body.prepend(banner);
+        function redirectToAdminLogin(reason) {
+            const next = encodeURIComponent(window.location.pathname.split('/').pop() || 'admin-dashboard.html');
+            const reasonParam = reason ? `&reason=${encodeURIComponent(reason)}` : '';
+            window.location.replace(`admin-login.html?next=${next}${reasonParam}`);
         }
 
         function ensureAdminAction() {
@@ -1284,17 +1353,13 @@
         }
 
         async function checkAdminAuth() {
-            // Preview-friendly: allow opening the dashboard without forcing login.
-            // If an admin session exists, enable actions; otherwise run read-only.
-
             window.adminUser = null;
 
             try {
                 const { data: { user }, error } = await supabase.auth.getUser();
 
                 if (error || !user) {
-                    showPreviewBanner();
-                    console.warn('Admin dashboard: no active session (preview mode).');
+                    redirectToAdminLogin('signin-required');
                     return;
                 }
 
@@ -1305,14 +1370,14 @@
                     .single();
 
                 if (profileError || !profile) {
-                    showPreviewBanner();
-                    console.warn('Admin dashboard: unable to load profile (preview mode).');
+                    await supabase.auth.signOut();
+                    redirectToAdminLogin('profile-not-found');
                     return;
                 }
 
                 if (String(profile.role || '').toLowerCase() !== 'admin') {
-                    showPreviewBanner();
-                    console.warn('Admin dashboard: non-admin session (preview mode).');
+                    await supabase.auth.signOut();
+                    redirectToAdminLogin('admin-only');
                     return;
                 }
 
@@ -1322,14 +1387,10 @@
                     email: profile.email
                 };
 
-                // Remove banner if present
-                const banner = document.getElementById('admin-preview-banner');
-                if (banner) banner.remove();
-
                 console.log('Admin authenticated:', profile.name);
             } catch (err) {
                 console.error('Auth check error:', err);
-                showPreviewBanner();
+                redirectToAdminLogin('auth-error');
             }
         }
 
@@ -1399,7 +1460,7 @@
 
                 if (recentTrainers && recentTrainers.length > 0) {
                     recentTrainers.forEach(trainer => {
-                        const date = trainer.created_at ? new Date(trainer.created_at).toLocaleDateString('en-IN') : '—';
+                        const date = trainer.created_at ? new Date(trainer.created_at).toLocaleDateString('en-IN') : 'â€”';
                         const status = getTrainerVerificationStatus(trainer);
                         const badgeClass = badgeClassForVerification(status);
                         html += `
@@ -1568,8 +1629,8 @@
 
             let html = `
                 <div style="padding: 20px; border-bottom: 1px solid #E8E8E8; display: flex; gap: 40px;">
-                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Total GMV: <span style="color: #000000;">₹${totalRevenue.toLocaleString('en-IN')}</span></h3>
-                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Net Platform Commission: <span style="color: green;">₹${totalCommission.toLocaleString('en-IN')}</span></h3>
+                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Total GMV: <span style="color: #000000;">â‚¹${totalRevenue.toLocaleString('en-IN')}</span></h3>
+                    <h3 style="color: #000000; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 600;">Net Platform Commission: <span style="color: green;">â‚¹${totalCommission.toLocaleString('en-IN')}</span></h3>
                 </div>
                 <table>
                     <thead>
@@ -1589,7 +1650,7 @@
             revenue.forEach(transaction => {
                 const date = new Date(transaction.created_at).toLocaleDateString('en-IN');
                 const badgeClass = transaction.status === 'completed' || transaction.status === 'confirmed' ? 'badge-verified' : 'badge-pending';
-                const commissionVal = transaction.commission ? `₹${Number(transaction.commission).toLocaleString('en-IN')}` : '₹0';
+                const commissionVal = transaction.commission ? `â‚¹${Number(transaction.commission).toLocaleString('en-IN')}` : 'â‚¹0';
                 
                 html += `
                     <tr>
@@ -1683,7 +1744,7 @@
                 const timeVal = booking.time || 'N/A';
                 const badgeClass = booking.status === 'completed' ? 'badge-verified' : 
                                  booking.status === 'cancelled' ? 'badge-rejected' : 'badge-pending';
-                const commissionVal = booking.commission ? `₹${Number(booking.commission).toLocaleString('en-IN')}` : '₹0';
+                const commissionVal = booking.commission ? `â‚¹${Number(booking.commission).toLocaleString('en-IN')}` : 'â‚¹0';
                 
                 html += `
                     <tr>
@@ -1692,7 +1753,7 @@
                         <td>${booking.client?.name || 'N/A'}</td>
                         <td>${booking.trainer?.name || 'N/A'}</td>
                         <td><span class="badge ${badgeClass}">${booking.status}</span></td>
-                        <td><strong>₹${(booking.price || 0).toLocaleString('en-IN')}</strong></td>
+                        <td><strong>â‚¹${(booking.price || 0).toLocaleString('en-IN')}</strong></td>
                         <td style="color: green; font-weight: bold;">${commissionVal}</td>
                     </tr>
                 `;
@@ -1914,7 +1975,7 @@
                 // Check if both KYC and certificates are verified to update overall status
                 await updateOverallVerificationStatus(trainerId);
 
-                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Verified ✅', message: 'Your identity documents have been approved.', read: false }]);
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Verified âœ…', message: 'Your identity documents have been approved.', read: false }]);
 
                 alert('KYC documents approved!');
                 closeTrainerModal();
@@ -1942,7 +2003,7 @@
 
                 if (error) throw error;
 
-                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Rejected ❌', message: 'Your identity documents were rejected. Please review and re-upload.', read: false }]);
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'KYC Rejected âŒ', message: 'Your identity documents were rejected. Please review and re-upload.', read: false }]);
                 alert('KYC documents rejected');
                 closeTrainerModal();
                 loadTrainers();
@@ -1985,7 +2046,7 @@
                 // Check if both KYC and certificates are verified to update overall status
                 await updateOverallVerificationStatus(trainerId);
 
-                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Verified ✅', message: 'Your professional certifications have been approved.', read: false }]);
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Verified âœ…', message: 'Your professional certifications have been approved.', read: false }]);
 
                 alert('Certificates approved!');
                 closeTrainerModal();
@@ -2013,7 +2074,7 @@
 
                 if (error) throw error;
 
-                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Rejected ❌', message: 'Your professional certifications were rejected.', read: false }]);
+                await supabase.from('notifications').insert([{ user_id: trainerId, type: 'alert', title: 'Certificates Rejected âŒ', message: 'Your professional certifications were rejected.', read: false }]);
                 alert('Certificates rejected');
                 closeTrainerModal();
                 loadTrainers();
@@ -2118,7 +2179,7 @@
             document.getElementById('total-clients-count').textContent = total;
             document.getElementById('active-clients-count').textContent = active;
             document.getElementById('new-clients-week').textContent = newThisWeek;
-            document.getElementById('clients-total-revenue').textContent = `₹${totalRevenue.toLocaleString()}`;
+            document.getElementById('clients-total-revenue').textContent = `â‚¹${totalRevenue.toLocaleString()}`;
         }
 
         function renderClientsTable(clients) {
@@ -2150,7 +2211,7 @@
                             <td><strong>${client.name || 'N/A'}</strong></td>
                             <td>${client.email}</td>
                             <td>${client.phone || 'N/A'}</td>
-                            <td>₹${totalSpent.toLocaleString()}</td>
+                            <td>â‚¹${totalSpent.toLocaleString()}</td>
                             <td><span class="badge ${statusClass}">${client.account_status || 'active'}</span></td>
                             <td>${joinDate}</td>
                             <td>
@@ -2187,7 +2248,7 @@
                     <div class="modal-content" style="max-width: 700px;">
                         <div class="modal-header">
                             <h3>${client.name || 'Client Details'}</h3>
-                            <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                            <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                         </div>
                         <div class="modal-body">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
@@ -2218,7 +2279,7 @@
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
                                     <div>
                                         <span style="color: #666;">Total Spent:</span>
-                                        <strong> ₹${(parseFloat(client.total_spent) || 0).toLocaleString()}</strong>
+                                        <strong> â‚¹${(parseFloat(client.total_spent) || 0).toLocaleString()}</strong>
                                     </div>
                                     <div>
                                         <span style="color: #666;">Joined:</span>
@@ -2351,7 +2412,7 @@
                 client.name || 'N/A',
                 client.email,
                 client.phone || 'N/A',
-                `₹${(parseFloat(client.total_spent) || 0).toLocaleString()}`,
+                `â‚¹${(parseFloat(client.total_spent) || 0).toLocaleString()}`,
                 client.account_status || 'active',
                 new Date(client.created_at).toLocaleDateString('en-IN')
             ]);
@@ -2371,9 +2432,244 @@
         // PLANS & SUBSCRIPTIONS MANAGEMENT
         // ========================================
         
+        let allBlogs = [];
         let allPlans = [];
         let allSubscriptions = [];
         let allPromoCodes = [];
+
+        function slugifyBlog(value) {
+            return String(value || '')
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+        }
+
+        function estimateReadTimeFromContent(content) {
+            const plain = String(content || '').replace(/<[^>]*>/g, ' ').trim();
+            const words = plain ? plain.split(/\s+/).length : 0;
+            const minutes = Math.max(1, Math.ceil(words / 220));
+            return `${minutes} min read`;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function uploadBlogImage(file) {
+            if (!file) return null;
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'jpg';
+            const path = `featured/${Date.now()}-${Math.random().toString(36).slice(2)}.${safeExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('blog-images')
+                .upload(path, file, { upsert: false });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('blog-images').getPublicUrl(path);
+            return data?.publicUrl || null;
+        }
+
+        function resetBlogForm() {
+            const ids = [
+                'blog-edit-id',
+                'blog-title',
+                'blog-description',
+                'blog-read-time',
+                'blog-image-url',
+                'blog-content'
+            ];
+            ids.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+
+            const category = document.getElementById('blog-category');
+            if (category) category.value = 'Weight Loss';
+
+            const file = document.getElementById('blog-image-file');
+            if (file) file.value = '';
+        }
+
+        async function loadBlogsAdmin() {
+            try {
+                const { data, error } = await supabase
+                    .from('blog_posts')
+                    .select('id, slug, title, category, image, description, content, read_time, is_published, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allBlogs = data || [];
+                renderBlogsTable(allBlogs);
+
+                const searchEl = document.getElementById('blogs-search');
+                if (searchEl && !searchEl.dataset.bound) {
+                    searchEl.dataset.bound = '1';
+                    searchEl.addEventListener('input', function (e) {
+                        const q = String(e.target.value || '').toLowerCase().trim();
+                        const filtered = allBlogs.filter((b) => {
+                            const hay = [b.title, b.category, b.description, b.slug].filter(Boolean).join(' ').toLowerCase();
+                            return hay.includes(q);
+                        });
+                        renderBlogsTable(filtered);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading blogs:', error);
+                document.getElementById('blogs-table').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading blogs</p>';
+            }
+        }
+
+        function renderBlogsTable(blogs) {
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Read Time</th>
+                            <th>Published</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (blogs && blogs.length > 0) {
+                blogs.forEach((blog) => {
+                    const createdAt = blog.created_at ? new Date(blog.created_at).toLocaleDateString('en-IN') : 'â€”';
+                    const pubBadge = blog.is_published ? 'badge-verified' : 'badge-pending';
+                    html += `
+                        <tr>
+                            <td>
+                                <strong>${escapeHtml(blog.title || 'Untitled')}</strong><br>
+                                <small style="color:#666;">${escapeHtml(blog.slug || '')}</small>
+                            </td>
+                            <td>${escapeHtml(blog.category || 'General')}</td>
+                            <td>${escapeHtml(blog.read_time || 'Auto')}</td>
+                            <td><span class="badge ${pubBadge}">${blog.is_published ? 'Yes' : 'No'}</span></td>
+                            <td>${createdAt}</td>
+                            <td>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;" onclick="editBlog('${blog.id}')">Edit</button>
+                                    <button class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;" onclick="deleteBlog('${blog.id}')">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html += '<tr><td colspan="6" style="text-align:center; color:#718096; padding:40px;">No blogs found</td></tr>';
+            }
+
+            html += '</tbody></table>';
+            document.getElementById('blogs-table').innerHTML = html;
+        }
+
+        function editBlog(blogId) {
+            const blog = allBlogs.find((b) => b.id === blogId);
+            if (!blog) return;
+
+            document.getElementById('blog-edit-id').value = blog.id || '';
+            document.getElementById('blog-title').value = blog.title || '';
+            document.getElementById('blog-category').value = blog.category || 'General';
+            document.getElementById('blog-description').value = blog.description || '';
+            document.getElementById('blog-read-time').value = blog.read_time || '';
+            document.getElementById('blog-image-url').value = blog.image || '';
+            document.getElementById('blog-content').value = blog.content || '';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function saveBlogFromAdmin() {
+            if (!ensureAdminAction()) return;
+
+            try {
+                const editId = String(document.getElementById('blog-edit-id').value || '').trim();
+                const title = String(document.getElementById('blog-title').value || '').trim();
+                const category = String(document.getElementById('blog-category').value || '').trim();
+                const description = String(document.getElementById('blog-description').value || '').trim();
+                const content = String(document.getElementById('blog-content').value || '').trim();
+                const readTimeInput = String(document.getElementById('blog-read-time').value || '').trim();
+                const imageUrlInput = String(document.getElementById('blog-image-url').value || '').trim();
+                const fileInput = document.getElementById('blog-image-file');
+                const imageFile = fileInput?.files?.[0] || null;
+
+                if (!title || !category || !content) {
+                    alert('Title, category, and full content are required.');
+                    return;
+                }
+
+                let finalImage = imageUrlInput;
+                if (imageFile) {
+                    finalImage = await uploadBlogImage(imageFile);
+                }
+
+                const payload = {
+                    title,
+                    slug: slugifyBlog(title),
+                    category,
+                    image: finalImage || null,
+                    description: description || null,
+                    content,
+                    read_time: readTimeInput || estimateReadTimeFromContent(content),
+                    is_published: true,
+                    created_by: window.adminUser?.id || null
+                };
+
+                if (editId) {
+                    const { error } = await supabase
+                        .from('blog_posts')
+                        .update(payload)
+                        .eq('id', editId);
+
+                    if (error) throw error;
+                    alert('Blog updated successfully.');
+                } else {
+                    const { error } = await supabase
+                        .from('blog_posts')
+                        .insert(payload);
+
+                    if (error) throw error;
+                    alert('Blog published successfully.');
+                }
+
+                resetBlogForm();
+                loadBlogsAdmin();
+            } catch (error) {
+                console.error('Error saving blog:', error);
+                alert('Error saving blog: ' + (error?.message || 'Unknown error'));
+            }
+        }
+
+        async function deleteBlog(blogId) {
+            if (!ensureAdminAction()) return;
+            if (!confirm('Delete this blog permanently?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('blog_posts')
+                    .delete()
+                    .eq('id', blogId);
+
+                if (error) throw error;
+                alert('Blog deleted successfully.');
+                loadBlogsAdmin();
+            } catch (error) {
+                console.error('Error deleting blog:', error);
+                alert('Error deleting blog: ' + (error?.message || 'Unknown error'));
+            }
+        }
 
         async function loadPlansData() {
             await Promise.all([loadPlans(), loadSubscriptions(), loadPromoCodes()]);
@@ -2430,7 +2726,7 @@
             if (plans && plans.length > 0) {
                 plans.forEach(plan => {
                     const features = plan.features || [];
-                    const featuresHTML = features.map(f => `<li style="margin-bottom: 8px;">✓ ${f}</li>`).join('');
+                    const featuresHTML = features.map(f => `<li style="margin-bottom: 8px;">âœ“ ${f}</li>`).join('');
                     const statusClass = plan.is_active ? 'badge-verified' : 'badge-pending';
 
                     html += `
@@ -2440,7 +2736,7 @@
                                 <span class="badge ${statusClass}" style="font-size: 11px;">${plan.is_active ? 'Active' : 'Inactive'}</span>
                             </div>
                             <div style="margin-bottom: 16px;">
-                                <div style="font-size: 32px; font-weight: 700; color: #000;">₹${plan.price.toLocaleString()}</div>
+                                <div style="font-size: 32px; font-weight: 700; color: #000;">â‚¹${plan.price.toLocaleString()}</div>
                                 <div style="font-size: 13px; color: #666;">${plan.duration_months} month${plan.duration_months > 1 ? 's' : ''}</div>
                             </div>
                             ${plan.description ? `<p style="font-size: 13px; color: #666; margin-bottom: 16px;">${plan.description}</p>` : ''}
@@ -2588,7 +2884,7 @@
                 promoCodes.forEach(promo => {
                     const discount = promo.discount_type === 'percent' ? 
                         `${promo.discount_value}%` : 
-                        `₹${promo.discount_value}`;
+                        `â‚¹${promo.discount_value}`;
                     const usage = promo.max_uses ? 
                         `${promo.current_uses}/${promo.max_uses}` : 
                         promo.current_uses;
@@ -2638,7 +2934,7 @@
             document.getElementById('active-plans-count').textContent = activePlans;
             document.getElementById('total-subscriptions-count').textContent = totalSubs;
             document.getElementById('active-subscriptions-count').textContent = activeSubs;
-            document.getElementById('plans-monthly-revenue').textContent = `₹${Math.round(monthlyRevenue).toLocaleString()}`;
+            document.getElementById('plans-monthly-revenue').textContent = `â‚¹${Math.round(monthlyRevenue).toLocaleString()}`;
         }
 
         // Create Plan Modal
@@ -2649,7 +2945,7 @@
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
                         <h3>Create New Plan</h3>
-                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                     </div>
                     <div class="modal-body">
                         <div style="display: grid; gap: 16px;">
@@ -2663,7 +2959,7 @@
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                                 <div>
-                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Price (₹)</label>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Price (â‚¹)</label>
                                     <input type="number" id="new-plan-price" placeholder="999" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
                                 </div>
                                 <div>
@@ -2733,7 +3029,7 @@
                 <div class="modal-content" style="max-width: 500px;">
                     <div class="modal-header">
                         <h3>Create Promo Code</h3>
-                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                     </div>
                     <div class="modal-body">
                         <div style="display: grid; gap: 16px;">
@@ -2745,7 +3041,7 @@
                                 <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Discount Type</label>
                                 <select id="new-promo-type" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
                                     <option value="percent">Percentage (%)</option>
-                                    <option value="amount">Fixed Amount (₹)</option>
+                                    <option value="amount">Fixed Amount (â‚¹)</option>
                                 </select>
                             </div>
                             <div>
@@ -3035,7 +3331,7 @@
                     <div class="modal-content" style="max-width: 800px;">
                         <div class="modal-header">
                             <h3>Ticket #${ticket.ticket_number || ticket.id.substring(0, 8)} - ${ticket.subject}</h3>
-                            <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                            <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                         </div>
                         <div class="modal-body">
                             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
@@ -3255,9 +3551,9 @@
             });
 
             // Update stats cards
-            document.getElementById('analytics-total-revenue').textContent = `₹${totalRevenue.toLocaleString()}`;
-            document.getElementById('analytics-avg-transaction').textContent = `₹${Math.round(avgTransaction).toLocaleString()}`;
-            document.getElementById('analytics-mrr').textContent = `₹${Math.round(mrr).toLocaleString()}`;
+            document.getElementById('analytics-total-revenue').textContent = `â‚¹${totalRevenue.toLocaleString()}`;
+            document.getElementById('analytics-avg-transaction').textContent = `â‚¹${Math.round(avgTransaction).toLocaleString()}`;
+            document.getElementById('analytics-mrr').textContent = `â‚¹${Math.round(mrr).toLocaleString()}`;
             document.getElementById('analytics-revenue-change').textContent = `Last ${currentAnalyticsPeriod} days`;
 
             // Group revenue by day
@@ -3283,7 +3579,7 @@
                 data: {
                     labels: dates,
                     datasets: [{
-                        label: 'Revenue (₹)',
+                        label: 'Revenue (â‚¹)',
                         data: amounts,
                         borderColor: '#FF5A5F',
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
@@ -3304,7 +3600,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '₹' + value.toLocaleString();
+                                    return 'â‚¹' + value.toLocaleString();
                                 }
                             }
                         }
@@ -3740,7 +4036,7 @@
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
                         <h3>Send Notification</h3>
-                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">Ã—</button>
                     </div>
                     <div class="modal-body">
                         <div style="display: grid; gap: 16px;">
@@ -3909,7 +4205,7 @@
                 return;
             }
 
-            const headers = ['Date', 'Client', 'Trainer', 'Type', 'Amount (₹)', 'Status'];
+            const headers = ['Date', 'Client', 'Trainer', 'Type', 'Amount (â‚¹)', 'Status'];
             const rows = allRevenue.map(r => [
                 new Date(r.created_at).toLocaleDateString('en-IN'),
                 r.client?.name || 'N/A',
@@ -3928,7 +4224,7 @@
                 return;
             }
 
-            const headers = ['Booking ID', 'Date', 'Time', 'Client', 'Trainer', 'Status', 'Amount (₹)'];
+            const headers = ['Booking ID', 'Date', 'Time', 'Client', 'Trainer', 'Status', 'Amount (â‚¹)'];
             const rows = allBookings.map(b => {
                 const dateRaw = getBookingDate(b);
                 return [
@@ -4015,7 +4311,7 @@
             
             doc.setFontSize(10);
             doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`, 14, 28);
-            doc.text(`Total Revenue: ₹${totalRevenue.toLocaleString('en-IN')}`, 14, 34);
+            doc.text(`Total Revenue: â‚¹${totalRevenue.toLocaleString('en-IN')}`, 14, 34);
             doc.text(`Total Transactions: ${allRevenue.length}`, 14, 40);
 
             // Table
@@ -4152,11 +4448,15 @@
 
         // Logout
         async function handleLogout() {
-            window.location.href = 'onlifit.html';
+            try {
+                await supabase.auth.signOut();
+            } catch (_) {}
+            window.location.href = 'admin-login.html';
         }
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+
 
 
 

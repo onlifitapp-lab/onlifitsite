@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Onlifit Blog | Fitness Insights</title>
+  <meta name="description" content="Read expert fitness content on weight loss, muscle gain, diet, and beginner training. Learn practical strategies and book your ideal Onlifit trainer." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="styles.css" rel="stylesheet" />
+  <link href="blog.css" rel="stylesheet" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} 
+    gtag('js', new Date());
+    gtag('config', 'G-4W2306MJ1Y');
+  </script>
+</head>
+<body class="bg-surface font-body text-on-surface">
+  <nav class="blog-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="blog-nav-inner">
+      <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+      <div class="nav-links">
+        <a href="trainers.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Trainers</a>
+        <a href="pricing.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Pricing</a>
+        <a href="calculators.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Free Tools</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="blog-shell">
+    <section class="blog-hero">
+      <h1>Fitness Blog For Real Results</h1>
+      <p>Actionable advice from the OnliFit ecosystem to help you lose fat, gain muscle, and stay consistent with your training plan.</p>
+
+      <div class="filter-wrap" id="blog-filters"></div>
+    </section>
+
+    <section class="blog-grid" id="blog-grid"></section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>
+    const grid = document.getElementById('blog-grid');
+    const filterWrap = document.getElementById('blog-filters');
+    const DEFAULT_CATEGORIES = ['Weight Loss', 'Muscle Gain', 'Diet', 'Beginner'];
+    let allPosts = [];
+    let currentFilter = 'All';
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function buildCategoryFilters(posts) {
+      const categoriesFromPosts = [...new Set((posts || []).map((p) => p.category).filter(Boolean))];
+      const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categoriesFromPosts])];
+
+      filterWrap.innerHTML = ['All', ...allCategories].map((name) => `
+        <button class="filter-btn ${name === 'All' ? 'active' : ''}" data-filter="${escapeHtml(name)}">${escapeHtml(name)}</button>
+      `).join('');
+    }
+
+    function toSlugOrId(post) {
+      if (post.slug && String(post.slug).trim()) return String(post.slug).trim();
+      return String(post.id || '').trim();
+    }
+
+    function renderCards() {
+      const posts = allPosts.filter((post) => {
+        return currentFilter === 'All' ? true : post.category === currentFilter;
+      });
+
+      if (!posts.length) {
+        grid.innerHTML = '<p style="color:#5d5d5d">No published posts found in this category.</p>';
+        return;
+      }
+
+      grid.innerHTML = posts.map((post) => `
+        <article class="blog-card">
+          <img class="blog-card-media" src="${escapeHtml(post.image || 'assets/blog/weight-loss.svg')}" alt="${escapeHtml(post.title || 'Blog image')}" loading="lazy" />
+          <div class="blog-card-body">
+            <span class="blog-category">${escapeHtml(post.category || 'General')}</span>
+            <h2 class="blog-card-title">${escapeHtml(post.title || 'Untitled')}</h2>
+            <p class="blog-card-desc">${escapeHtml(post.description || 'No description available.')}</p>
+            <a class="read-more" href="blog-post.html?slug=${encodeURIComponent(toSlugOrId(post))}">Read More</a>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function loadPublishedBlogs() {
+      grid.innerHTML = '<p style="color:#5d5d5d">Loading published posts...</p>';
+
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('id, slug, title, category, image, description, created_at')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        allPosts = data || [];
+        buildCategoryFilters(allPosts);
+        renderCards();
+      } catch (err) {
+        console.error('Failed to load blog posts:', err);
+        grid.innerHTML = '<p style="color:#5d5d5d">Unable to load blog posts right now.</p>';
+      }
+    }
+
+    filterWrap.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-filter]');
+      if (!btn) return;
+      currentFilter = btn.dataset.filter;
+      [...filterWrap.querySelectorAll('.filter-btn')].forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCards();
+    });
+
+    loadPublishedBlogs();
+  </script>
+<script src="footer-component.js"></script></body>
+</html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 
 <head>
@@ -688,7 +688,7 @@
             const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
             const location = (cityState || t?.location || '').trim();
             const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
-            return [location, mode].filter(Boolean).join(' â€¢ ');
+            return [location, mode].filter(Boolean).join(' Ã¢â‚¬Â¢ ');
         }
 
         function getHourlyPrice(t) {
@@ -789,6 +789,7 @@
             }).format(price);
         }
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 
 </html>
+

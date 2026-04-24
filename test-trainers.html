@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,7 +27,7 @@
             
             try {
                 // Test 1: Check if supabase is initialized
-                results.innerHTML += `<p>✅ Supabase client initialized</p>`;
+                results.innerHTML += `<p>âœ… Supabase client initialized</p>`;
                 
                 // Test 2: Fetch all trainers
                 const { data: trainers, error } = await supabase
@@ -37,14 +37,14 @@
                     .limit(5);
                 
                 if (error) {
-                    results.innerHTML += `<p class="text-red-600">❌ Error: ${error.message}</p>`;
+                    results.innerHTML += `<p class="text-red-600">âŒ Error: ${error.message}</p>`;
                     return;
                 }
                 
-                results.innerHTML += `<p>✅ Found ${trainers.length} trainers</p>`;
+                results.innerHTML += `<p>âœ… Found ${trainers.length} trainers</p>`;
                 
                 if (trainers.length === 0) {
-                    results.innerHTML += `<p class="text-yellow-600">⚠️ No trainers in database. You need to create trainer profiles first.</p>`;
+                    results.innerHTML += `<p class="text-yellow-600">âš ï¸ No trainers in database. You need to create trainer profiles first.</p>`;
                     results.innerHTML += `<p class="mt-4"><a href="join-us.html" class="px-4 py-2 bg-black text-white rounded">Create Trainer Profile</a></p>`;
                 } else {
                     results.innerHTML += `<div class="mt-4"><h2 class="font-bold mb-2">Trainers in database:</h2>`;
@@ -64,11 +64,12 @@
                 }
                 
             } catch (err) {
-                results.innerHTML += `<p class="text-red-600">❌ Exception: ${err.message}</p>`;
+                results.innerHTML += `<p class="text-red-600">âŒ Exception: ${err.message}</p>`;
             }
         }
         
         window.onload = testTrainers;
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+

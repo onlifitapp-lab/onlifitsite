@@ -340,14 +340,10 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
 
         console.log('Google OAuth initiated with role:', normalizedRole, 'isSignup:', isSignup, 'source:', signupSource);
 
-        // Supabase URL Configuration (docs) uses the apex domain (`https://onlifit.in`).
-        // If we send `redirectTo` for `www`, Supabase may reject it (not in allow-list)
-        // and dump users on the homepage without a session.
+        // Keep OAuth callback on the exact same origin the user started from.
+        // This preserves localStorage role/source bridge data for trainer signup flows.
         const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
-        const isOnlifitDomain = /(^|\.)onlifit\.in$/i.test(window.location.hostname);
-        const authBase = (!isHttp)
-            ? 'https://onlifit.in'
-            : (isOnlifitDomain ? 'https://onlifit.in' : window.location.origin);
+        const authBase = isHttp ? window.location.origin : 'https://onlifit.in';
         const redirectTo = `${authBase}/login.html`;
 
         // localStorage bridge is only for OAuth signups (role selection happens during signup).
@@ -637,6 +633,25 @@ async function handleOAuthCallback(options = {}) {
             profile = (insertedProfiles && insertedProfiles.length > 0) ? insertedProfiles[0] : profile;
         } catch (e) {
             // Non-fatal
+        }
+    }
+
+    // Hard guarantee: Join Us signup must always continue as trainer flow.
+    if (oauthIsSignup && oauthSignupSource === 'join-us') {
+        try {
+            const { data: forcedProfiles } = await supabaseClient
+                .from('profiles')
+                .update({ role: 'trainer' })
+                .eq('id', user.id)
+                .select('role, onboarding_completed, verification_status');
+
+            if (forcedProfiles && forcedProfiles.length > 0) {
+                profile = forcedProfiles[0];
+            } else {
+                profile = { ...(profile || {}), role: 'trainer' };
+            }
+        } catch (e) {
+            profile = { ...(profile || {}), role: 'trainer' };
         }
     }
 

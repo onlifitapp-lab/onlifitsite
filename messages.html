@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="scroll-smooth h-full" lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -127,7 +127,7 @@
                     <button onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
                         <span class="material-symbols-outlined text-on-surface">arrow_back</span>
                     </button>
-                    <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">👤</div>
+                    <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">ðŸ‘¤</div>
                     <div>
                         <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
                         <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
@@ -148,7 +148,7 @@
             <!-- Chat History -->
             <div id="chat-history" class="flex-1 overflow-y-auto p-8 space-y-6 flex flex-col">
                 <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
-                    <div class="text-7xl mb-6">💬</div>
+                    <div class="text-7xl mb-6">ðŸ’¬</div>
                     <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
                     <p class="text-sm">Choose someone from the list to start chatting.</p>
                 </div>
@@ -284,7 +284,7 @@
             return `
             <div onclick="selectChat('${c.id}', '${c.name}', '${c.avatar_url}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
                 <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform relative">
-                    ${c.avatar_url || '👤'}
+                    ${c.avatar_url || 'ðŸ‘¤'}
                     ${unreadCount > 0 ? `<span class="absolute -top-1 -right-1 unread-badge">${unreadCount}</span>` : ''}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -326,7 +326,7 @@
         document.getElementById('chat-view').classList.add('flex');
 
         document.getElementById('active-name').textContent = name;
-        document.getElementById('active-avatar').textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : '👤';
+        document.getElementById('active-avatar').textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : 'ðŸ‘¤';
         
         // Unsubscribe from previous typing channel
         if (typingChannel) {
@@ -370,15 +370,15 @@
             const status = m.status || 'sent';
             const isRead = m.read;
             
-            // Status icons: ✓ = sent, ✓✓ = delivered, ✓✓ (blue) = seen
+            // Status icons: âœ“ = sent, âœ“âœ“ = delivered, âœ“âœ“ (blue) = seen
             let statusIcon = '';
             if (isMe) {
                 if (status === 'seen' || isRead) {
-                    statusIcon = '<span class="msg-status seen">✓✓</span>';
+                    statusIcon = '<span class="msg-status seen">âœ“âœ“</span>';
                 } else if (status === 'delivered') {
-                    statusIcon = '<span class="msg-status">✓✓</span>';
+                    statusIcon = '<span class="msg-status">âœ“âœ“</span>';
                 } else {
-                    statusIcon = '<span class="msg-status">✓</span>';
+                    statusIcon = '<span class="msg-status">âœ“</span>';
                 }
             }
             
@@ -479,5 +479,6 @@
 
     init();
 </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+

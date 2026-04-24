@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -36,7 +36,7 @@
         </div>
         
         <div class="mt-6 p-4 bg-blue-50 rounded-xl">
-            <h3 class="font-bold mb-2">🔍 Debug Info:</h3>
+            <h3 class="font-bold mb-2">ðŸ” Debug Info:</h3>
             <div id="debug" class="text-sm text-gray-600"></div>
         </div>
     </div>
@@ -48,13 +48,13 @@
         async function fixAccount() {
             const statusDiv = document.getElementById('status');
             statusDiv.className = 'mb-6 p-4 rounded-xl bg-blue-50';
-            statusDiv.innerHTML = '⏳ Fixing your account...';
+            statusDiv.innerHTML = 'â³ Fixing your account...';
             
             try {
                 const user = await getCurrentUser();
                 if (!user) {
                     statusDiv.className = 'mb-6 p-4 rounded-xl bg-red-50 text-red-600';
-                    statusDiv.innerHTML = '❌ Please log in first';
+                    statusDiv.innerHTML = 'âŒ Please log in first';
                     return;
                 }
                 
@@ -67,7 +67,7 @@
                 if (error) throw error;
                 
                 statusDiv.className = 'mb-6 p-4 rounded-xl bg-green-50 text-green-600';
-                statusDiv.innerHTML = '✅ Account fixed! Redirecting to onboarding...';
+                statusDiv.innerHTML = 'âœ… Account fixed! Redirecting to onboarding...';
                 
                 setTimeout(() => {
                     window.location.href = 'trainer-onboarding.html';
@@ -75,7 +75,7 @@
                 
             } catch (error) {
                 statusDiv.className = 'mb-6 p-4 rounded-xl bg-red-50 text-red-600';
-                statusDiv.innerHTML = '❌ Error: ' + error.message;
+                statusDiv.innerHTML = 'âŒ Error: ' + error.message;
             }
         }
         
@@ -99,5 +99,6 @@
             }
         };
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+

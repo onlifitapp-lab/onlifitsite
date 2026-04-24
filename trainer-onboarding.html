@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 <head>
     <meta charset="utf-8" />
@@ -105,7 +105,7 @@
                 <div class="mt-8 flex justify-end">
                     <button type="button" onclick="nextStep(1)" 
                             class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Next Step →
+                        Next Step â†’
                     </button>
                 </div>
             </div>
@@ -198,11 +198,11 @@
                 <div class="mt-8 flex justify-between">
                     <button type="button" onclick="prevStep(2)" 
                             class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
-                        ← Back
+                        â† Back
                     </button>
                     <button type="button" onclick="nextStep(2)" 
                             class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Next Step →
+                        Next Step â†’
                     </button>
                 </div>
             </div>
@@ -344,11 +344,11 @@
                 <div class="mt-8 flex justify-between">
                     <button type="button" onclick="prevStep(3)" 
                             class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
-                        ← Back
+                        â† Back
                     </button>
                     <button type="button" onclick="validateAndNextStep3()" 
                             class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Next Step →
+                        Next Step â†’
                     </button>
                 </div>
             </div>
@@ -364,7 +364,7 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Single Session (Per Hour) *</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">â‚¹</span>
                             <input type="number" id="price_hourly" required min="500" step="100"
                                    class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="999">
@@ -375,7 +375,7 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Package Pricing (10 Sessions)</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">â‚¹</span>
                             <input type="number" id="price_package" min="0" step="100"
                                    class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="7999">
@@ -386,7 +386,7 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Monthly Unlimited</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">₹</span>
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">â‚¹</span>
                             <input type="number" id="price_monthly" min="0" step="100"
                                    class="w-full pl-8 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="14999">
@@ -395,11 +395,11 @@
                     </div>
 
                     <div class="p-4 bg-tertiary-container rounded-xl">
-                        <h3 class="font-bold mb-2">💡 Pricing Tips</h3>
+                        <h3 class="font-bold mb-2">ðŸ’¡ Pricing Tips</h3>
                         <ul class="text-sm text-on-surface-variant space-y-1">
-                            <li>• Average single session rates: ₹800 - ₹1,500</li>
-                            <li>• Offer 10-15% discount on packages to attract more clients</li>
-                            <li>• Monthly plans work great for serious fitness goals</li>
+                            <li>â€¢ Average single session rates: â‚¹800 - â‚¹1,500</li>
+                            <li>â€¢ Offer 10-15% discount on packages to attract more clients</li>
+                            <li>â€¢ Monthly plans work great for serious fitness goals</li>
                         </ul>
                     </div>
                 </div>
@@ -407,11 +407,11 @@
                 <div class="mt-8 flex justify-between">
                     <button type="button" onclick="prevStep(4)" 
                             class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
-                        ← Back
+                        â† Back
                     </button>
                     <button type="button" onclick="nextStep(4)" 
                             class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Next Step →
+                        Next Step â†’
                     </button>
                 </div>
             </div>
@@ -439,7 +439,7 @@
                     </div>
 
                     <div class="p-6 bg-tertiary-container rounded-xl">
-                        <h3 class="font-bold mb-3">📋 Profile Summary</h3>
+                        <h3 class="font-bold mb-3">ðŸ“‹ Profile Summary</h3>
                         <div id="profile-summary" class="text-sm space-y-2 text-on-surface-variant">
                             <!-- Will be populated by JS -->
                         </div>
@@ -456,11 +456,11 @@
                 <div class="mt-8 flex justify-between">
                     <button type="button" onclick="prevStep(5)" 
                             class="px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
-                        ← Back
+                        â† Back
                     </button>
                     <button type="button" id="submit-btn" onclick="submitTrainerProfile()"
                             class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Create Profile & Go Live ✓
+                        Create Profile & Go Live âœ“
                     </button>
                 </div>
             </div>
@@ -472,7 +472,7 @@
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-green-600 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
             </div>
-            <h2 class="text-3xl font-black font-headline mb-2">🎉 Application Submitted. Profile Is Live!</h2>
+            <h2 class="text-3xl font-black font-headline mb-2">ðŸŽ‰ Application Submitted. Profile Is Live!</h2>
             <p class="text-on-surface-variant mb-2">Your trainer application is now in AI review.</p>
             <p class="text-sm text-on-surface-variant mb-6">We are validating your documents quickly. Once approved, you will be redirected automatically to your trainer dashboard.</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
@@ -623,7 +623,7 @@
                 <p><strong>Specialty:</strong> ${specialty}</p>
                 <p><strong>Experience:</strong> ${experience}</p>
                 <p><strong>Training Areas:</strong> ${tags.join(', ')}</p>
-                <p><strong>Starting Price:</strong> ₹${priceHourly}/hour</p>
+                <p><strong>Starting Price:</strong> â‚¹${priceHourly}/hour</p>
             `;
             
             document.getElementById('profile-summary').innerHTML = summary;
@@ -643,7 +643,7 @@
             }
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = 'Saving... ⏳';
+            submitBtn.innerHTML = 'Saving... â³';
 
             try {
                 const user = await getCurrentUser();
@@ -666,7 +666,7 @@
                 let kycBackUrl = null;
                 
                 if (kycFront) {
-                    submitBtn.innerHTML = 'Uploading KYC Front... ⏳';
+                    submitBtn.innerHTML = 'Uploading KYC Front... â³';
                     const frontExt = kycFront.name.split('.').pop();
                     const frontResult = await uploadToStorage(kycFront, user.id, 'kyc', `id_front.${frontExt}`);
                     if (!frontResult.success) {
@@ -676,7 +676,7 @@
                 }
                 
                 if (kycBack) {
-                    submitBtn.innerHTML = 'Uploading KYC Back... ⏳';
+                    submitBtn.innerHTML = 'Uploading KYC Back... â³';
                     const backExt = kycBack.name.split('.').pop();
                     const backResult = await uploadToStorage(kycBack, user.id, 'kyc', `id_back.${backExt}`);
                     if (!backResult.success) {
@@ -695,7 +695,7 @@
                     const nameInput = document.getElementById(`cert-name-${i}`);
                     
                     if (fileInput.files[0] && nameInput.value) {
-                        submitBtn.innerHTML = `Uploading Certificate ${i}... ⏳`;
+                        submitBtn.innerHTML = `Uploading Certificate ${i}... â³`;
                         const file = fileInput.files[0];
                         const ext = file.name.split('.').pop();
                         const sanitizedName = nameInput.value.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
@@ -711,7 +711,7 @@
                     }
                 }
 
-                submitBtn.innerHTML = 'Creating Your Profile... ⏳';
+                submitBtn.innerHTML = 'Creating Your Profile... â³';
 
                 const profileData = {
                     name: document.getElementById('name').value,
@@ -788,7 +788,7 @@
                 console.error('Error saving profile:', error);
                 alert('Error saving profile: ' + error.message);
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create Profile & Go Live ✓';
+                submitBtn.innerHTML = 'Create Profile & Go Live âœ“';
             }
         }
 
@@ -1044,5 +1044,6 @@
             nextStep(3);
         }
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+

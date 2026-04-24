@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <base href="/">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Onlifit Blog Post</title>
+  <meta name="description" content="Premium fitness insights from Onlifit with practical guidance and trainer recommendations." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="styles.css" rel="stylesheet" />
+  <link href="blog.css" rel="stylesheet" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} 
+    gtag('js', new Date());
+    gtag('config', 'G-4W2306MJ1Y');
+  </script>
+</head>
+<body class="bg-surface font-body text-on-surface">
+  <nav class="blog-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="blog-nav-inner">
+      <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+      <div class="nav-links">
+        <a href="blog.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Blog</a>
+        <a href="trainers.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Trainers</a>
+        <a href="pricing.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Pricing</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="post-wrap" id="post-wrap"></main>
+
+  <div class="mobile-sticky-cta">
+    <a href="trainers.html" class="cta-btn">Book Now</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const slugOrId = params.get('slug') || '';
+    const wrap = document.getElementById('post-wrap');
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function sanitizeAdminHtml(input) {
+      const value = String(input || '');
+      return value
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+        .replace(/on\w+\s*=\s*"[^"]*"/gi, '')
+        .replace(/on\w+\s*=\s*'[^']*'/gi, '');
+    }
+
+    function parsePlainContentToHtml(content) {
+      const lines = String(content || '').split(/\r?\n/);
+      let html = '';
+      let inList = false;
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (!line) {
+          if (inList) {
+            html += '</ul>';
+            inList = false;
+          }
+          continue;
+        }
+
+        if (line.startsWith('### ')) {
+          if (inList) { html += '</ul>'; inList = false; }
+          html += `<h3>${escapeHtml(line.slice(4))}</h3>`;
+          continue;
+        }
+
+        if (line.startsWith('## ')) {
+          if (inList) { html += '</ul>'; inList = false; }
+          html += `<h2>${escapeHtml(line.slice(3))}</h2>`;
+          continue;
+        }
+
+        if (line.startsWith('- ')) {
+          if (!inList) {
+            html += '<ul>';
+            inList = true;
+          }
+          html += `<li>${escapeHtml(line.slice(2))}</li>`;
+          continue;
+        }
+
+        if (inList) {
+          html += '</ul>';
+          inList = false;
+        }
+        html += `<p>${escapeHtml(line)}</p>`;
+      }
+
+      if (inList) html += '</ul>';
+      return html;
+    }
+
+    function renderContentHtml(content) {
+      const value = String(content || '').trim();
+      if (!value) return '<p>No content available.</p>';
+      const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+      return looksLikeHtml ? sanitizeAdminHtml(value) : parsePlainContentToHtml(value);
+    }
+
+    function buildTrainerCards(trainers) {
+      return (trainers || []).map((trainer) => {
+        const onlifitBlack = trainer.onlifitBlack === 'Yes';
+        return `
+        <article class="trainer-card">
+          <div>
+            <p class="trainer-name">${escapeHtml(trainer.name)}</p>
+            <p class="trainer-meta">Rating ${escapeHtml(trainer.rating)} | ${escapeHtml(trainer.price)}</p>
+            ${onlifitBlack ? '<p class="trainer-meta" style="font-weight:700;color:#111;">ðŸ–¤ OnliFit Black</p>' : ''}
+          </div>
+          <a class="view-profile-btn" href="${escapeHtml(trainer.profileUrl || 'trainers.html')}">View Profile</a>
+        </article>
+      `;
+      }).join('');
+    }
+
+    function estimateReadTime(content) {
+      const plain = String(content || '').replace(/<[^>]*>/g, ' ').trim();
+      const wordCount = plain ? plain.split(/\s+/).length : 0;
+      const minutes = Math.max(1, Math.ceil(wordCount / 220));
+      return `${minutes} min read`;
+    }
+
+    async function fetchBlogPost() {
+      if (!slugOrId) return null;
+
+      const { data: bySlug } = await supabase
+        .from('blog_posts')
+        .select('id, slug, title, category, image, description, content, read_time, created_at')
+        .eq('is_published', true)
+        .eq('slug', slugOrId)
+        .maybeSingle();
+
+      if (bySlug) return bySlug;
+
+      const { data: byId } = await supabase
+        .from('blog_posts')
+        .select('id, slug, title, category, image, description, content, read_time, created_at')
+        .eq('is_published', true)
+        .eq('id', slugOrId)
+        .maybeSingle();
+
+      return byId || null;
+    }
+
+    async function fetchRecommendedTrainers(category) {
+      try {
+        let trainers = [];
+
+        if (category) {
+          const { data: categoryTrainers } = await supabase
+            .from('profiles')
+            .select('id, name, rating, plans, has_black_status, role, specialty')
+            .eq('role', 'trainer')
+            .ilike('specialty', `%${category}%`)
+            .order('rating', { ascending: false })
+            .limit(3);
+          trainers = categoryTrainers || [];
+        }
+
+        if (!trainers.length) {
+          const { data: fallbackTrainers } = await supabase
+            .from('profiles')
+            .select('id, name, rating, plans, has_black_status, role')
+            .eq('role', 'trainer')
+            .order('rating', { ascending: false })
+            .limit(3);
+          trainers = fallbackTrainers || [];
+        }
+
+        return trainers.map((t) => {
+          const plans = t.plans || {};
+          const numericPrice = Number(plans.basic_price || plans.standard_price || plans.premium_price || 0);
+          return {
+            name: t.name || 'Trainer',
+            rating: Number.isFinite(Number(t.rating)) ? Number(t.rating).toFixed(1) : 'New',
+            price: numericPrice > 0 ? `INR ${numericPrice.toLocaleString('en-IN')}/session` : 'Price on request',
+            profileUrl: `trainer-profile.html?id=${encodeURIComponent(t.id)}`,
+            onlifitBlack: t.has_black_status ? 'Yes' : 'No'
+          };
+        });
+      } catch (err) {
+        console.error('Failed to fetch trainers:', err);
+        return [];
+      }
+    }
+
+    async function loadBlogPostPage() {
+      wrap.innerHTML = '<p class="post-subtitle">Loading article...</p>';
+
+      const post = await fetchBlogPost();
+
+      if (!post) {
+        wrap.innerHTML = `
+          <h1 class="post-title">Post Not Found</h1>
+          <p class="post-subtitle">This article may have moved. Explore more guides on our blog.</p>
+          <div class="cta-actions" style="margin-top:16px">
+            <a href="blog.html" class="cta-btn">Back To Blog</a>
+          </div>
+        `;
+        return;
+      }
+
+      document.title = `${post.title} | Onlifit Blog`;
+
+      const contentHtml = renderContentHtml(post.content || '');
+      const contentBlocks = (String(post.content || '').split(/\n\n+/).length || 1);
+      const ctaInsertIndex = Math.max(1, Math.floor(contentBlocks * 0.3));
+
+      const fragments = contentHtml.split(/(?=<h2|<h3|<p|<ul)/g).filter(Boolean);
+      const top = fragments.slice(0, ctaInsertIndex).join('');
+      const bottom = fragments.slice(ctaInsertIndex).join('');
+
+      const trainers = await fetchRecommendedTrainers(post.category);
+      const trainerSection = trainers.length
+        ? `<div class="trainer-grid">${buildTrainerCards(trainers)}</div>`
+        : '<p class="post-subtitle">Trainers will be available soon</p>';
+
+      const readTime = post.read_time || estimateReadTime(post.content || '');
+
+      wrap.innerHTML = `
+        <header>
+          <h1 class="post-title">${escapeHtml(post.title || 'Untitled')}</h1>
+          <p class="post-subtitle">${escapeHtml(post.description || '')}</p>
+          <div class="post-meta">${escapeHtml(readTime)}</div>
+          <img class="post-featured" src="${escapeHtml(post.image || 'assets/blog/weight-loss.svg')}" alt="${escapeHtml(post.title || 'Blog image')}" />
+        </header>
+
+        <section class="post-section">${top}</section>
+
+        <section class="cta-box">
+          <h4>Want faster results? Book a trainer on Onlifit</h4>
+          <p>Get a personalized plan, accountability, and weekly progress tracking.</p>
+          <div class="cta-actions">
+            <a href="trainers.html" class="cta-btn">Find Trainer</a>
+          </div>
+        </section>
+
+        <section class="post-section">${bottom}</section>
+
+        <section class="cta-box">
+          <h4>Recommended Trainers For This Goal</h4>
+          <p>Connect with a coach who can turn this strategy into a personalized plan.</p>
+          ${trainerSection}
+        </section>
+
+        <section class="cta-box">
+          <h4>Start your fitness journey today</h4>
+          <p>Pick a trainer, schedule your first session, and begin with confidence.</p>
+          <div class="cta-actions">
+            <a href="trainers.html" class="cta-btn">Book Now</a>
+          </div>
+        </section>
+      `;
+    }
+
+    loadBlogPostPage();
+  </script>
+<script src="footer-component.js"></script></body>
+</html>
+

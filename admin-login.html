@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -195,7 +195,7 @@
 
             <div class="form-group">
                 <label for="admin-password">Password</label>
-                <input id="admin-password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+                <input id="admin-password" type="password" autocomplete="current-password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required />
             </div>
 
             <button id="login-btn" class="btn-login" type="submit">Log In</button>
@@ -231,7 +231,18 @@
                 try {
                     const { data: { user } } = await sb.auth.getUser();
                     if (user) {
-                        window.location.href = getNextUrl();
+                        const { data: profile, error: profileError } = await sb
+                            .from('profiles')
+                            .select('role')
+                            .eq('id', user.id)
+                            .single();
+
+                        if (!profileError && (profile?.role || '').toLowerCase() === 'admin') {
+                            window.location.href = getNextUrl();
+                            return;
+                        }
+
+                        await sb.auth.signOut();
                     }
                 } catch (_) {}
             });
@@ -275,12 +286,13 @@
         </script>
 
         <div class="back-link">
-            <a href="onlifit.html">← Back to Home</a>
+            <a href="onlifit.html">â† Back to Home</a>
         </div>
 
         <div class="back-link" style="margin-top: 10px;">
             <a href="login.html">Not an admin? Go to user login</a>
         </div>
     </div>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -263,6 +263,7 @@
 
         // BMI Logic
         let bmiUnit = 'metric';
+        let calUnit = 'metric';
         
         function setBmiUnit(unit) {
             bmiUnit = unit;
@@ -288,12 +289,11 @@
             }
         }
 
-        // Verified standard WHO calculation rules
         function calculateBMI() {
             let height = parseFloat(document.getElementById('bmi-height').value);
             let weight = parseFloat(document.getElementById('bmi-weight').value);
             
-            if (!height || !weight) {
+            if (!Number.isFinite(height) || !Number.isFinite(weight) || height <= 0 || weight <= 0) {
                 alert("Please properly fill out the height and weight fields.");
                 return;
             }
@@ -308,8 +308,12 @@
                 bmi = (703 * weight) / (height * height);
             }
 
-            bmi = bmi.toFixed(1);
-            showBMIResult(bmi);
+            if (!Number.isFinite(bmi) || bmi <= 0) {
+                alert("Unable to calculate BMI. Please check your values.");
+                return;
+            }
+
+            showBMIResult(Number(bmi.toFixed(1)));
         }
 
         function showBMIResult(bmi) {
@@ -325,11 +329,11 @@
                 category.innerText = "Underweight";
                 category.className = "px-4 py-1 rounded-full text-sm font-bold mb-6 bg-blue-100 text-blue-700 border border-blue-200";
                 message.innerText = "You are currently underweight. Consider consulting a nutritionist to build healthy mass.";
-            } else if (bmi >= 18.5 && bmi < 24.9) {
+            } else if (bmi < 25) {
                 category.innerText = "Normal Weight";
                 category.className = "px-4 py-1 rounded-full text-sm font-bold mb-6 bg-green-100 text-green-700 border border-green-200";
                 message.innerText = "Great job! You are in a healthy weight range. Keep active to maintain it.";
-            } else if (bmi >= 25 && bmi < 29.9) {
+            } else if (bmi < 30) {
                 category.innerText = "Overweight";
                 category.className = "px-4 py-1 rounded-full text-sm font-bold mb-6 bg-yellow-100 text-yellow-700 border border-yellow-200";
                 message.innerText = "You are slightly above a healthy weight. Modifying your diet and exercise could help.";
@@ -341,55 +345,105 @@
         }
 
         // Calorie Logic (Mifflin-St Jeor Equation)
-        // Verified: The calculation is mathematically accurate and uses the standard Mifflin-St Jeor equation.
-        function calculateCalories() {
-            let age = parseFloat(document.getElementById('cal-age').value);
-            let height = parseFloat(document.getElementById('cal-height').value);
-            let weight = parseFloat(document.getElementById('cal-weight').value);
-            let gender = document.querySelector('input[name="cal-gender"]:checked').value;
-            let activity = parseFloat(document.getElementById('cal-activity').value);
+        function setCalUnit(unit) {
+            calUnit = unit;
+            const metricBtn = document.getElementById('cal-metric-btn');
+            const imperialBtn = document.getElementById('cal-imperial-btn');
+            const metricHeight = document.getElementById('cal-height-metric');
+            const imperialHeight = document.getElementById('cal-height-imperial');
+            const weightLabel = document.getElementById('cal-weight-label');
+            const weightInput = document.getElementById('cal-weight');
+            const metricHeightInput = document.getElementById('cal-height');
 
-            if (!age || !height || !weight) {
+            if (unit === 'metric') {
+                metricBtn.className = 'flex-1 py-1.5 text-sm font-bold bg-white text-on-surface rounded-md shadow-sm';
+                imperialBtn.className = 'flex-1 py-1.5 text-sm font-bold text-on-surface-variant hover:bg-white/50 rounded-md';
+                metricHeight.classList.remove('hidden');
+                imperialHeight.classList.add('hidden');
+                imperialHeight.classList.remove('grid');
+                weightLabel.innerText = '(kg)';
+                weightInput.placeholder = 'e.g. 70';
+                metricHeightInput.placeholder = 'e.g. 175';
+            } else {
+                imperialBtn.className = 'flex-1 py-1.5 text-sm font-bold bg-white text-on-surface rounded-md shadow-sm';
+                metricBtn.className = 'flex-1 py-1.5 text-sm font-bold text-on-surface-variant hover:bg-white/50 rounded-md';
+                metricHeight.classList.add('hidden');
+                imperialHeight.classList.remove('hidden');
+                imperialHeight.classList.add('grid');
+                weightLabel.innerText = '(lb)';
+                weightInput.placeholder = 'e.g. 154';
+            }
+        }
+
+        function calculateCalories() {
+            const age = parseFloat(document.getElementById('cal-age').value);
+            const genderSelection = document.querySelector('input[name="cal-gender"]:checked');
+            const activity = parseFloat(document.getElementById('cal-activity').value);
+            const weightInput = parseFloat(document.getElementById('cal-weight').value);
+
+            if (!Number.isFinite(age) || age <= 0 || !Number.isFinite(weightInput) || weightInput <= 0) {
                 alert("Please fill in all fields with precise numbers for an accurate calculation.");
                 return;
             }
 
-            // Using the strictly accurate Mifflin-St Jeor Equation
+            if (!genderSelection) {
+                alert("Please select your gender.");
+                return;
+            }
+
+            let heightCm = 0;
+            let weightKg = 0;
+
+            if (calUnit === 'metric') {
+                const metricHeight = parseFloat(document.getElementById('cal-height').value);
+                if (!Number.isFinite(metricHeight) || metricHeight <= 0) {
+                    alert("Please enter a valid height in cm.");
+                    return;
+                }
+
+                heightCm = metricHeight;
+                weightKg = weightInput;
+            } else {
+                const ft = parseFloat(document.getElementById('cal-height-ft').value);
+                const inches = parseFloat(document.getElementById('cal-height-in').value);
+
+                if (!Number.isFinite(ft) || ft < 0 || !Number.isFinite(inches) || inches < 0) {
+                    alert("Please enter a valid height in ft and inches.");
+                    return;
+                }
+
+                const totalInches = (ft * 12) + inches;
+                if (totalInches <= 0) {
+                    alert("Height must be greater than zero.");
+                    return;
+                }
+
+                heightCm = totalInches * 2.54;
+                weightKg = weightInput * 0.45359237;
+            }
+
+            const gender = genderSelection.value;
             let bmr = 0;
             if (gender === 'male') {
-                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) + 5;
             } else {
-                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                bmr = (10 * weightKg) + (6.25 * heightCm) - (5 * age) - 161;
             }
 
-            let tdee = Math.round(bmr * activity);
+            const tdee = Math.round(bmr * activity);
+            const weightLoss = Math.max(1200, tdee - 500);
+            const muscleGain = tdee + 300;
             
             document.getElementById('cal-result-placeholder').classList.add('hidden');
             document.getElementById('cal-result-container').classList.remove('hidden');
             
             document.getElementById('cal-score').innerText = tdee.toLocaleString();
-            document.getElementById('cal-loss').innerText = (tdee - 500).toLocaleString() + " kcal";
-            document.getElementById('cal-gain').innerText = (tdee + 500).toLocaleString() + " kcal";
+            document.getElementById('cal-loss').innerText = weightLoss.toLocaleString() + " kcal";
+            document.getElementById('cal-gain').innerText = muscleGain.toLocaleString() + " kcal";
         }
 
-            // BMR
-            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-            if (gender === 'male') {
-                bmr += 5;
-            } else {
-                bmr -= 161;
-            }
-
-            // TDEE
-            let tdee = Math.round(bmr * activity);
-
-            document.getElementById('cal-result-placeholder').classList.add('hidden');
-            document.getElementById('cal-result-container').classList.remove('hidden');
-            
-            document.getElementById('cal-score').innerText = tdee.toLocaleString();
-            document.getElementById('cal-loss').innerText = (tdee - 500).toLocaleString() + " kcal";
-            document.getElementById('cal-gain').innerText = (tdee + 300).toLocaleString() + " kcal";
-        }
+        // Ensure correct initial state for unit-specific fields
+        setCalUnit('metric');
     </script>
-</body>
+<script src="footer-component.js"></script></body>
 </html>
