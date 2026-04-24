@@ -188,7 +188,7 @@
         </a>
         <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/bookings" data-route="bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
-            <span>My Bookings</span>
+            <span>My Trainers</span>
         </a>
         <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/messages" data-route="messages">
             <span class="material-symbols-outlined text-[20px]">chat</span>
@@ -301,7 +301,7 @@
     <!-- â”€â”€ Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     </section><section id="view-bookings" class="route-view hidden anim-slide-up">
     <header class="mb-8">
-        <h2 class="text-3xl font-black font-headline text-on-surface">My Bookings</h2>
+        <h2 class="text-3xl font-black font-headline text-on-surface">My Trainers</h2>
         <p class="text-on-surface-variant text-sm mt-1">Manage your upcoming and past sessions.</p>
     </header>
 <div class="grid grid-cols-12 gap-6" id="bookings-section">
@@ -1608,23 +1608,24 @@ async function loadContacts() {
     const list = document.getElementById('contacts-list');
     if (!list || !user) return;
 
-    const allTrainers = await getTrainers();
-    const bookings = await getBookingsForUser(user.id);
-
-    const contactIds = [...new Set(bookings.map(b => user.role === 'trainer' ? b.client_id : b.trainer_id))];
-
     let contacts = [];
-    if (contactIds.length > 0) {
+
+    try {
+        const allTrainers = await getTrainers();
+        const bookings = await getBookingsForUser(user.id);
+
+        const contactIds = [...new Set(bookings.map(b => user.role === 'trainer' ? b.client_id : b.trainer_id))];
+
         for (const id of contactIds) {
             let person = allTrainers.find(t => t.id === id);
             if (!person) person = await getUserById(id);
             if (person) contacts.push(person);
         }
-    } else {
-        contacts = allTrainers.slice(0, 8);
+    } catch (error) {
+        console.error('Failed to load message contacts:', error);
     }
 
-    const lastMessages = await getLastMessagesForContacts(user.id, contacts.map(c => c.id));
+    const lastMessages = contacts.length ? await getLastMessagesForContacts(user.id, contacts.map(c => c.id)) : {};
 
     contacts.sort((a, b) => {
         const aTime = lastMessages[a.id]?.timestamp || 0;
@@ -1634,6 +1635,19 @@ async function loadContacts() {
 
     const q = (document.getElementById('contacts-search')?.value || '').trim().toLowerCase();
     const filtered = q ? contacts.filter(c => (c.name || '').toLowerCase().includes(q)) : contacts;
+
+    if (!filtered.length) {
+        list.innerHTML = `
+            <div class="p-6 text-center text-on-surface-variant">
+                <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-surface-container-low flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">chat_bubble</span>
+                </div>
+                <p class="font-bold text-on-surface mb-1">No message contacts yet</p>
+                <p class="text-sm">Book a trainer to start chatting here.</p>
+            </div>
+        `;
+        return;
+    }
 
     list.innerHTML = filtered.map(c => {
         const lastMsg = lastMessages[c.id];
