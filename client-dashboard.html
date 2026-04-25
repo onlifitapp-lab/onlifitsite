@@ -229,7 +229,7 @@
     <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
         <div>
             <h1 id="welcome-heading" class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">
-                Welcome back! ðŸ‘‹
+                Welcome back!
             </h1>
             <p class="text-on-surface-variant mt-1.5 text-sm">Here's an overview of your fitness journey.</p>
         </div>
@@ -293,7 +293,7 @@
                     </div>
                 </div>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Total Invested</p>
-                <h3 id="stat-spent" class="text-2xl font-black text-on-surface font-headline">â‚¹0</h3>
+                <h3 id="stat-spent" class="text-2xl font-black text-on-surface font-headline">Rs 0</h3>
             </div>
         </div>
     </div>
@@ -412,7 +412,7 @@
             <div class="bg-primary-container/30 rounded-2xl p-6 border border-primary/10">
                 <span class="material-symbols-outlined text-primary text-2xl mb-3 block" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
                 <p id="motivation-quote" class="text-sm text-on-surface font-medium italic leading-relaxed">"The only bad workout is the one that didn't happen."</p>
-                <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">â€” Unknown</p>
+                <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">- Unknown</p>
             </div>
         </div>
     </div>
@@ -464,7 +464,7 @@
                         <button type="button" onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
                             <span class="material-symbols-outlined text-on-surface">arrow_back</span>
                         </button>
-                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">ðŸ‘¤</div>
+                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">U</div>
                         <div>
                             <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
                             <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
@@ -485,7 +485,7 @@
                 <!-- Chat History -->
                 <div id="chat-history" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
                     <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
-                        <div class="text-7xl mb-6">ðŸ’¬</div>
+                        <span class="material-symbols-outlined text-7xl mb-6">chat_bubble</span>
                         <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
                         <p class="text-sm">Choose someone from the list to start chatting.</p>
                     </div>
@@ -698,7 +698,7 @@
 <!-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <footer class="md:ml-64 bg-surface-container-low w-full py-8 px-6 md:px-8">
     <div class="flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-8 gap-4">
-        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Â© 2024 Onlifit. All rights reserved.</p>
+        <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">© 2024 Onlifit. All rights reserved.</p>
         <div class="flex gap-6">
             <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all font-bold" href="privacy.html">Privacy</a>
             <a class="text-[10px] uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all font-bold" href="terms.html">Terms</a>
@@ -763,7 +763,7 @@
             
             document.getElementById('sidebar-avatar').textContent = initial;
             document.getElementById('sidebar-name').textContent = userName;
-            document.getElementById('welcome-heading').textContent = `Welcome back, ${firstName}! ðŸ‘‹`;
+            document.getElementById('welcome-heading').textContent = `Welcome back, ${firstName}!`;
 
             console.log('Dashboard UI updated, rendering content...');
             await renderAll();
@@ -812,7 +812,7 @@
 
     // â”€â”€ Helper Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     function formatPrice(amount) {
-        return 'â‚¹' + amount.toLocaleString('en-IN');
+        return 'Rs ' + amount.toLocaleString('en-IN');
     }
 
     // â”€â”€ Render Stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -874,7 +874,7 @@
         const meta = trainer ? getTrainerMeta(trainer) : '';
 
         document.getElementById('next-trainer-name').textContent = (trainer?.name || 'Trainer');
-        document.getElementById('next-specialty').textContent = (trainer?.specialty || meta || 'â€”');
+        document.getElementById('next-specialty').textContent = (trainer?.specialty || meta || '-');
         document.getElementById('next-date').textContent = formatDate(next.date);
         document.getElementById('next-time').textContent = (next.time ? next.time : 'TBD');
         document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
@@ -927,7 +927,7 @@
                         <div class="flex items-start justify-between gap-2 mb-1">
                             <div>
                                 <h4 class="font-headline font-bold text-on-surface text-base">${escapeHtml(trainer?.name || 'Trainer')}</h4>
-                                <p class="text-xs text-on-surface-variant">${escapeHtml(trainer?.specialty || getTrainerMeta(trainer || {}) || 'â€”')}</p>
+                                <p class="text-xs text-on-surface-variant">${escapeHtml(trainer?.specialty || getTrainerMeta(trainer || {}) || '-')}</p>
                             </div>
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${statusClass}">
                                 ${escapeHtml(b.status || 'confirmed')}
@@ -944,10 +944,10 @@
                             </span>
                             <span class="flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">sell</span>
-                                ${b.plan_label ? escapeHtml(b.plan_label) : 'â€”'}
+                                ${b.plan_label ? escapeHtml(b.plan_label) : '-'}
                             </span>
                             <span class="font-bold text-primary">
-                                ${b.price ? formatPrice(b.price) : 'â€”'}
+                                ${b.price ? formatPrice(b.price) : '-'}
                             </span>
                         </div>
                     </div>
@@ -991,11 +991,11 @@
             return `
             <div class="bg-white rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity flex-wrap sm:flex-nowrap">
                 <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-lg flex-shrink-0">
-                    ${trainer?.avatar_url || 'âœ…'}
+                    ${trainer?.avatar_url || 'U'}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-on-surface">${trainer?.name || 'Trainer'}</p>
-                    <p class="text-xs text-on-surface-variant">${formatDate(b.date)} Â· ${b.time || ''} Â· ${b.plan_label || 'Session'}</p>
+                    <p class="text-xs text-on-surface-variant">${formatDate(b.date)} - ${b.time || ''} - ${b.plan_label || 'Session'}</p>
                 </div>
                 <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 justify-between sm:justify-end">
                     <div class="flex items-center gap-2">
@@ -1104,7 +1104,7 @@
     function setRandomQuote() {
         const q = quotes[Math.floor(Math.random() * quotes.length)];
         document.getElementById('motivation-quote').textContent = '"' + q.text + '"';
-        document.getElementById('motivation-author').textContent = 'â€” ' + q.author;
+        document.getElementById('motivation-author').textContent = '- ' + q.author;
     }
 
     // â”€â”€ Reviews Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1316,7 +1316,7 @@ function getHourlyPrice(t) {
 function renderTrainerPriceLine(t) {
     const price = getHourlyPrice(t);
     if (price) {
-        return `<span class="text-primary font-bold text-xl">â‚¹${price.toLocaleString('en-IN')}</span><span class="text-on-surface-variant text-sm">/hr</span>`;
+        return `<span class="text-primary font-bold text-xl">Rs ${price.toLocaleString('en-IN')}</span><span class="text-on-surface-variant text-sm">/hr</span>`;
     }
     return `<span class="text-primary font-bold">View pricing</span>`;
 }
@@ -1656,9 +1656,9 @@ async function loadContacts() {
         const lastMsgTime = lastMsg?.timestamp ? formatTimestamp(lastMsg.timestamp) : '';
 
         return `
-        <div onclick="selectChat('${c.id}', '${escapeHtml(c.name || 'User')}', '${escapeHtml(c.avatar_url || 'ðŸ‘¤')}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
+        <div onclick="selectChat('${c.id}', '${escapeHtml(c.name || 'User')}', '${escapeHtml(c.avatar_url || 'U')}')" class="p-4 flex gap-3 hover:bg-white cursor-pointer transition-all border-l-4 border-transparent group ${currentContactId === c.id ? '!border-primary bg-white' : ''}">
             <div class="w-12 h-12 rounded-full bg-surface-container flex flex-shrink-0 items-center justify-center text-xl shadow-sm group-hover:scale-105 transition-transform relative">
-                ${c.avatar_url || 'ðŸ‘¤'}
+            ${c.avatar_url || 'U'}
                 ${unreadCount > 0 ? `<span class=\"absolute -top-1 -right-1 unread-badge\">${unreadCount}</span>` : ''}
             </div>
             <div class="flex-1 min-w-0">
@@ -1704,7 +1704,7 @@ async function selectChat(id, name, avatar) {
     const nameEl = document.getElementById('active-name');
     const avatarEl = document.getElementById('active-avatar');
     if (nameEl) nameEl.textContent = name;
-    if (avatarEl) avatarEl.textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : 'ðŸ‘¤';
+    if (avatarEl) avatarEl.textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : 'U';
 
     if (typingChannel) typingChannel.unsubscribe();
     typingChannel = subscribeToTyping(user.id, id, (isTypingNow) => {
@@ -1746,9 +1746,9 @@ async function loadMessages() {
 
         let statusIcon = '';
         if (isMe) {
-            if (status === 'seen' || isRead) statusIcon = '<span class="msg-status seen">âœ“âœ“</span>';
-            else if (status === 'delivered') statusIcon = '<span class="msg-status">âœ“âœ“</span>';
-            else statusIcon = '<span class="msg-status">âœ“</span>';
+            if (status === 'seen' || isRead) statusIcon = '<span class="msg-status seen">&#10003;&#10003;</span>';
+            else if (status === 'delivered') statusIcon = '<span class="msg-status">&#10003;&#10003;</span>';
+            else statusIcon = '<span class="msg-status">&#10003;</span>';
         }
 
         return `

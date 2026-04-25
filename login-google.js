@@ -1,4 +1,10 @@
 (function () {
+    const ROLE_STORAGE_KEY = 'onlifit_user_role';
+    const TRAINER_INTENT_KEY = 'onlifit_trainer_intent';
+    const OAUTH_SIGNUP_SOURCE_KEY = 'oauth_signup_source';
+    const OAUTH_ROLE_KEY = 'oauth_role';
+    const OAUTH_INTENT_KEY = 'oauth_intent';
+
     function getParam(name) {
         const params = new URLSearchParams(window.location.search);
         return params.get(name);
@@ -11,8 +17,25 @@
         isBusy: false
     };
 
+    function persistTrainerIntent() {
+        localStorage.setItem(TRAINER_INTENT_KEY, 'join-us');
+        localStorage.setItem(ROLE_STORAGE_KEY, 'trainer');
+        localStorage.setItem(OAUTH_SIGNUP_SOURCE_KEY, 'join-us');
+        localStorage.setItem(OAUTH_ROLE_KEY, 'trainer');
+        localStorage.setItem(OAUTH_INTENT_KEY, 'join_us_trainer_signup');
+    }
+
+    function hasTrainerIntent() {
+        return localStorage.getItem(TRAINER_INTENT_KEY) === 'join-us'
+            || localStorage.getItem(ROLE_STORAGE_KEY) === 'trainer'
+            || localStorage.getItem(OAUTH_SIGNUP_SOURCE_KEY) === 'join-us'
+            || localStorage.getItem(OAUTH_ROLE_KEY) === 'trainer'
+            || localStorage.getItem(OAUTH_INTENT_KEY) === 'join_us_trainer_signup';
+    }
+
     function isTrainerJoinUsSignupFlow() {
-        return state.mode === 'signup' && state.role === 'trainer' && state.source === 'join-us';
+        const explicitJoinUs = state.mode === 'signup' && state.role === 'trainer' && state.source === 'join-us';
+        return explicitJoinUs || hasTrainerIntent();
     }
 
     function setNotice(message, type) {
@@ -133,8 +156,9 @@
                 }
 
                 if (signupRole === 'trainer') {
+                    persistTrainerIntent();
                     setNotice('Trainer account created. Redirecting to trainer application...', 'success');
-                    window.location.href = 'trainer-onboarding.html';
+                    window.location.href = 'trainer-onboarding.html?role=trainer&source=join-us';
                     return;
                 }
 
@@ -150,7 +174,32 @@
                 return;
             }
 
-            const userRole = result?.user?.role || state.role || 'client';
+            const strictTrainerIntent = isTrainerJoinUsSignupFlow();
+            let userRole = result?.user?.role || state.role || 'client';
+
+            if (strictTrainerIntent && userRole !== 'admin') {
+                persistTrainerIntent();
+
+                if (userRole !== 'trainer' && result?.user?.id && typeof updateUserProfile === 'function') {
+                    const promote = await updateUserProfile(result.user.id, { role: 'trainer' });
+                    if (promote?.success) {
+                        userRole = 'trainer';
+                    }
+                }
+
+                const verificationStatusStrict = String(result?.user?.verification_status || '').toLowerCase();
+                const approvedStrict = verificationStatusStrict === 'approved' || verificationStatusStrict === 'verified';
+                const onboardingDoneStrict = !!result?.user?.onboarding_completed;
+
+                if (!onboardingDoneStrict || !approvedStrict) {
+                    window.location.href = 'trainer-onboarding.html?role=trainer&source=join-us';
+                    return;
+                }
+
+                window.location.href = getSafeDashboardHref('trainer');
+                return;
+            }
+
             const verificationStatus = String(result?.user?.verification_status || '').toLowerCase();
             if (userRole === 'trainer' && verificationStatus && verificationStatus !== 'approved' && verificationStatus !== 'verified') {
                 window.location.href = 'trainer-onboarding.html';
@@ -170,11 +219,16 @@
 
         try {
             const isSignup = state.mode === 'signup';
-            const isTrainerSignup = isSignup && isTrainerJoinUsSignupFlow();
-            const targetRole = isSignup ? (isTrainerSignup ? 'trainer' : 'client') : state.role;
+            const strictTrainerIntent = isTrainerJoinUsSignupFlow();
+            const isTrainerSignup = isSignup && strictTrainerIntent;
+            const targetRole = isSignup ? (isTrainerSignup ? 'trainer' : 'client') : (strictTrainerIntent ? 'trainer' : state.role);
             const options = isSignup
                 ? { signupSource: isTrainerSignup ? 'join-us' : 'public' }
-                : { signupSource: state.source || 'direct' };
+                : { signupSource: strictTrainerIntent ? 'join-us' : (state.source || 'direct') };
+
+            if (strictTrainerIntent) {
+                persistTrainerIntent();
+            }
 
             const result = await signInWithGoogle(targetRole, isSignup, options);
             if (result && result.success === false) {
@@ -239,6 +293,14 @@
     }
 
     function init() {
+        // If user reached login from Join Us trainer CTA, persist strict trainer flow intent.
+        if (state.role === 'trainer' && state.source === 'join-us') {
+            persistTrainerIntent();
+        } else if (hasTrainerIntent()) {
+            state.role = 'trainer';
+            state.source = 'join-us';
+        }
+
         setupEvents();
         updateModeUi();
 

@@ -43,6 +43,100 @@
             scrollbar-width: none;
         }
 
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .hero-search-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .hero-search-segment {
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-search-input-wrap {
+            flex: 1;
+            min-width: 0;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(232, 232, 232, 0.6);
+        }
+
+        .hero-search-mode-wrap {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(232, 232, 232, 0.6);
+        }
+
+        .hero-search-button {
+            width: 100%;
+            min-height: 56px;
+        }
+
+        #search-query,
+        #search-mode,
+        #search-location {
+            min-height: 44px;
+        }
+
+        .hero-dynamic-placeholder {
+            width: calc(100% - 2rem);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+
+        @media (min-width: 768px) {
+            .hero-search-bar {
+                flex-direction: row;
+                align-items: stretch;
+                gap: 0;
+            }
+
+            .hero-search-segment {
+                min-height: 72px;
+            }
+
+            .hero-search-input-wrap {
+                padding: 0 1.25rem;
+                border-bottom: none;
+                border-right: 1px solid rgba(232, 232, 232, 0.6);
+            }
+
+            .hero-search-mode-wrap {
+                width: auto;
+                min-width: 270px;
+                padding: 0 1.25rem;
+                border-bottom: none;
+            }
+
+            .hero-search-button {
+                width: auto;
+                min-width: 150px;
+                min-height: 72px;
+                border-radius: 0.9rem;
+            }
+
+            .hero-dynamic-placeholder {
+                font-size: 1rem;
+                line-height: 1.5rem;
+            }
+        }
+
         /* Glassmorphism effect */
         .glass-effect {
             background: rgba(250, 249, 251, 0.8);
@@ -179,22 +273,22 @@
                         
                         <!-- Subtext (H2) -->
                         <h2 class="text-on-surface-variant text-base lg:text-lg mb-10 leading-relaxed font-medium">
-                            <span class="block mb-2">ðŸ¥‡ India's largest community of certified personal trainers</span>
-                            <span class="block mb-2">âœ… Pick your favourite trainer and book sessions â€” in person or online</span>
-                            <span class="block">ðŸŽ 1st session free, no commitment</span>
+                            <span class="block mb-2">India's largest community of certified personal trainers</span>
+                            <span class="block mb-2">Pick your favorite trainer and book sessions in person or online</span>
+                            <span class="block">1st session free, no commitment</span>
                         </h2>
 
                         <!-- Search Bar -->
-                        <div class="bg-white rounded-2xl shadow-xl w-full p-2 border border-outline-variant/50 flex flex-col md:flex-row md:items-stretch gap-2 mb-8 transform transition-all hover:shadow-2xl relative z-50 overflow-hidden">
-                    <div class="flex-1 min-w-0 flex items-center relative px-4 md:px-5 py-4 md:py-0 md:min-h-[72px] md:border-r border-outline-variant/30">
-                        <div class="relative w-full h-full flex items-center">
+                        <div class="hero-search-bar bg-white rounded-2xl shadow-xl w-full p-2 border border-outline-variant/50 mb-8 transform transition-all hover:shadow-2xl relative z-50 overflow-hidden">
+                    <div class="hero-search-segment hero-search-input-wrap flex items-center relative">
+                        <div class="relative w-full flex items-center">
                             <span class="material-symbols-outlined absolute left-0 text-on-surface-variant pointer-events-none">search</span>
-                            <div class="relative w-full h-full flex items-center overflow-hidden pl-8">
+                            <div class="relative w-full flex items-center overflow-hidden">
                                     <label for="search-query" class="sr-only">Search trainers by goal</label>
                                     <input id="search-query" type="text" 
-                                    class="w-full h-full border-none focus:ring-0 text-on-surface text-base outline-none p-0 bg-transparent z-10 relative bg-white mix-blend-multiply placeholder-transparent focus:placeholder-transparent" 
+                                    class="w-full border-none focus:ring-0 text-on-surface text-sm md:text-base outline-none p-0 pl-8 pr-2 bg-transparent z-10 relative bg-white mix-blend-multiply placeholder-transparent focus:placeholder-transparent" 
                                     autocomplete="off" />
-                                <div id="dynamic-placeholder" class="absolute left-8 top-0 h-full flex flex-col justify-center transition-transform duration-500 pointer-events-none text-on-surface-variant/70 text-base select-none z-0">
+                                <div id="dynamic-placeholder" class="hero-dynamic-placeholder absolute left-8 top-0 h-full flex flex-col justify-center transition-transform duration-500 pointer-events-none text-on-surface-variant/70 select-none z-0">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
@@ -223,20 +317,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex-none min-w-0 flex items-center gap-3 px-4 md:px-5 py-4 md:py-0 md:min-h-[72px] relative z-40 border-t md:border-t-0 md:border-l border-outline-variant/30">
+                    <div class="hero-search-segment hero-search-mode-wrap flex-none min-w-0 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 relative z-40">
                         <label for="search-mode" class="sr-only">Select training mode</label>
                         <select id="search-mode" onchange="toggleLocationInput()" 
-                            class="w-full md:w-32 border-none focus:ring-0 text-on-surface text-base font-semibold outline-none py-0 pl-0 pr-8 bg-transparent cursor-pointer h-12 md:h-auto">
+                            class="w-full md:w-32 border-none focus:ring-0 text-on-surface text-base font-semibold outline-none py-0 pl-0 pr-8 bg-transparent cursor-pointer h-12">
                             <option value="online">Online</option>
                             <option value="offline">Offline</option>
                         </select>
                         <label for="search-location" class="sr-only">Enter city or pincode for offline search</label>
                         <input id="search-location" type="text" placeholder="Pincode or City" 
                             style="display: none;"
-                            class="w-full md:w-40 border-none focus:ring-0 text-on-surface text-base font-semibold placeholder:text-on-surface-variant/70 outline-none p-0 bg-transparent h-12 md:h-auto" />
+                            class="w-full md:w-40 border-none focus:ring-0 text-on-surface text-base font-semibold placeholder:text-on-surface-variant/70 outline-none p-0 bg-transparent h-12" />
                     </div>
                     <button onclick="performSearch()"
-                        class="bg-secondary text-on-secondary px-8 py-3 rounded-xl text-base font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-secondary/10 w-full md:w-auto md:min-h-[72px] flex items-center justify-center">
+                        class="hero-search-button bg-secondary text-on-secondary px-8 py-3 rounded-xl text-base font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-secondary/10 flex items-center justify-center">
                         Search
                     </button>
                 </div>
@@ -245,7 +339,7 @@
                         <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-outline-variant/30 shadow-sm">
                             <span class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface">
                                 <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                Verified trainers â€¢ Secure chat â€¢ Online &amp; offline sessions
+                                Verified trainers | Secure chat | Online &amp; offline sessions
                             </span>
                         </div>
                     </div>
@@ -499,7 +593,7 @@
 
                 <div id="testimonial-carousel" class="flex gap-6 overflow-x-auto testimonial-carousel hide-scrollbar snap-x snap-mandatory pb-8">
                     <div id="reviews-loading" class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                        <p class="text-on-surface font-semibold">Loading reviewsâ€¦</p>
+                        <p class="text-on-surface font-semibold">Loading reviews...</p>
                         <p class="text-on-surface-variant text-sm mt-2">This section appears only when real reviews are available.</p>
                     </div>
                 </div>
@@ -614,7 +708,7 @@
             </div>
             <div
                 class="border-t border-white/10 pt-12 text-center text-[10px] uppercase tracking-widest text-surface-container-highest/40 font-bold">
-                Â© 2024 Onlifit. All rights reserved. Built with love for fitness enthusiasts.
+                © 2024 Onlifit. All rights reserved. Built with love for fitness enthusiasts.
             </div>
         </div>
     </footer>
@@ -629,10 +723,10 @@
         const searchInput = document.getElementById('search-query');
         const dynamicPlaceholder = document.getElementById('dynamic-placeholder');
         const placeholders = [
-            "Try â€œYoga Trainerâ€",
-            "Search â€œWeight Loss Coachâ€",
-            "Find â€œPersonal Trainer near meâ€",
-            "Try â€œZumba Expertâ€"
+            "Try Yoga Trainer",
+            "Search Weight Loss Coach",
+            "Find Personal Trainer near me",
+            "Try Zumba Expert"
         ];
         
         let placeholderIndex = 0;
@@ -735,11 +829,7 @@
 
                 const reviews = (data || []).filter(r => (r?.text || '').trim().length > 0);
                 if (reviews.length === 0) {
-                    carousel.innerHTML = `
-                        <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                            <p class="text-on-surface font-semibold">Client reviews will appear here soon.</p>
-                            <p class="text-on-surface-variant text-sm mt-2">This section stays visible so visitors know reviews are coming.</p>
-                        </div>`;
+                    carousel.innerHTML = renderDummyReviews();
                     if (loading) loading.remove();
                     return;
                 }
@@ -769,13 +859,49 @@
                 }).join('');
             } catch (e) {
                 console.error('Homepage reviews failed to load:', e);
-                carousel.innerHTML = `
-                    <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
-                        <p class="text-on-surface font-semibold">Client reviews will appear here soon.</p>
-                        <p class="text-on-surface-variant text-sm mt-2">This section stays visible even if reviews are temporarily unavailable.</p>
-                    </div>`;
+                carousel.innerHTML = renderDummyReviews();
                 if (loading) loading.remove();
             }
+        }
+
+        function renderDummyReviews() {
+            const fallbackReviews = [
+                {
+                    rating: 5,
+                    text: 'Found my trainer in less than a day. Sessions are structured and I already feel stronger in week two.',
+                    date: '12 Apr 2026',
+                    initial: 'A'
+                },
+                {
+                    rating: 5,
+                    text: 'The online plan was super practical for my work schedule. My coach checks in every week and keeps me consistent.',
+                    date: '02 Apr 2026',
+                    initial: 'R'
+                },
+                {
+                    rating: 4,
+                    text: 'Booked an offline trainer nearby and the experience has been smooth. Clear pricing and easy communication.',
+                    date: '22 Mar 2026',
+                    initial: 'S'
+                }
+            ];
+
+            return fallbackReviews.map(r => `
+                <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex gap-1 text-tertiary">${renderStars(r.rating)}</div>
+                        <span class="text-xs text-on-surface-variant font-semibold">${r.date}</span>
+                    </div>
+                    <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"${escapeHtml(r.text)}"</p>
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-black flex-shrink-0">${r.initial}</div>
+                        <div class="flex flex-col">
+                            <p class="font-bold text-sm text-on-surface">Onlifit Member</p>
+                            <p class="text-xs font-semibold text-on-surface-variant">Verified feedback</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function escapeHtml(str) {

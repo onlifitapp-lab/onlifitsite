@@ -84,7 +84,7 @@
 </head>
 <body>
     <div class="card">
-        <h1>ðŸ” Login Flow Tester</h1>
+        <h1>🔐 Login Flow Tester</h1>
         <p>This page tests the automatic role detection and redirect system.</p>
         
         <div id="status" class="info">
@@ -103,8 +103,8 @@
         <div class="info">
             <strong>How the system works:</strong>
             <ul>
-                <li><strong>Email/Password Login:</strong> Fetches role from database â†’ redirects to correct dashboard</li>
-                <li><strong>Google OAuth Login:</strong> Checks localStorage (for signup) OR fetches from database (for returning users) â†’ redirects accordingly</li>
+                <li><strong>Email/Password Login:</strong> Fetches role from database → redirects to correct dashboard</li>
+                <li><strong>Google OAuth Login:</strong> Checks localStorage (for signup) OR fetches from database (for returning users) → redirects accordingly</li>
             </ul>
         </div>
 
@@ -187,7 +187,7 @@
                 
                 if (user) {
                     statusDiv.className = 'user-info';
-                    statusDiv.innerHTML = `<strong>âœ… Logged In</strong> as ${user.email}`;
+                    statusDiv.innerHTML = `<strong>✅ Logged In</strong> as ${user.email}`;
                     
                     userInfoDiv.innerHTML = `
                         <strong>User Details:</strong><br>
@@ -196,16 +196,16 @@
                         <strong>Role:</strong> <code>${user.role || 'Not set'}</code><br>
                         <strong>User ID:</strong> <code>${user.id}</code><br>
                         <strong>Phone:</strong> ${user.phone || 'Not set'}<br>
-                        <strong>Onboarding:</strong> ${user.onboarding_completed ? 'âœ… Completed' : 'â³ Pending'}
+                        <strong>Onboarding:</strong> ${user.onboarding_completed ? '✅ Completed' : '⏳ Pending'}
                     `;
                 } else {
                     statusDiv.className = 'info';
-                    statusDiv.innerHTML = '<strong>ðŸ‘¤ Not Logged In</strong> - You can test login flows below';
+                    statusDiv.innerHTML = '<strong>👤 Not Logged In</strong> - You can test login flows below';
                     userInfoDiv.innerHTML = '<p style="color: #64748b;">No user logged in. Sign up or login to test the system.</p>';
                 }
             } catch (error) {
                 statusDiv.className = 'error';
-                statusDiv.innerHTML = `<strong>âŒ Error:</strong> ${error.message}`;
+                statusDiv.innerHTML = `<strong>❌ Error:</strong> ${error.message}`;
             }
         }
 
@@ -213,14 +213,14 @@
             const resultsDiv = document.getElementById('test-results');
             resultsDiv.innerHTML = `
                 <div class="info" style="margin-top: 20px;">
-                    <strong>ðŸ“§ Testing Email Login (${role}):</strong><br><br>
+                    <strong>📧 Testing Email Login (${role}):</strong><br><br>
                     1. Go to <code>login.html</code><br>
                     2. Enter credentials for a ${role} account<br>
                     3. Click "Login"<br>
                     4. System will:<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Fetch user from database<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Read <code>role</code> field<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Redirect to <code>${role === 'trainer' ? 'bookings.html' : 'client-dashboard.html'}</code><br><br>
+                    &nbsp;&nbsp;&nbsp;→ Fetch user from database<br>
+                    &nbsp;&nbsp;&nbsp;→ Read <code>role</code> field<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect to <code>${role === 'trainer' ? 'bookings.html' : 'client-dashboard.html'}</code><br><br>
                     <button onclick="window.location.href='login.html'">Go to Login Page</button>
                 </div>
             `;
@@ -230,15 +230,15 @@
             const resultsDiv = document.getElementById('test-results');
             resultsDiv.innerHTML = `
                 <div class="info" style="margin-top: 20px;">
-                    <strong>ðŸ” Testing Google Signup (${role}):</strong><br><br>
+                    <strong>🔐 Testing Google Signup (${role}):</strong><br><br>
                     1. Will open <code>login.html?tab=signup&role=${role}</code><br>
                     2. Click "Sign up with Google"<br>
                     3. Complete Google authentication<br>
                     4. System will:<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Save <code>role=${role}</code> to localStorage<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Create account with OAuth<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Update profile with correct role<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Redirect to <code>${role === 'trainer' ? 'trainer-onboarding.html' : 'onboarding.html'}</code><br><br>
+                    &nbsp;&nbsp;&nbsp;→ Save <code>role=${role}</code> to localStorage<br>
+                    &nbsp;&nbsp;&nbsp;→ Create account with OAuth<br>
+                    &nbsp;&nbsp;&nbsp;→ Update profile with correct role<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect to <code>${role === 'trainer' ? 'trainer-onboarding.html' : 'onboarding.html'}</code><br><br>
                     <button onclick="window.location.href='login.html?tab=signup&role=${role}'">Start Test</button>
                 </div>
             `;
@@ -248,16 +248,16 @@
             const resultsDiv = document.getElementById('test-results');
             resultsDiv.innerHTML = `
                 <div class="info" style="margin-top: 20px;">
-                    <strong>ðŸ” Testing Google Login (Returning User):</strong><br><br>
+                    <strong>🔐 Testing Google Login (Returning User):</strong><br><br>
                     1. Will open <code>login.html</code><br>
                     2. Click "Login with Google"<br>
                     3. Select your existing Google account<br>
                     4. System will:<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Authenticate user<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Fetch role from database<br>
-                    &nbsp;&nbsp;&nbsp;â†’ Redirect based on role:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;â€¢ Trainer â†’ <code>bookings.html</code><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;â€¢ Client â†’ <code>client-dashboard.html</code><br><br>
+                    &nbsp;&nbsp;&nbsp;→ Authenticate user<br>
+                    &nbsp;&nbsp;&nbsp;→ Fetch role from database<br>
+                    &nbsp;&nbsp;&nbsp;→ Redirect based on role:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Trainer → <code>bookings.html</code><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Client → <code>client-dashboard.html</code><br><br>
                     <button onclick="window.location.href='login.html'">Start Test</button>
                 </div>
             `;

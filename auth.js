@@ -9,6 +9,7 @@ const ONLIFIT_ROLE_STORAGE = 'onlifit_user_role';
 const ONLIFIT_OAUTH_SIGNUP_SOURCE = 'oauth_signup_source';
 const ONLIFIT_OAUTH_LOGIN_ROLE = 'oauth_login_role';
 const ONLIFIT_OAUTH_LOGIN_SOURCE = 'oauth_login_source';
+const ONLIFIT_OAUTH_INTENT = 'oauth_intent';
 
 let _clerkLoadPromise = null;
 
@@ -312,7 +313,47 @@ async function signUp(name, email, password, role, trainerData, phone) {
         // Wait a moment for trigger to complete
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        return { success: true, user: authData.user };
+        let mergedUser = authData.user;
+        const normalizedSignupRole = normalizeUserRole(role, 'client');
+
+        if (normalizedSignupRole === 'trainer') {
+            localStorage.setItem(ONLIFIT_ROLE_STORAGE, 'trainer');
+            localStorage.setItem('onlifit_trainer_intent', 'join-us');
+            localStorage.setItem(ONLIFIT_OAUTH_SIGNUP_SOURCE, 'join-us');
+            localStorage.setItem('oauth_role', 'trainer');
+            localStorage.setItem(ONLIFIT_OAUTH_INTENT, 'join_us_trainer_signup');
+        }
+
+        try {
+            const { data: profileRows, error: profileFetchError } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', authData.user.id)
+                .limit(1);
+
+            if (!profileFetchError && Array.isArray(profileRows) && profileRows.length > 0) {
+                let profile = profileRows[0];
+
+                if (normalizedSignupRole === 'trainer' && profile.role !== 'trainer') {
+                    const { data: updatedRows, error: promoteError } = await supabaseClient
+                        .from('profiles')
+                        .update({ role: 'trainer' })
+                        .eq('id', authData.user.id)
+                        .select('*')
+                        .limit(1);
+
+                    if (!promoteError && Array.isArray(updatedRows) && updatedRows.length > 0) {
+                        profile = updatedRows[0];
+                    }
+                }
+
+                mergedUser = { ...authData.user, ...profile };
+            }
+        } catch (profileSyncError) {
+            console.warn('Unable to sync profile role after signup:', profileSyncError?.message || profileSyncError);
+        }
+
+        return { success: true, user: mergedUser };
     } catch (error) {
         console.error("Signup error:", error.message);
         return { success: false, error: error.message };
@@ -344,7 +385,11 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
         // This preserves localStorage role/source bridge data for trainer signup flows.
         const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
         const authBase = isHttp ? window.location.origin : 'https://onlifit.in';
-        const redirectTo = `${authBase}/login.html`;
+        const joinUsTrainerSignup = isSignup && normalizedRole === 'trainer' && signupSource === 'join-us';
+        const oauthIntent = joinUsTrainerSignup ? 'join_us_trainer_signup' : '';
+        const redirectTo = oauthIntent
+            ? `${authBase}/login.html?oauth_intent=${encodeURIComponent(oauthIntent)}`
+            : `${authBase}/login.html`;
 
         // localStorage bridge is only for OAuth signups (role selection happens during signup).
         // For logins, role must be fetched from DB.
@@ -352,12 +397,18 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
             localStorage.setItem('oauth_role', normalizedRole);
             localStorage.setItem('oauth_is_signup', 'true');
             localStorage.setItem(ONLIFIT_OAUTH_SIGNUP_SOURCE, signupSource || 'direct');
+            if (oauthIntent) {
+                localStorage.setItem(ONLIFIT_OAUTH_INTENT, oauthIntent);
+            } else {
+                localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
+            }
             localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
             localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
         } else {
             localStorage.removeItem('oauth_role');
             localStorage.removeItem('oauth_is_signup');
             localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+            localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
             localStorage.setItem(ONLIFIT_OAUTH_LOGIN_ROLE, normalizedRole);
             localStorage.setItem(ONLIFIT_OAUTH_LOGIN_SOURCE, signupSource || 'direct');
         }
@@ -398,6 +449,16 @@ async function login(email, password) {
 
         if (error) throw error;
 
+        const hasTrainerIntent = localStorage.getItem('onlifit_trainer_intent') === 'join-us'
+            || localStorage.getItem(ONLIFIT_ROLE_STORAGE) === 'trainer'
+            || localStorage.getItem(ONLIFIT_OAUTH_SIGNUP_SOURCE) === 'join-us'
+            || localStorage.getItem('oauth_role') === 'trainer'
+            || localStorage.getItem(ONLIFIT_OAUTH_INTENT) === 'join_us_trainer_signup'
+            || (
+                localStorage.getItem(ONLIFIT_OAUTH_LOGIN_ROLE) === 'trainer'
+                && localStorage.getItem(ONLIFIT_OAUTH_LOGIN_SOURCE) === 'join-us'
+            );
+
         // Fetch profile to get role (handle multiple results or no results)
         const { data: profiles, error: profileError } = await supabaseClient
             .from('profiles')
@@ -409,23 +470,47 @@ async function login(email, password) {
         // If no profile exists, create one (fallback)
         if (!profiles || profiles.length === 0) {
             console.warn("No profile found, creating one...");
+            const fallbackRole = hasTrainerIntent ? 'trainer' : (data.user.user_metadata?.role || 'client');
             const { data: newProfile } = await supabaseClient
                 .from('profiles')
                 .insert([{
                     id: data.user.id,
                     email: data.user.email,
                     name: data.user.user_metadata?.name || 'User',
-                    role: data.user.user_metadata?.role || 'client',
+                    role: fallbackRole,
                     phone: data.user.user_metadata?.phone || null
                 }])
                 .select()
                 .single();
+
+            if (fallbackRole === 'trainer') {
+                localStorage.setItem(ONLIFIT_ROLE_STORAGE, 'trainer');
+                localStorage.setItem('onlifit_trainer_intent', 'join-us');
+            }
             
             return { success: true, user: { ...data.user, ...newProfile } };
         }
 
         // Use first profile if multiple exist
-        const profile = profiles[0];
+        let profile = profiles[0];
+
+        if (hasTrainerIntent && profile.role !== 'trainer') {
+            const { data: updatedProfiles, error: promoteError } = await supabaseClient
+                .from('profiles')
+                .update({ role: 'trainer' })
+                .eq('id', data.user.id)
+                .select('*')
+                .limit(1);
+
+            if (!promoteError && Array.isArray(updatedProfiles) && updatedProfiles.length > 0) {
+                profile = updatedProfiles[0];
+            }
+        }
+
+        if (profile.role === 'trainer') {
+            localStorage.setItem(ONLIFIT_ROLE_STORAGE, 'trainer');
+            localStorage.setItem('onlifit_trainer_intent', 'join-us');
+        }
 
         return { success: true, user: { ...data.user, ...profile } };
     } catch (error) {
@@ -506,6 +591,8 @@ async function handleOAuthCallback(options = {}) {
     const oauthLoginSource = localStorage.getItem(ONLIFIT_OAUTH_LOGIN_SOURCE) || 'direct';
 
     const params = new URLSearchParams(window.location.search);
+    const oauthIntentParam = params.get('oauth_intent') || localStorage.getItem(ONLIFIT_OAUTH_INTENT) || '';
+    const joinUsTrainerIntent = oauthIntentParam === 'join_us_trainer_signup';
     const code = params.get('code');
     const hasAccessToken = window.location.hash.includes('access_token=');
     const hadOAuthParams = !!code || hasAccessToken;
@@ -561,6 +648,7 @@ async function handleOAuthCallback(options = {}) {
                 params.delete('state');
                 params.delete('error');
                 params.delete('error_description');
+                params.delete('oauth_intent');
                 const cleanUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
                 window.history.replaceState({}, document.title, cleanUrl);
             }
@@ -592,6 +680,7 @@ async function handleOAuthCallback(options = {}) {
         localStorage.removeItem('oauth_role');
         localStorage.removeItem('oauth_is_signup');
         localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
 
@@ -600,10 +689,11 @@ async function handleOAuthCallback(options = {}) {
         return;
     }
 
-    if (!profile && !oauthIsSignup) {
+    if (!profile && !oauthIsSignup && !joinUsTrainerIntent) {
         localStorage.removeItem('oauth_role');
         localStorage.removeItem('oauth_is_signup');
         localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
 
@@ -619,7 +709,7 @@ async function handleOAuthCallback(options = {}) {
     // Create profile if missing (mainly for first-time OAuth signups)
     if (!profile) {
         try {
-            const roleForNewProfile = oauthRole || user.user_metadata?.role || 'client';
+            const roleForNewProfile = joinUsTrainerIntent ? 'trainer' : (oauthRole || user.user_metadata?.role || 'client');
             const { data: insertedProfiles } = await supabaseClient
                 .from('profiles')
                 .insert([{
@@ -637,7 +727,7 @@ async function handleOAuthCallback(options = {}) {
     }
 
     // Hard guarantee: Join Us signup must always continue as trainer flow.
-    if (oauthIsSignup && oauthSignupSource === 'join-us') {
+    if ((oauthIsSignup && oauthSignupSource === 'join-us') || joinUsTrainerIntent) {
         try {
             const { data: forcedProfiles } = await supabaseClient
                 .from('profiles')
@@ -659,10 +749,11 @@ async function handleOAuthCallback(options = {}) {
     localStorage.removeItem('oauth_role');
     localStorage.removeItem('oauth_is_signup');
     localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+    localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
     localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
     localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
 
-    const finalRole = profile?.role || oauthRole || user.user_metadata?.role || 'client';
+    const finalRole = joinUsTrainerIntent ? 'trainer' : (profile?.role || oauthRole || user.user_metadata?.role || 'client');
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
     if (!shouldRedirectNow) return;
 
@@ -836,9 +927,15 @@ function isMissingColumnError(error, columnName) {
     return msg.includes('does not exist') && msg.includes(String(columnName).toLowerCase());
 }
 
+function isLikelySupabaseUuid(id) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(id || ''));
+}
+
 function normalizeTrainerList(list) {
     if (!Array.isArray(list)) return [];
-    return list.map(t => (typeof window.normalizeTrainerBadges === 'function' ? window.normalizeTrainerBadges(t) : t));
+    return list
+        .filter(t => isLikelySupabaseUuid(t?.id))
+        .map(t => (typeof window.normalizeTrainerBadges === 'function' ? window.normalizeTrainerBadges(t) : t));
 }
 
 let _cachedTrainers = null;
@@ -869,9 +966,17 @@ async function getTrainers(options = {}) {
         const stored = localStorage.getItem(TRAINERS_CACHE_KEY);
         const storedTime = localStorage.getItem(TRAINERS_CACHE_TIME_KEY);
         if (stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
-            _cachedTrainers = normalizeTrainerList(JSON.parse(stored));
-            _cachedTrainersTime = parseInt(storedTime);
-            return _cachedTrainers;
+            const parsed = JSON.parse(stored);
+            const normalized = normalizeTrainerList(parsed);
+
+            if (Array.isArray(parsed) && parsed.length > 0 && normalized.length === 0) {
+                localStorage.removeItem(TRAINERS_CACHE_KEY);
+                localStorage.removeItem(TRAINERS_CACHE_TIME_KEY);
+            } else {
+                _cachedTrainers = normalized;
+                _cachedTrainersTime = parseInt(storedTime);
+                return _cachedTrainers;
+            }
         }
     } catch (e) {}
 

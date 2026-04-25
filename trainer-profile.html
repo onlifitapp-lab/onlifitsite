@@ -35,7 +35,9 @@
         .shadow-ambient {
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
         }
-        </style>
+    </style>
+</head>
+<body class="bg-surface-container-low font-body text-on-surface">
     <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
         <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
@@ -705,7 +707,7 @@
             const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
             const location = (cityState || t?.location || '').trim();
             const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
-            return [location, mode].filter(Boolean).join(' Ã¢â‚¬Â¢ ');
+            return [location, mode].filter(Boolean).join(' - ');
         }
 
         function getHourlyPrice(t) {
