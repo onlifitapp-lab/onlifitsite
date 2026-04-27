@@ -1129,7 +1129,7 @@
         
         // Upload file to Supabase Storage with robust bucket fallback.
         async function uploadToStorage(file, userId, category, filename) {
-            const candidateBuckets = ['trainer-documents', 'trainer_documents', 'avatars'];
+            const candidateBuckets = ['Trainers Kyc', 'trainer-documents', 'trainer_documents', 'avatars'];
             const filePath = `${userId}/${category}/${filename}`;
             let lastErrorMessage = 'Unknown upload error';
 
@@ -1169,7 +1169,7 @@
             console.error('Upload error across buckets:', lastErrorMessage);
             return {
                 success: false,
-                error: `Upload failed. Please ensure a storage bucket exists (trainer-documents preferred). Details: ${lastErrorMessage}`
+                error: `Upload failed. Please ensure a storage bucket exists (Trainers Kyc preferred). Details: ${lastErrorMessage}`
             };
         }
         

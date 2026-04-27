@@ -54,7 +54,10 @@
 <main class="pt-24 pb-24 px-6">
     <div class="max-w-3xl mx-auto">
         <div class="flex items-center justify-between mb-8">
-            <h1 class="font-headline text-3xl font-black">Notifications</h1>
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="window.history.back()" class="text-xs font-bold text-on-surface-variant hover:text-primary uppercase tracking-widest">Back</button>
+                <h1 class="font-headline text-3xl font-black">Notifications</h1>
+            </div>
             <button onclick="markAllAsRead()" class="text-xs font-bold text-primary hover:underline uppercase tracking-widest">Mark all as read</button>
         </div>
 
@@ -78,7 +81,8 @@
     </div>
 </main>
 
-<script src="auth.js" defer></script>
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
 <script>
     let user = null;
 
