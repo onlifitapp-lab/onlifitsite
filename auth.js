@@ -1043,7 +1043,7 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, has_black_status, kyc_verified, certificates_verified, verification_status, experience';
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience';
     const selectWithBadge = selectBase + ', has_black_status';
 
     try {
@@ -1377,8 +1377,7 @@ async function sendMessage(senderId, receiverId, text) {
         const messagePayload = { 
             sender_id: senderId, 
             receiver_id: receiverId, 
-            text,
-            status: 'sent'
+            text
         };
         if (readColumn) messagePayload[readColumn] = false;
 
@@ -1412,11 +1411,12 @@ async function sendMessage(senderId, receiverId, text) {
 async function updateMessageStatus(messageIds, status, read) {
     try {
         const updates = {};
-        if (status) updates.status = status;
         if (read !== undefined) {
             const readColumn = await resolveMessageReadColumn();
             if (readColumn) updates[readColumn] = read;
         }
+
+        if (!Object.keys(updates).length) return true;
 
         const { error } = await supabaseClient
             .from('messages')
@@ -1440,7 +1440,7 @@ async function markMessagesAsRead(senderId, receiverId) {
         if (!readColumn) return true;
         const { error } = await supabaseClient
             .from('messages')
-            .update({ [readColumn]: true, status: 'seen' })
+            .update({ [readColumn]: true })
             .eq('sender_id', senderId)
             .eq('receiver_id', receiverId)
             .eq(readColumn, false);
