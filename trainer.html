@@ -273,7 +273,7 @@
       certList.innerHTML = '';
     }
 
-    document.getElementById('chat-platform-link').href = '/client/messages?id=' + encodeURIComponent(trainer.id);
+    document.getElementById('chat-platform-link').href = 'client-dashboard.html#messages?id=' + encodeURIComponent(trainer.id);
 
     const wa = document.getElementById('chat-whatsapp-link');
     const phone = (trainer.phone || '').replace(/\D/g, '');
