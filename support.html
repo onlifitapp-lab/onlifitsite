@@ -182,9 +182,10 @@
                 ? await getApiAuthHeader()
                 : null;
             
-            let uploadedFileUrl = null;
+            let uploadedFilePath = null;
             let uploadedFileName = null;
             let uploadedFileType = null;
+            let uploadedFileSize = null;
 
             // Optional Phase 4: Handle File Upload to Storage directly first if user is authenticated
             // (If unauthenticated, we could let anonymous uploads if Storage Policies allow it,
@@ -199,10 +200,10 @@
                 
                 if (uploadError) throw new Error("File upload failed: " + uploadError.message);
                 
-                const { data: { publicUrl } } = supabaseClient.storage.from('ticket_attachments').getPublicUrl(uploadData.path);
-                uploadedFileUrl = publicUrl;
+                uploadedFilePath = uploadData.path;
                 uploadedFileName = file.name;
                 uploadedFileType = fileExt;
+                uploadedFileSize = file.size;
             } else if (file && !currentUser) {
                 // If you want guest file uploads, ensure Storage bucket 'ticket_attachments' allows anonymous inserts
                 // For safety, we just append a note indicating they tried to upload via API or skip.
@@ -220,10 +221,10 @@
                     message,
                     guestEmail: currentUser ? null : guestEmail,
                     authHeader,
-                    // If we wanted to pass the file URL straight to the ticket API to link it
-                    attachmentUrl: uploadedFileUrl,
+                    attachmentPath: uploadedFilePath,
                     attachmentName: uploadedFileName,
-                    attachmentType: uploadedFileType
+                    attachmentType: uploadedFileType,
+                    attachmentSize: uploadedFileSize
                 })
             });
 

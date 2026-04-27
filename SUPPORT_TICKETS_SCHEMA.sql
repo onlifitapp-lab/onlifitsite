@@ -72,10 +72,51 @@ COMMIT;
 -- STORAGE BUCKET FOR TICKETS
 -- ================================================================
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('ticket_attachments', 'ticket_attachments', true)
+VALUES ('ticket_attachments', 'ticket_attachments', false)
 ON CONFLICT (id) DO NOTHING;
 
+UPDATE storage.buckets
+SET public = false
+WHERE id = 'ticket_attachments';
+
 -- Storage Policies
-CREATE POLICY "Ticket attachments are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'ticket_attachments');
--- Anyone authenticated can technically upload (we validate their ticket association in client apps)
-CREATE POLICY "Authenticated users can upload attachments" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'ticket_attachments' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Ticket attachments are publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can read own ticket attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload own ticket attachments" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can read all ticket attachments" ON storage.objects;
+
+-- Users can read files only from their own folder (first path segment = auth.uid())
+CREATE POLICY "Users can read own ticket attachments"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+    bucket_id = 'ticket_attachments'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Users can upload files only to their own folder
+CREATE POLICY "Users can upload own ticket attachments"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    bucket_id = 'ticket_attachments'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+-- Admins can read all ticket attachments
+CREATE POLICY "Admins can read all ticket attachments"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+    bucket_id = 'ticket_attachments'
+    AND EXISTS (
+        SELECT 1
+        FROM profiles
+        WHERE profiles.id = auth.uid()
+          AND profiles.role = 'admin'
+    )
+);
