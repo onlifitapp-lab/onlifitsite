@@ -1346,17 +1346,13 @@ async function resolveMessageReadColumn(userId) {
             return _messageReadColumn;
         }
 
-        const message = String(error?.message || '').toLowerCase();
-        if (message.includes('read') && message.includes('column')) {
-            _messageReadColumn = 'is_read';
-            return _messageReadColumn;
-        }
+        // Any error here likely means the column name differs (e.g., is_read).
+        _messageReadColumn = 'is_read';
+        return _messageReadColumn;
     } catch (error) {
-        // Fall back to default below.
+        _messageReadColumn = 'is_read';
+        return _messageReadColumn;
     }
-
-    _messageReadColumn = 'read';
-    return _messageReadColumn;
 }
 
 async function getNotifications(userId) {
@@ -1493,8 +1489,22 @@ async function getUnreadCount(userId) {
             .eq('receiver_id', userId)
             .eq(readColumn, false);
 
-        if (error) throw error;
-        return count || 0;
+        if (!error) return count || 0;
+
+        if (readColumn === 'read') {
+            const { count: fallbackCount, error: fallbackError } = await supabaseClient
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('receiver_id', userId)
+                .eq('is_read', false);
+
+            if (!fallbackError) {
+                _messageReadColumn = 'is_read';
+                return fallbackCount || 0;
+            }
+        }
+
+        throw error;
     } catch (error) {
         console.error("Get unread count error:", error.message);
         return 0;
