@@ -764,13 +764,24 @@ async function handleOAuthCallback(options = {}) {
         }
     }
 
-    // Clean up oauth local storage (only after session exists)
-    localStorage.removeItem('oauth_role');
-    localStorage.removeItem('oauth_is_signup');
-    localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
-    localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
-    localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
-    localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
+    const shouldKeepTrainerIntent = joinUsTrainerIntent || profile?.role === 'trainer';
+    if (shouldKeepTrainerIntent) {
+        localStorage.setItem(ONLIFIT_ROLE_STORAGE, 'trainer');
+        localStorage.setItem('onlifit_trainer_intent', 'join-us');
+        if (joinUsTrainerIntent) {
+            localStorage.setItem(ONLIFIT_OAUTH_INTENT, 'join_us_trainer_signup');
+            localStorage.setItem(ONLIFIT_OAUTH_SIGNUP_SOURCE, 'join-us');
+            localStorage.setItem('oauth_role', 'trainer');
+        }
+    } else {
+        // Clean up oauth local storage (only after session exists)
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+        localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
+    }
 
     const finalRole = joinUsTrainerIntent ? 'trainer' : (profile?.role || oauthRole || user.user_metadata?.role || 'client');
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
@@ -783,14 +794,32 @@ async function handleOAuthCallback(options = {}) {
         const verificationStatus = String(profile?.verification_status || '').toLowerCase();
         const trainerApproved = verificationStatus === 'approved' || verificationStatus === 'verified';
 
+        const onboardingUrl = (joinUsTrainerIntent || shouldKeepTrainerIntent)
+            ? 'trainer-onboarding.html?role=trainer&source=join-us'
+            : 'trainer-onboarding.html';
+
         if (!profile?.onboarding_completed) {
-            window.location.replace('trainer-onboarding.html');
+            window.location.replace(onboardingUrl);
         } else if (!trainerApproved) {
-            window.location.replace('trainer-onboarding.html');
+            window.location.replace(onboardingUrl);
         } else {
+            // Trainer is fully approved; clear any leftover oauth intent.
+            localStorage.removeItem('oauth_role');
+            localStorage.removeItem('oauth_is_signup');
+            localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+            localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
+            localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+            localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
             window.location.replace(getDashboardPathForRole('trainer'));
         }
     } else {
+        // Client role redirect; clear any oauth intent.
+        localStorage.removeItem('oauth_role');
+        localStorage.removeItem('oauth_is_signup');
+        localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
+        localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
+        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
         // Client role redirect
         // CRITICAL FIX: For existing users (profile exists), prioritize their completion status
         // Only send to onboarding if this is actually a NEW signup AND incomplete
