@@ -228,8 +228,8 @@ function resolveAppPath(cleanPath, htmlFallback) {
 function getDashboardPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
     if (normalized === 'admin') return 'admin-dashboard.html';
-    if (normalized === 'trainer') return resolveAppPath('/trainer/dashboard', 'bookings.html');
-    return resolveAppPath('/client/dashboard', 'client-dashboard.html');
+    if (normalized === 'trainer') return 'bookings.html';
+    return 'client-dashboard.html';
 }
 
 function getMessagesPathForRole(role) {
