@@ -1278,11 +1278,35 @@
 
     async function renderContacts() {
         const list = document.getElementById('contacts-list');
-        if (!list) return;
+        if (!list || !trainerUser) return;
 
         const searchQ = String(document.getElementById('contacts-search')?.value || '').trim().toLowerCase();
-        const contactIds = [...new Set((trainerBookings || []).map(b => b?.client_id).filter(Boolean))];
+        const bookingIds = (trainerBookings || []).map(b => b?.client_id).filter(Boolean);
         await ensureClientProfiles(trainerBookings);
+
+        let messageIds = [];
+        try {
+            const { data } = await supabaseClient
+                .from('messages')
+                .select('sender_id, receiver_id')
+                .or(`sender_id.eq.${trainerUser.id},receiver_id.eq.${trainerUser.id}`)
+                .limit(200);
+
+            messageIds = (data || [])
+                .map(m => (m.sender_id === trainerUser.id ? m.receiver_id : m.sender_id))
+                .filter(Boolean);
+        } catch (error) {
+            console.warn('Failed to load message contacts:', error?.message || error);
+        }
+
+        const contactIds = [...new Set([...bookingIds, ...messageIds])];
+
+        for (const id of contactIds) {
+            if (!trainerClientsById.get(id)) {
+                const profile = await getUserById(id);
+                if (profile) trainerClientsById.set(id, profile);
+            }
+        }
 
         const visibleIds = contactIds.filter(id => {
             const c = trainerClientsById.get(id);
@@ -1557,7 +1581,11 @@
         if (route === 'messages') {
             await renderContacts();
 
-            const id = new URLSearchParams(window.location.search).get('id');
+            const hashQuery = window.location.hash.includes('?')
+                ? window.location.hash.split('?')[1]
+                : '';
+            const params = new URLSearchParams(window.location.search || hashQuery);
+            const id = params.get('id');
             if (id && id !== activeChatContactId) {
                 await openChat(id);
             }
