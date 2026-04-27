@@ -629,6 +629,42 @@
             document.getElementById('profile-summary').innerHTML = summary;
         }
 
+        function extractMissingColumnName(errorMessage) {
+            const text = String(errorMessage || '');
+            const match = text.match(/Could not find the '([^']+)' column/i);
+            return match && match[1] ? match[1] : null;
+        }
+
+        async function updateProfileWithSchemaFallback(userId, profileData) {
+            const payload = { ...profileData };
+            const removedColumns = [];
+
+            // Retry a few times by stripping unknown columns reported by PostgREST.
+            for (let attempt = 0; attempt < 12; attempt += 1) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .update(payload)
+                    .eq('id', userId)
+                    .select();
+
+                if (!error) {
+                    return { data, removedColumns };
+                }
+
+                const missingColumn = extractMissingColumnName(error?.message);
+                if (missingColumn && Object.prototype.hasOwnProperty.call(payload, missingColumn)) {
+                    console.warn(`Profiles table missing column '${missingColumn}'. Removing from payload and retrying.`);
+                    removedColumns.push(missingColumn);
+                    delete payload[missingColumn];
+                    continue;
+                }
+
+                throw error;
+            }
+
+            throw new Error('Profile update failed due to repeated schema mismatches.');
+        }
+
         // Main submit function - called when "Create Profile & Go Live" is clicked
         async function submitTrainerProfile() {
             console.log('=== SUBMIT TRAINER PROFILE TRIGGERED ===');
@@ -767,19 +803,22 @@
 
                 console.log('Updating profile with data:', profileData);
 
-                // Update profile in database
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .update(profileData)
-                    .eq('id', user.id)
-                    .select();
+                // Update profile in database (schema-tolerant fallback for optional columns).
+                const { data, removedColumns } = await updateProfileWithSchemaFallback(user.id, profileData);
 
-                if (error) {
-                    console.error('Supabase error:', error);
-                    throw error;
+                if (removedColumns.length > 0) {
+                    console.warn('Profile saved after dropping unsupported columns:', removedColumns);
                 }
                 
                 console.log('Profile updated successfully:', data);
+
+                // Clear trainer list cache so newly live profile appears quickly across pages.
+                try {
+                    localStorage.removeItem('onlifit_trainers_cache_v2');
+                    localStorage.removeItem('onlifit_trainers_time_v2');
+                } catch (cacheError) {
+                    console.warn('Failed to clear trainer cache:', cacheError?.message || cacheError);
+                }
 
                 // Show success message
                 showPendingApprovalState();
@@ -816,6 +855,7 @@
 
             // Fresh signups can briefly load without merged profile fields. Re-fetch profile directly.
             if (!resolvedUser?.role && resolvedUser?.id) {
+                console.log('No role found, fetching fresh profile...');
                 const { data: profiles } = await supabase
                     .from('profiles')
                     .select('*')
@@ -824,11 +864,21 @@
 
                 if (Array.isArray(profiles) && profiles.length > 0) {
                     resolvedUser = { ...resolvedUser, ...profiles[0] };
+                    console.log('Fresh profile fetched, role:', resolvedUser.role);
                 }
             }
 
             const trainerIntent = hasJoinUsTrainerIntent();
-            if (resolvedUser?.id && resolvedUser?.role !== 'trainer' && trainerIntent) {
+            const originalRole = resolvedUser?.role;
+            console.log('Trainer intent check:', { trainerIntent, userRole: originalRole, hasUserId: !!resolvedUser?.id });
+
+            if (trainerIntent) {
+                resolvedUser = { ...(resolvedUser || {}), role: 'trainer' };
+                localStorage.setItem('onlifit_user_role', 'trainer');
+            }
+            
+            if (resolvedUser?.id && originalRole !== 'trainer' && trainerIntent) {
+                console.log('User has trainer intent but role is not trainer, forcing update...');
                 const { data: forcedProfiles } = await supabase
                     .from('profiles')
                     .update({ role: 'trainer' })
@@ -838,8 +888,10 @@
 
                 if (Array.isArray(forcedProfiles) && forcedProfiles.length > 0) {
                     resolvedUser = { ...resolvedUser, ...forcedProfiles[0] };
+                    console.log('Profile role forced to trainer via DB update');
                 } else {
                     resolvedUser = { ...resolvedUser, role: 'trainer' };
+                    console.log('Profile role forced to trainer in memory');
                 }
 
                 localStorage.setItem('onlifit_user_role', 'trainer');
@@ -852,8 +904,10 @@
         window.onload = async function() {
             try {
                 const rawUser = await getCurrentUser();
-                const user = await ensureTrainerAccess(rawUser);
-                console.log('Onboarding page loaded, resolved user:', user);
+                console.log('Raw user from auth:', { id: rawUser?.id, role: rawUser?.role, name: rawUser?.name });
+                
+                let user = await ensureTrainerAccess(rawUser);
+                console.log('Onboarding page loaded, resolved user:', { id: user?.id, role: user?.role, name: user?.name });
                 
                 if (!user) {
                     alert('Please log in as a trainer first');
@@ -861,11 +915,45 @@
                     return;
                 }
                 
+                // CRITICAL FIX: If user still doesn't have trainer role but has trainer intent,
+                // this is a fresh signup that hasn't fully synced yet. Give it one more chance.
+                if (user.role !== 'trainer' && hasJoinUsTrainerIntent()) {
+                    console.log('Retrying trainer role assignment...');
+                    // Re-fetch and force update
+                    const { data: freshProfile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', user.id)
+                        .limit(1);
+                    
+                    if (Array.isArray(freshProfile) && freshProfile.length > 0 && freshProfile[0].role !== 'trainer') {
+                        console.log('Forcing trainer role in database...');
+                        const { data: updated } = await supabase
+                            .from('profiles')
+                            .update({ role: 'trainer' })
+                            .eq('id', user.id)
+                            .select('*')
+                            .limit(1);
+                        
+                            if (Array.isArray(updated) && updated.length > 0) {
+                                console.log('✅ Role updated to trainer');
+                            }
+                    }
+                }
+
+                if (hasJoinUsTrainerIntent()) {
+                    user = { ...(user || {}), role: 'trainer' };
+                    localStorage.setItem('onlifit_user_role', 'trainer');
+                }
+                
                 if (user.role !== 'trainer') {
+                    console.error('User role is not trainer:', user.role);
                     alert('This page is for trainers only');
                     window.location.href = getDashboardPathForRole(user.role || 'client');
                     return;
                 }
+                
+                console.log('✅ User verified as trainer');
                 
                 // If onboarding is done, route based on approval status.
                 if (user.onboarding_completed) {
@@ -1039,30 +1127,50 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
         
-        // Upload file to Supabase Storage
+        // Upload file to Supabase Storage with robust bucket fallback.
         async function uploadToStorage(file, userId, category, filename) {
-            try {
-                const filePath = `${userId}/${category}/${filename}`;
-                
-                const { data, error } = await supabaseClient.storage
-                    .from('trainer-documents')
-                    .upload(filePath, file, {
-                        cacheControl: '3600',
-                        upsert: true
-                    });
-                
-                if (error) throw error;
-                
-                // Get public URL
-                const { data: urlData } = supabaseClient.storage
-                    .from('trainer-documents')
-                    .getPublicUrl(filePath);
-                
-                return { success: true, path: data.path, url: urlData.publicUrl };
-            } catch (error) {
-                console.error('Upload error:', error);
-                return { success: false, error: error.message };
+            const candidateBuckets = ['trainer-documents', 'trainer_documents', 'avatars'];
+            const filePath = `${userId}/${category}/${filename}`;
+            let lastErrorMessage = 'Unknown upload error';
+
+            for (const bucketName of candidateBuckets) {
+                try {
+                    const { data, error } = await supabaseClient.storage
+                        .from(bucketName)
+                        .upload(filePath, file, {
+                            cacheControl: '3600',
+                            upsert: true
+                        });
+
+                    if (error) {
+                        lastErrorMessage = error.message || String(error);
+                        continue;
+                    }
+
+                    const { data: urlData } = supabaseClient.storage
+                        .from(bucketName)
+                        .getPublicUrl(filePath);
+
+                    if (urlData?.publicUrl) {
+                        return {
+                            success: true,
+                            bucket: bucketName,
+                            path: data?.path || filePath,
+                            url: urlData.publicUrl
+                        };
+                    }
+
+                    lastErrorMessage = `Could not generate URL for bucket: ${bucketName}`;
+                } catch (error) {
+                    lastErrorMessage = error?.message || String(error);
+                }
             }
+
+            console.error('Upload error across buckets:', lastErrorMessage);
+            return {
+                success: false,
+                error: `Upload failed. Please ensure a storage bucket exists (trainer-documents preferred). Details: ${lastErrorMessage}`
+            };
         }
         
         // Validate and proceed to next step from step 3

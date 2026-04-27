@@ -86,7 +86,11 @@
 
       <div id="trainer-meta" class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-on-surface-variant text-sm mb-4"></div>
       <p id="trainer-bio" class="text-on-surface-variant text-sm leading-relaxed mb-6 hidden"></p>
-      <div id="trainer-tags" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+      <div id="trainer-tags" class="flex flex-wrap justify-center md:justify-start gap-2 mb-4"></div>
+      <div id="trainer-certifications" class="hidden">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant mb-2">Certifications</p>
+        <div id="trainer-certifications-list" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+      </div>
     </div>
   </div>
 
@@ -185,6 +189,17 @@
     }
   }
 
+  function getCertificateEntries(rawCertificates) {
+    if (!Array.isArray(rawCertificates)) return [];
+    return rawCertificates
+      .filter(cert => cert && typeof cert === 'object')
+      .map(cert => ({
+        name: String(cert.name || '').trim(),
+        verified: Boolean(cert.verified)
+      }))
+      .filter(cert => cert.name.length > 0);
+  }
+
   async function load() {
     if (!supabase) {
       card.classList.add('hidden');
@@ -201,7 +216,7 @@
 
     const { data: trainer, error } = await supabase
       .from('profiles')
-      .select('id, name, avatar_url, city, state, location, training_mode, session_mode, specialty, bio, tags, rating, review_count, kyc_verified, certificates_verified, phone')
+      .select('id, name, avatar_url, city, state, location, training_mode, session_mode, specialty, bio, tags, rating, review_count, kyc_verified, certificates_verified, verification_status, certificate_urls, phone')
       .eq('id', trainerId)
       .eq('role', 'trainer')
       .single();
@@ -218,7 +233,7 @@
     const avatarEl = document.getElementById('trainer-avatar');
     renderAvatarInto(avatarEl, trainer);
 
-    const verified = Boolean(trainer.kyc_verified || trainer.certificates_verified);
+    const verified = String(trainer.verification_status || '').toLowerCase() === 'verified' || (Boolean(trainer.kyc_verified) && Boolean(trainer.certificates_verified));
     document.getElementById('trainer-verified').classList.toggle('hidden', !verified);
 
     renderRating(trainer);
@@ -241,6 +256,22 @@
     const tags = Array.isArray(trainer.tags) ? trainer.tags.slice(0, 6) : [];
     const tagsEl = document.getElementById('trainer-tags');
     tagsEl.innerHTML = tags.map(t => `<span class="px-3 py-1 bg-surface-container rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">${escapeHtml(t)}</span>`).join('');
+
+    const certContainer = document.getElementById('trainer-certifications');
+    const certList = document.getElementById('trainer-certifications-list');
+    const certificates = getCertificateEntries(trainer.certificate_urls);
+    if (certificates.length > 0) {
+      certContainer.classList.remove('hidden');
+      certList.innerHTML = certificates.map(cert => `
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container rounded-full text-[11px] font-semibold text-on-surface">
+          <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' ${cert.verified ? '1' : '0'};">verified</span>
+          ${escapeHtml(cert.name)}
+        </span>
+      `).join('');
+    } else {
+      certContainer.classList.add('hidden');
+      certList.innerHTML = '';
+    }
 
     document.getElementById('chat-platform-link').href = '/client/messages?id=' + encodeURIComponent(trainer.id);
 

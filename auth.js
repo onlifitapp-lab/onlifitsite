@@ -333,8 +333,10 @@ async function signUp(name, email, password, role, trainerData, phone) {
 
             if (!profileFetchError && Array.isArray(profileRows) && profileRows.length > 0) {
                 let profile = profileRows[0];
+                console.log('Profile fetched after signup:', { id: profile.id, role: profile.role });
 
                 if (normalizedSignupRole === 'trainer' && profile.role !== 'trainer') {
+                    console.log('Profile role is not trainer, updating...');
                     const { data: updatedRows, error: promoteError } = await supabaseClient
                         .from('profiles')
                         .update({ role: 'trainer' })
@@ -344,10 +346,12 @@ async function signUp(name, email, password, role, trainerData, phone) {
 
                     if (!promoteError && Array.isArray(updatedRows) && updatedRows.length > 0) {
                         profile = updatedRows[0];
+                        console.log('✅ Profile role updated to trainer');
                     }
                 }
 
                 mergedUser = { ...authData.user, ...profile };
+                console.log('Merged user after profile sync:', { id: mergedUser.id, role: mergedUser.role });
             }
         } catch (profileSyncError) {
             console.warn('Unable to sync profile role after signup:', profileSyncError?.message || profileSyncError);
@@ -355,13 +359,21 @@ async function signUp(name, email, password, role, trainerData, phone) {
 
         return { success: true, user: mergedUser };
     } catch (error) {
+        const message = String(error?.message || '');
+        if (/already registered|already exists|email.*in use/i.test(message)) {
+            return {
+                success: false,
+                error: 'An account with this email already exists. Please sign in instead.'
+            };
+        }
+
         console.error("Signup error:", error.message);
         return { success: false, error: error.message };
     }
 }
 
 /**
- * Sign in with Google
+ * Sign in with Google (Supabase OAuth)
  */
 async function signInWithGoogle(role = 'client', isSignup = false, options = {}) {
     if (AUTH_BYPASS) {
@@ -379,20 +391,13 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
             };
         }
 
-        console.log('Google OAuth initiated with role:', normalizedRole, 'isSignup:', isSignup, 'source:', signupSource);
+        console.log('Google auth initiated with role:', normalizedRole, 'isSignup:', isSignup, 'source:', signupSource);
 
-        // Keep OAuth callback on the exact same origin the user started from.
-        // This preserves localStorage role/source bridge data for trainer signup flows.
-        const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
-        const authBase = isHttp ? window.location.origin : 'https://onlifit.in';
+        // Keep local intent bridge for signup/login role routing and onboarding enforcement.
         const joinUsTrainerSignup = isSignup && normalizedRole === 'trainer' && signupSource === 'join-us';
         const oauthIntent = joinUsTrainerSignup ? 'join_us_trainer_signup' : '';
-        const redirectTo = oauthIntent
-            ? `${authBase}/login.html?oauth_intent=${encodeURIComponent(oauthIntent)}`
-            : `${authBase}/login.html`;
 
-        // localStorage bridge is only for OAuth signups (role selection happens during signup).
-        // For logins, role must be fetched from DB.
+        // Store intent for OAuth callback to use.
         if (isSignup) {
             localStorage.setItem('oauth_role', normalizedRole);
             localStorage.setItem('oauth_is_signup', 'true');
@@ -412,21 +417,28 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
             localStorage.setItem(ONLIFIT_OAUTH_LOGIN_ROLE, normalizedRole);
             localStorage.setItem(ONLIFIT_OAUTH_LOGIN_SOURCE, signupSource || 'direct');
         }
-        
+
+        const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
+        const authBase = isHttp ? window.location.origin : 'https://onlifit.in';
+        const redirectTo = oauthIntent
+            ? `${authBase}/login.html?oauth_intent=${encodeURIComponent(oauthIntent)}`
+            : `${authBase}/login.html`;
+
         const { data, error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: redirectTo,
+                redirectTo,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent'
                 }
             }
         });
+
         if (error) throw error;
-        // The redirect handles the rest
+        return { success: true, user: data?.user || null };
     } catch (error) {
-        console.error("Google sign in error:", error.message);
+        console.error('Google sign in error:', error.message);
         return { success: false, error: error.message };
     }
 }
@@ -669,7 +681,7 @@ async function handleOAuthCallback(options = {}) {
     try {
         const { data: profiles } = await supabaseClient
             .from('profiles')
-            .select('role, onboarding_completed, verification_status')
+            .select('id, role, onboarding_completed, verification_status')
             .eq('id', user.id);
         profile = (profiles && profiles.length > 0) ? profiles[0] : null;
     } catch (e) {
@@ -689,21 +701,12 @@ async function handleOAuthCallback(options = {}) {
         return;
     }
 
-    if (!profile && !oauthIsSignup && !joinUsTrainerIntent) {
-        localStorage.removeItem('oauth_role');
-        localStorage.removeItem('oauth_is_signup');
-        localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
-        localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
-        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
-        localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
-
-        await supabaseClient.auth.signOut();
-        if (oauthLoginRole === 'trainer' && oauthLoginSource === 'join-us') {
-            window.location.replace('login.html?tab=signup&role=trainer&source=join-us&reason=new-user');
-        } else {
-            window.location.replace('login.html?tab=signup&reason=new-user');
-        }
-        return;
+    // CRITICAL FIX: Detect existing user in signup mode (most common problem scenario)
+    // When oauthIsSignup=true but profile already exists, this is an EXISTING user re-signing in via signup tab
+    // Not a new signup. Treat as normal login and clear signup intent.
+    const isExistingUserInSignupMode = oauthIsSignup && profile;
+    if (isExistingUserInSignupMode) {
+        console.log('OAuth in signup mode but profile exists: Existing user detected. Treating as login, not signup.');
     }
 
     // Create profile if missing (mainly for first-time OAuth signups)
@@ -719,7 +722,7 @@ async function handleOAuthCallback(options = {}) {
                     role: roleForNewProfile,
                     phone: null
                 }])
-                .select('role, onboarding_completed, verification_status');
+                .select('id, role, onboarding_completed, verification_status');
             profile = (insertedProfiles && insertedProfiles.length > 0) ? insertedProfiles[0] : profile;
         } catch (e) {
             // Non-fatal
@@ -733,7 +736,7 @@ async function handleOAuthCallback(options = {}) {
                 .from('profiles')
                 .update({ role: 'trainer' })
                 .eq('id', user.id)
-                .select('role, onboarding_completed, verification_status');
+                .select('id, role, onboarding_completed, verification_status');
 
             if (forcedProfiles && forcedProfiles.length > 0) {
                 profile = forcedProfiles[0];
@@ -772,7 +775,21 @@ async function handleOAuthCallback(options = {}) {
             window.location.replace(getDashboardPathForRole('trainer'));
         }
     } else {
-        window.location.replace(oauthIsSignup ? 'onboarding.html' : getDashboardPathForRole('client'));
+        // Client role redirect
+        // CRITICAL FIX: For existing users (profile exists), prioritize their completion status
+        // Only send to onboarding if this is actually a NEW signup AND incomplete
+        const actuallyNewSignup = oauthIsSignup && !profile?.id;  // New signup with no profile
+        const isCompleted = profile?.onboarding_completed;
+        
+        console.log('Client redirect decision:', { oauthIsSignup, profileExists: !!profile?.id, onboardingCompleted: isCompleted });
+        
+        if (actuallyNewSignup && !isCompleted) {
+            console.log('New signup client without onboarding, sending to onboarding.html');
+            window.location.replace('onboarding.html');
+        } else {
+            console.log('Existing user or completed onboarding, sending to dashboard');
+            window.location.replace(getDashboardPathForRole('client'));
+        }
     }
 }
 
@@ -943,6 +960,7 @@ let _cachedTrainersTime = 0;
 
 async function getTrainers(options = {}) {
     const onUpdate = typeof options === 'function' ? options : options?.onUpdate;
+    const forceRefresh = Boolean(options?.forceRefresh);
 
     const emitUpdate = (list) => {
         if (typeof onUpdate !== 'function') return;
@@ -954,7 +972,7 @@ async function getTrainers(options = {}) {
     };
 
     // 1. Check memory cache (fastest)
-    if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
+    if (!forceRefresh && _cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
         return _cachedTrainers;
     }
 
@@ -965,7 +983,7 @@ async function getTrainers(options = {}) {
     try {
         const stored = localStorage.getItem(TRAINERS_CACHE_KEY);
         const storedTime = localStorage.getItem(TRAINERS_CACHE_TIME_KEY);
-        if (stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
+        if (!forceRefresh && stored && storedTime && (Date.now() - parseInt(storedTime) < 300000)) {
             const parsed = JSON.parse(stored);
             const normalized = normalizeTrainerList(parsed);
 
@@ -980,7 +998,7 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode, latitude, longitude';
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode, latitude, longitude, kyc_verified, certificates_verified, verification_status';
     const selectWithBadge = selectBase + ', has_black_status';
 
     try {
@@ -1605,6 +1623,12 @@ async function getLastMessagesForContacts(userId, contactIds) {
 
 // ─── PREMIUM BADGES (OnliFit Black + scalable) ─────────────────────────────────
 const ONLIFIT_BADGE_DEFS = {
+    verified: {
+        id: 'verified',
+        label: 'Verified',
+        icon: 'verified',
+        tooltip: 'KYC and certificates are approved by OnliFit.'
+    },
     black: {
         id: 'black',
         label: 'OnliFit Black',
@@ -1624,6 +1648,7 @@ function ensureOnlifitBadgeStyles() {
             .onlifit-badge{display:inline-flex;align-items:center;gap:6px;border-radius:9999px;line-height:1;font-weight:800;letter-spacing:.04em;text-transform:uppercase;user-select:none;white-space:nowrap}
             .onlifit-badge__icon{font-size:16px;line-height:1;opacity:.95}
 
+            .onlifit-badge--verified{background:#111827;color:#ecfeff;box-shadow:0 0 0 1px rgba(6,182,212,.35),0 12px 24px rgba(6,182,212,.18)}
             .onlifit-badge--black{background:#000;color:#FFD700;box-shadow:0 0 0 1px rgba(255,215,0,.25),0 14px 28px rgba(0,0,0,.28),0 0 18px rgba(255,215,0,.18)}
 
             .onlifit-badge--xs{font-size:10px;padding:5px 9px}
@@ -1657,12 +1682,17 @@ function normalizeTrainerBadges(record) {
         record.has_black ??
         record.is_black
     );
-    return { ...record, hasBlackStatus };
+
+    const verificationStatus = String(record.verification_status || '').toLowerCase();
+    const isFullyVerified = verificationStatus === 'verified' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
+
+    return { ...record, hasBlackStatus, isFullyVerified };
 }
 
 function getTrainerBadgeIds(trainer) {
     const t = normalizeTrainerBadges(trainer);
     const ids = [];
+    if (t?.isFullyVerified) ids.push('verified');
     if (t?.hasBlackStatus) ids.push('black');
     return ids;
 }
@@ -1679,8 +1709,10 @@ function renderOnlifitBadgeHtml(badgeId, options = {}) {
     const sizeClass = size === 'xs' ? 'onlifit-badge--xs' : size === 'md' ? 'onlifit-badge--md' : 'onlifit-badge--sm';
     const variantClass = variant === 'corner' ? 'onlifit-badge--corner' : '';
 
+    const toneClass = badgeId === 'verified' ? 'onlifit-badge--verified' : 'onlifit-badge--black';
+
     return `
-        <span class="onlifit-badge onlifit-badge--black ${sizeClass} ${variantClass} onlifit-tooltip" data-tooltip="${def.tooltip}" title="${def.tooltip}" role="note">
+        <span class="onlifit-badge ${toneClass} ${sizeClass} ${variantClass} onlifit-tooltip" data-tooltip="${def.tooltip}" title="${def.tooltip}" role="note">
             <span class="material-symbols-outlined onlifit-badge__icon" style="font-variation-settings: 'FILL' 1;">${def.icon}</span>
             <span>${def.label}</span>
         </span>

@@ -1245,9 +1245,11 @@
         }
 
         function getTrainerVerificationStatus(trainer) {
-            const direct = trainer?.verification_status;
-            if (direct) return String(direct);
+            const direct = String(trainer?.verification_status || '').trim().toLowerCase();
+            if (direct === 'verified' || direct === 'rejected') return direct;
             if (trainer?.kyc_verified && trainer?.certificates_verified) return 'verified';
+            if (trainer?.kyc_verified) return 'kyc_verified';
+            if (trainer?.certificates_verified) return 'certificates_verified';
             return 'pending';
         }
 
@@ -1280,7 +1282,7 @@
 
         function badgeClassForVerification(status) {
             const s = normalizeStatus(status);
-            if (s === 'verified') return 'badge-verified';
+            if (s === 'verified' || s === 'kyc_verified' || s === 'certificates_verified') return 'badge-verified';
             if (s === 'rejected') return 'badge-rejected';
             return 'badge-pending';
         }
@@ -1921,38 +1923,134 @@
         async function deleteTrainerPermanently(trainerId) {
             if (!ensureAdminAction()) return;
 
-            const confirmText = prompt('This will permanently delete the trainer (profile, bookings, chats, etc.). Type DELETE to confirm:');
-            if (confirmText !== 'DELETE') return;
+            const confirmText = prompt('This will permanently delete the trainer account from the system. Type "DELETE TRAINER" to confirm:');
+            if (confirmText !== 'DELETE TRAINER') return;
+
+            const deleteBtn = event?.target;
+            if (deleteBtn) deleteBtn.disabled = true;
 
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                const accessToken = session?.access_token;
-                if (!accessToken) {
-                    alert('Admin session token missing. Please log in again.');
+                // First, get trainer details for cleanup
+                const { data: trainer } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('id', trainerId)
+                    .single();
+
+                if (!trainer) {
+                    alert('Trainer not found.');
                     return;
                 }
 
-                const resp = await fetch('/api/delete-trainer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    },
-                    body: JSON.stringify({ trainerId })
-                });
+                console.log('Deleting trainer:', trainerId, '(' + trainer.email + ')');
 
-                const payload = await resp.json().catch(() => ({}));
-                if (!resp.ok) {
-                    throw new Error(payload?.error || 'Failed to delete trainer');
-                }
+                // Delete related bookings
+                const { error: bookingsError } = await supabase.from('bookings').delete().eq('trainer_id', trainerId);
+                if (bookingsError) console.warn('Bookings delete warning:', bookingsError);
 
-                alert('Trainer permanently deleted.');
+                // Delete trainer messages (both sent and received)
+                const { error: messagesError } = await supabase.from('messages').delete().or(`sender_id.eq.${trainerId},receiver_id.eq.${trainerId}`);
+                if (messagesError) console.warn('Messages delete warning:', messagesError);
+
+                // Delete typing status
+                const { error: typingError } = await supabase.from('typing_status').delete().or(`user_id.eq.${trainerId},chat_with.eq.${trainerId}`);
+                if (typingError) console.warn('Typing status delete warning:', typingError);
+
+                // Delete notifications
+                const { error: notifError } = await supabase.from('notifications').delete().eq('user_id', trainerId);
+                if (notifError) console.warn('Notifications delete warning:', notifError);
+
+                // Delete reviews by this trainer
+                const { error: reviewsError } = await supabase.from('reviews').delete().eq('trainer_id', trainerId);
+                if (reviewsError) console.warn('Reviews delete warning:', reviewsError);
+
+                // Finally, delete profile record
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', trainerId);
+
+                if (profileError) throw profileError;
+
+                console.log('✅ Trainer permanently deleted:', trainerId);
+                alert('✅ Trainer account permanently deleted from the system.\n\nThey will need to create a new account to login.');
                 closeTrainerModal();
                 loadTrainers();
                 loadDashboard();
             } catch (err) {
-                console.error('Delete trainer error:', err);
-                alert(err?.message || 'Error deleting trainer');
+                console.error('❌ Delete trainer error:', err);
+                alert('❌ Error deleting trainer: ' + (err?.message || 'Unknown error'));
+            } finally {
+                if (deleteBtn) deleteBtn.disabled = false;
+            }
+        }
+
+        async function deleteClientPermanently(clientId) {
+            if (!ensureAdminAction()) return;
+
+            const confirmText = prompt('This will permanently delete the client account from the system. Type "DELETE CLIENT" to confirm:');
+            if (confirmText !== 'DELETE CLIENT') return;
+
+            const deleteBtn = event?.target;
+            if (deleteBtn) deleteBtn.disabled = true;
+
+            try {
+                // Get client details for cleanup
+                const { data: client } = await supabase
+                    .from('profiles')
+                    .select('id, email')
+                    .eq('id', clientId)
+                    .single();
+
+                if (!client) {
+                    alert('Client not found.');
+                    return;
+                }
+
+                console.log('Deleting client:', clientId, '(' + client.email + ')');
+
+                // Delete related bookings
+                const { error: bookingsError } = await supabase.from('bookings').delete().eq('client_id', clientId);
+                if (bookingsError) console.warn('Bookings delete warning:', bookingsError);
+
+                // Delete client messages (both sent and received)
+                const { error: messagesError } = await supabase.from('messages').delete().or(`sender_id.eq.${clientId},receiver_id.eq.${clientId}`);
+                if (messagesError) console.warn('Messages delete warning:', messagesError);
+
+                // Delete typing status
+                const { error: typingError } = await supabase.from('typing_status').delete().or(`user_id.eq.${clientId},chat_with.eq.${clientId}`);
+                if (typingError) console.warn('Typing status delete warning:', typingError);
+
+                // Delete notifications
+                const { error: notifError } = await supabase.from('notifications').delete().eq('user_id', clientId);
+                if (notifError) console.warn('Notifications delete warning:', notifError);
+
+                // Delete reviews by this client
+                const { error: reviewsError } = await supabase.from('reviews').delete().eq('client_id', clientId);
+                if (reviewsError) console.warn('Reviews delete warning:', reviewsError);
+
+                // Finally, delete profile record
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', clientId);
+
+                if (profileError) throw profileError;
+
+                console.log('✅ Client permanently deleted:', clientId);
+                alert('✅ Client account permanently deleted from the system.\n\nThey will need to create a new account to login.');
+                
+                // Close modal if open
+                const modal = document.querySelector('.modal-overlay');
+                if (modal) modal.remove();
+                
+                loadClients();
+                loadDashboard();
+            } catch (err) {
+                console.error('❌ Delete client error:', err);
+                alert('❌ Error deleting client: ' + (err?.message || 'Unknown error'));
+            } finally {
+                if (deleteBtn) deleteBtn.disabled = false;
             }
         }
 
@@ -2304,9 +2402,12 @@
                                 </div>
                             ` : ''}
 
-                            <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                                <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-                                <button class="btn btn-primary" onclick="saveClientDetails('${client.id}')">Save Changes</button>
+                            <div style="display: flex; gap: 12px; justify-content: space-between; align-items: center;">
+                                <button class="btn btn-danger" onclick="deleteClientPermanently('${client.id}')">Permanently Delete Client</button>
+                                <div style="display: flex; gap: 12px;">
+                                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                                    <button class="btn btn-primary" onclick="saveClientDetails('${client.id}')">Save Changes</button>
+                                </div>
                             </div>
                         </div>
                     </div>
