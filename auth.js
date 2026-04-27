@@ -1014,7 +1014,7 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, city, state, training_mode, latitude, longitude, kyc_verified, certificates_verified, verification_status';
+    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, has_black_status, kyc_verified, certificates_verified, verification_status, experience';
     const selectWithBadge = selectBase + ', has_black_status';
 
     try {
@@ -1795,9 +1795,9 @@ async function reverseGeocodeOfflineLocation(lat, lng) {
     const data = await response.json();
     const feature = data?.features?.[0];
     const props = feature?.properties || {};
-    const cityBits = [props.city, props.town, props.village, props.suburb, props.county].filter(Boolean);
+    const cityBits = [props.location].filter(Boolean);
     if (cityBits.length) {
-        return cityBits.slice(0, 2).join(', ');
+        return cityBits.slice(0, 1).join(', ');
     }
 
     return props.name || props.state || props.country || null;
