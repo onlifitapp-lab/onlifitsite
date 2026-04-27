@@ -125,7 +125,7 @@
 <span class="material-symbols-outlined">calendar_today</span>
 <span>Bookings</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/messages">
+    <a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="bookings.html#messages">
 <span class="material-symbols-outlined">chat_bubble</span>
 <span>Messages</span>
 </a>
@@ -659,7 +659,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
-<script src="auth.js"></script>
+<script src="auth.js?v=20260428"></script>
 
 <script>
 
@@ -924,7 +924,7 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">${status}</span>
-                        <a href="/trainer/messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">
+                        <a href="bookings.html#messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">
                             Message
                         </a>
                     </div>
@@ -1017,7 +1017,7 @@
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">${escapeHtml(status)}</span>
-                        <a href="/trainer/messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">Message</a>
+                        <a href="bookings.html#messages?id=${encodeURIComponent(b.client_id)}" class="px-4 py-2 rounded-xl bg-primary text-on-primary text-xs font-black uppercase tracking-widest">Message</a>
                     </div>
                 </div>
             `;
@@ -1337,7 +1337,7 @@
         activeChatContact = trainerClientsById.get(contactId) || (await getUserById(contactId));
 
         // Update URL (deep-linkable)
-        history.replaceState(null, '', `/trainer/messages?id=${encodeURIComponent(contactId)}`);
+        history.replaceState(null, '', `bookings.html#messages?id=${encodeURIComponent(contactId)}`);
 
         // Mobile layout
         const sidebar = document.getElementById('contacts-sidebar');

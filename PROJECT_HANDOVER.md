@@ -46,6 +46,13 @@ Here is the exact journey of what has been implemented to stabilize the platform
 *   **Temporary auth pause:** login and signup were disabled while OTP auth is being built. `login.html` now acts as a notice page, and shared auth rendering falls back to a guest-mode dashboard link.
 *   **Temporary bypass behavior:** `auth.js` now returns preview users so dashboards can load without a live Supabase session. `requireAuth()` no longer blocks the main app flow during this phase.
 *   **Dashboard routing cleanup:** removed login redirects from `client-dashboard.html`, `bookings.html`, `onboarding.html`, `trainer-onboarding.html`, `trainer-profile.html`, and `admin-dashboard.html` so pages remain editable and usable without authentication.
+*   **Join Us trainer flow hardened:** OAuth signup from Join Us now forces `profiles.role = 'trainer'`, preserves trainer intent until onboarding, and keeps trainer logins on trainer dashboards.
+
+### Messaging & Notifications Stability
+*   **Schema-safe messages:** production `messages` table does not include `read` or `status`, so message logic now avoids writing to those fields.
+*   **Unread badge safety:** unread counts now gracefully skip when read columns are missing (prevents 400 loops).
+*   **Notification page fix:** `notifications.html` now loads `supabase-client.js` + `auth.js` in-order and includes a Back button.
+*   **SPA-safe messaging links:** message buttons now use hash-based routes (e.g., `client-dashboard.html#messages?id=...`, `bookings.html#messages?id=...`) to avoid Vercel 404s.
 
 ### Trainer Dashboard Overhaul
 *   **Merged Settings**: Extracted `settings.html` and absorbed it physically into `bookings.html` so the UI doesn't force jarring "Open in New Tab" (`target="_blank"`) layouts.
@@ -77,6 +84,10 @@ We added a premium trainer tier badge that can be used across multiple pages and
 ### Caching Note (important for badge visibility)
 *   `auth.js` caches trainer lists in memory + `localStorage` for ~5 minutes (keys are versioned, currently `onlifit_trainers_cache_v2`).
 *   `vercel.json` is configured so **images are long-cached**, but **CSS/JS are not immutable** (so new JS changes like the badge ship immediately).
+
+### Storage & KYC Updates
+*   Trainer KYC uploads now default to the `Trainers Kyc` bucket (with fallbacks for older buckets).
+*   Support ticket attachments moved to private bucket with owner-scoped policies.
 
 ---
 
