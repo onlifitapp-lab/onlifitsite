@@ -1324,6 +1324,41 @@ async function createBooking(clientId, trainerId, planType, details) {
 
 // ─── NOTIFICATIONS & MESSAGES ─────────────────────────────────────────────────
 
+let _messageReadColumn = null;
+
+async function resolveMessageReadColumn(userId) {
+    if (_messageReadColumn) return _messageReadColumn;
+
+    try {
+        let query = supabaseClient
+            .from('messages')
+            .select('read', { count: 'exact', head: true })
+            .limit(1);
+
+        if (userId) {
+            query = query.eq('receiver_id', userId);
+        }
+
+        const { error } = await query;
+
+        if (!error) {
+            _messageReadColumn = 'read';
+            return _messageReadColumn;
+        }
+
+        const message = String(error?.message || '').toLowerCase();
+        if (message.includes('read') && message.includes('column')) {
+            _messageReadColumn = 'is_read';
+            return _messageReadColumn;
+        }
+    } catch (error) {
+        // Fall back to default below.
+    }
+
+    _messageReadColumn = 'read';
+    return _messageReadColumn;
+}
+
 async function getNotifications(userId) {
     const { data, error } = await supabaseClient
         .from('notifications')
@@ -1365,15 +1400,20 @@ async function getMessages(u1, u2) {
 
 async function sendMessage(senderId, receiverId, text) {
     try {
+        const readColumn = await resolveMessageReadColumn(receiverId);
+        const messagePayload = { 
+            sender_id: senderId, 
+            receiver_id: receiverId, 
+            text,
+            status: 'sent'
+        };
+        if (readColumn) {
+            messagePayload[readColumn] = false;
+        }
+
         const { data, error } = await supabaseClient
             .from('messages')
-            .insert([{ 
-                sender_id: senderId, 
-                receiver_id: receiverId, 
-                text,
-                status: 'sent',
-                read: false
-            }])
+            .insert([messagePayload])
             .select()
             .single();
 
@@ -1402,7 +1442,10 @@ async function updateMessageStatus(messageIds, status, read) {
     try {
         const updates = {};
         if (status) updates.status = status;
-        if (read !== undefined) updates.read = read;
+        if (read !== undefined) {
+            const readColumn = await resolveMessageReadColumn(null);
+            updates[readColumn] = read;
+        }
 
         const { error } = await supabaseClient
             .from('messages')
@@ -1422,12 +1465,13 @@ async function updateMessageStatus(messageIds, status, read) {
  */
 async function markMessagesAsRead(senderId, receiverId) {
     try {
+        const readColumn = await resolveMessageReadColumn(receiverId);
         const { error } = await supabaseClient
             .from('messages')
-            .update({ read: true, status: 'seen' })
+            .update({ [readColumn]: true, status: 'seen' })
             .eq('sender_id', senderId)
             .eq('receiver_id', receiverId)
-            .eq('read', false);
+            .eq(readColumn, false);
 
         if (error) throw error;
         return true;
@@ -1442,11 +1486,12 @@ async function markMessagesAsRead(senderId, receiverId) {
  */
 async function getUnreadCount(userId) {
     try {
+        const readColumn = await resolveMessageReadColumn(userId);
         const { count, error } = await supabaseClient
             .from('messages')
             .select('*', { count: 'exact', head: true })
             .eq('receiver_id', userId)
-            .eq('read', false);
+            .eq(readColumn, false);
 
         if (error) throw error;
         return count || 0;
