@@ -878,7 +878,7 @@
         document.getElementById('next-date').textContent = formatDate(next.date);
         document.getElementById('next-time').textContent = (next.time ? next.time : 'TBD');
         document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
-        document.getElementById('next-chat-link').href = '/client/messages?id=' + next.trainer_id;
+        document.getElementById('next-chat-link').href = 'client-dashboard.html#messages?id=' + next.trainer_id;
     }
 
     // â”€â”€ Render Bookings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1368,7 +1368,7 @@ function trainerCardHTML(tRaw) {
                     <div class="flex items-baseline gap-1">${renderTrainerPriceLine(t)}</div>
                     ${renderTrainerOfferLine()}
                     <div class="mt-4 flex gap-2 justify-end">
-                        <a href="/client/messages?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
+                        <a href="client-dashboard.html#messages?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
                         <a href="trainer-profile.html?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-surface-container-low text-on-surface-variant rounded-xl text-xs font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View</a>
                     </div>
                 </div>
