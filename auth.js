@@ -204,6 +204,23 @@ function supportsCleanRoutes() {
     return host.endsWith('onlifit.in') || host.endsWith('vercel.app');
 }
 
+function resolveAuthBaseUrl() {
+    if (typeof window === 'undefined') return 'https://www.onlifit.in';
+
+    const protocol = (window.location.protocol || '').toLowerCase();
+    const hostname = (window.location.hostname || '').toLowerCase();
+
+    if (protocol === 'https:' || protocol === 'http:') {
+        if (hostname === 'onlifit.in' || hostname === 'www.onlifit.in') {
+            // Keep auth callbacks on a single production origin so session storage is consistent.
+            return 'https://www.onlifit.in';
+        }
+        return window.location.origin;
+    }
+
+    return 'https://www.onlifit.in';
+}
+
 function resolveAppPath(cleanPath, htmlFallback) {
     return supportsCleanRoutes() ? cleanPath : htmlFallback;
 }
@@ -418,8 +435,7 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
             localStorage.setItem(ONLIFIT_OAUTH_LOGIN_SOURCE, signupSource || 'direct');
         }
 
-        const isHttp = window.location.protocol === 'https:' || window.location.protocol === 'http:';
-        const authBase = isHttp ? window.location.origin : 'https://onlifit.in';
+        const authBase = resolveAuthBaseUrl();
         const redirectTo = oauthIntent
             ? `${authBase}/login.html?oauth_intent=${encodeURIComponent(oauthIntent)}`
             : `${authBase}/login.html`;

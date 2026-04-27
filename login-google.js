@@ -406,8 +406,11 @@
         setBusy(true);
 
         try {
-            const isHttp = window.location.protocol === 'http:' || window.location.protocol === 'https:';
-            const redirectBase = isHttp ? window.location.origin : 'https://onlifit.in';
+            const redirectBase = (typeof resolveAuthBaseUrl === 'function')
+                ? resolveAuthBaseUrl()
+                : ((window.location.protocol === 'http:' || window.location.protocol === 'https:')
+                    ? window.location.origin
+                    : 'https://www.onlifit.in');
             const redirectTo = `${redirectBase}/login.html`;
 
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
