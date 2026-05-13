@@ -2,7 +2,7 @@
 -- Run this in your Supabase SQL Editor
 
 -- 1. Create Profiles Table (Extends Supabase Auth)
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   name TEXT,
   email TEXT,
@@ -35,7 +35,7 @@ CREATE TABLE profiles (
 );
 
 -- 2. Create Bookings Table
-CREATE TABLE bookings (
+CREATE TABLE IF NOT EXISTS bookings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   client_id UUID REFERENCES profiles(id),
   trainer_id UUID REFERENCES profiles(id),
@@ -49,7 +49,7 @@ CREATE TABLE bookings (
 );
 
 -- 3. Create Messages Table
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   sender_id UUID REFERENCES profiles(id),
   receiver_id UUID REFERENCES profiles(id),
@@ -60,7 +60,7 @@ CREATE TABLE messages (
 );
 
 -- 3a. Create Typing Status Table
-CREATE TABLE typing_status (
+CREATE TABLE IF NOT EXISTS typing_status (
   user_id UUID REFERENCES profiles(id),
   chat_with UUID REFERENCES profiles(id),
   is_typing BOOLEAN DEFAULT FALSE,
@@ -69,7 +69,7 @@ CREATE TABLE typing_status (
 );
 
 -- 4. Create Notifications Table
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id),
   type TEXT, -- 'booking', 'message', 'alert'
@@ -80,7 +80,7 @@ CREATE TABLE notifications (
 );
 
 -- 5. Create Reviews Table
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   trainer_id UUID REFERENCES profiles(id),
   client_id UUID REFERENCES profiles(id),
@@ -98,30 +98,49 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 
 -- 7. Policies (Simplified for development - Adjust for production)
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Bookings are viewable by participants" ON bookings;
+DROP POLICY IF EXISTS "Clients can create bookings" ON bookings;
+DROP POLICY IF EXISTS "Trainers can update their bookings" ON bookings;
 CREATE POLICY "Bookings are viewable by participants" ON bookings FOR SELECT 
 USING (auth.uid() = client_id OR auth.uid() = trainer_id);
 CREATE POLICY "Clients can create bookings" ON bookings FOR INSERT WITH CHECK (auth.uid() = client_id);
+CREATE POLICY "Trainers can update their bookings" ON bookings FOR UPDATE USING (auth.uid() = client_id OR auth.uid() = trainer_id) WITH CHECK (auth.uid() = client_id OR auth.uid() = trainer_id);
 
+DROP POLICY IF EXISTS "Messages are viewable by participants" ON messages;
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
+DROP POLICY IF EXISTS "Users can update own messages" ON messages;
 CREATE POLICY "Messages are viewable by participants" ON messages FOR SELECT 
 USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 CREATE POLICY "Users can send messages" ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 CREATE POLICY "Users can update own messages" ON messages FOR UPDATE 
-USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+USING (auth.uid() = sender_id OR auth.uid() = receiver_id)
+WITH CHECK (auth.uid() = sender_id OR auth.uid() = receiver_id);
 
+DROP POLICY IF EXISTS "Typing status viewable by participants" ON typing_status;
+DROP POLICY IF EXISTS "Users can manage own typing status" ON typing_status;
 CREATE POLICY "Typing status viewable by participants" ON typing_status FOR SELECT 
 USING (auth.uid() = user_id OR auth.uid() = chat_with);
 CREATE POLICY "Users can manage own typing status" ON typing_status FOR ALL 
-USING (auth.uid() = user_id);
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Notifications are viewable by owner" ON notifications;
+DROP POLICY IF EXISTS "System/Users can create notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can mark own notifications as read" ON notifications;
 CREATE POLICY "Notifications are viewable by owner" ON notifications FOR SELECT 
 USING (auth.uid() = user_id);
 CREATE POLICY "System/Users can create notifications" ON notifications FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users can mark own notifications as read" ON notifications FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can mark own notifications as read" ON notifications FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Reviews are viewable by everyone" ON reviews;
+DROP POLICY IF EXISTS "Clients can leave reviews" ON reviews;
 CREATE POLICY "Reviews are viewable by everyone" ON reviews FOR SELECT USING (true);
 CREATE POLICY "Clients can leave reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = client_id);
 

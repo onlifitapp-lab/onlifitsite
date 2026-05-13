@@ -472,12 +472,12 @@
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-green-600 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
             </div>
-            <h2 class="text-3xl font-black font-headline mb-2">🎉 Application Submitted. Profile Is Live!</h2>
-            <p class="text-on-surface-variant mb-2">Your trainer application is now in AI review.</p>
-            <p class="text-sm text-on-surface-variant mb-6">We are validating your documents quickly. Once approved, you will be redirected automatically to your trainer dashboard.</p>
+            <h2 class="text-3xl font-black font-headline mb-2">Trainer profile saved</h2>
+            <p class="text-on-surface-variant mb-2">Your account is now active.</p>
+            <p class="text-sm text-on-surface-variant mb-6">You will be sent to your trainer dashboard now.</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
                 <button type="button" id="approval-status-btn" class="inline-block px-8 py-3 bg-primary text-on-primary font-bold rounded-xl opacity-90 cursor-default">
-                    Waiting for approval...
+                    Redirecting to dashboard...
                 </button>
                 <a href="trainer-profile.html" class="inline-block px-8 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-on-primary transition-all">
                     View My Profile
@@ -490,6 +490,42 @@
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
+        // CRITICAL SAFEGUARD: Enforce trainer role
+        // If somehow this page is reached by a non-trainer, redirect them appropriately
+        (async function() {
+            try {
+                const user = await getCurrentUser('trainer');
+                const userRole = String(user?.role || 'client').toLowerCase();
+                const storedRole = localStorage.getItem('onlifit_user_role') || '';
+                const joinUsIntent = localStorage.getItem('onlifit_trainer_intent') === 'join-us'
+                    || localStorage.getItem('oauth_intent') === 'join_us_trainer_signup'
+                    || localStorage.getItem('oauth_signup_source') === 'join-us';
+
+                // If user is not a trainer and wasn't from Join Us trainer flow, redirect
+                if (userRole !== 'trainer' && !joinUsIntent && storedRole !== 'trainer') {
+                    console.warn('Non-trainer accessed trainer-onboarding.html. Redirecting to appropriate page.');
+                    // Redirect based on actual role
+                    if (userRole === 'admin') {
+                        window.location.replace('admin-dashboard.html');
+                    } else {
+                        window.location.replace('onboarding.html');
+                    }
+                    return;
+                }
+
+                // Extra validation: If Join Us trainer flow is active, ensure database role is 'trainer'
+                if (joinUsIntent && userRole !== 'trainer') {
+                    console.log('Join Us trainer flow detected but role is not trainer. Attempting to update...');
+                    if (user?.id && typeof updateUserProfile === 'function') {
+                        await updateUserProfile(user.id, { role: 'trainer' });
+                    }
+                }
+            } catch (error) {
+                console.error('Trainer-onboarding role validation error:', error);
+                // Continue anyway - form will handle auth errors
+            }
+        })();
+        
         let currentStep = 1;
         const totalSteps = 5;
         let approvalPollInterval = null;
@@ -502,43 +538,23 @@
         }
 
         function showPendingApprovalState() {
-            document.getElementById('onboarding-form').classList.add('hidden');
-            document.getElementById('success-message').classList.remove('hidden');
-            window.scrollTo(0, 0);
-            startApprovalPolling();
+              // UPDATED: Skip approval wait - send trainer directly to dashboard
+              console.log('Trainer onboarding complete. Sending to dashboard...');
+              window.location.replace(getTrainerDashboardHref());
         }
 
         async function checkApprovalAndRedirect() {
-            try {
-                const user = await getCurrentUser();
-                if (!user) return;
-
-                const { data: profiles, error } = await supabase
-                    .from('profiles')
-                    .select('verification_status, onboarding_completed')
-                    .eq('id', user.id)
-                    .limit(1);
-
-                if (error || !Array.isArray(profiles) || profiles.length === 0) return;
-
-                const profile = profiles[0];
-                const status = String(profile.verification_status || '').toLowerCase();
-                if (profile.onboarding_completed && (status === 'approved' || status === 'verified')) {
-                    if (approvalPollInterval) {
-                        clearInterval(approvalPollInterval);
-                        approvalPollInterval = null;
-                    }
-                    window.location.href = getTrainerDashboardHref();
-                }
-            } catch (error) {
-                console.warn('Approval check failed:', error?.message || error);
-            }
+            // UPDATED: No longer needed - trainers sent directly to dashboard
+            // This function is kept for backward compatibility but does nothing
+            return;
         }
 
         function startApprovalPolling() {
-            if (approvalPollInterval) return;
-            checkApprovalAndRedirect();
-            approvalPollInterval = setInterval(checkApprovalAndRedirect, 15000);
+            // UPDATED: No longer needed - trainers sent directly to dashboard
+            if (approvalPollInterval) {
+                clearInterval(approvalPollInterval);
+                approvalPollInterval = null;
+            }
         }
 
         function updateProgress() {
@@ -957,14 +973,9 @@
                 
                 // If onboarding is done, route based on approval status.
                 if (user.onboarding_completed) {
-                    const status = String(user.verification_status || '').toLowerCase();
-                    if (status === 'approved' || status === 'verified') {
-                        console.log('Trainer approved, redirecting to dashboard');
-                        window.location.href = getTrainerDashboardHref();
-                    } else {
-                        console.log('Trainer pending approval, showing waiting state');
-                        showPendingApprovalState();
-                    }
+                    // UPDATED: No more approval waiting - send directly to dashboard
+                    console.log('Trainer already has completed onboarding, redirecting to dashboard');
+                    window.location.replace(getTrainerDashboardHref());
                     return;
                 }
                 

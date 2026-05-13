@@ -212,8 +212,8 @@ function renderInitError(message, detail = '') {
         <div class="mt-3 text-xs text-red-700 bg-white/70 border border-red-200 rounded-lg p-3">
           <p class="font-semibold mb-1">Use HTTP for Clerk (not file://)</p>
           <p>Run this from project root:</p>
-          <code class="block mt-1 p-2 rounded bg-slate-900 text-slate-100">python -m http.server 5500</code>
-          <p class="mt-2">Then open: <strong>http://localhost:5500/login.html</strong></p>
+          <code class="block mt-1 p-2 rounded bg-slate-900 text-slate-100">python -m http.server</code>
+          <p class="mt-2">Then open the site through the local server URL shown in your terminal.</p>
         </div>
       ` : ''}
     </div>
@@ -223,7 +223,7 @@ function renderInitError(message, detail = '') {
 function normalizeDevOrigin() {
   if (window.location.hostname !== '127.0.0.1') return false;
 
-  const redirectUrl = `${window.location.protocol}//localhost:${window.location.port}${window.location.pathname}${window.location.search}${window.location.hash}`;
+  const redirectUrl = `${window.location.protocol}//127.0.0.1:${window.location.port}${window.location.pathname}${window.location.search}${window.location.hash}`;
   window.location.replace(redirectUrl);
   return true;
 }

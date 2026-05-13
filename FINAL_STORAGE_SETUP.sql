@@ -10,6 +10,10 @@ VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Avatars RLS Policies (Allow anyone to view, but only authorized users to upload their own)
+DROP POLICY IF EXISTS "Avatar images are publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload their own avatar" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update their own avatar" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own avatar" ON storage.objects;
 CREATE POLICY "Avatar images are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
 CREATE POLICY "Users can upload their own avatar" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Users can update their own avatar" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
@@ -22,6 +26,10 @@ VALUES ('trainer_certifications', 'trainer_certifications', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Certifications RLS Policies
+DROP POLICY IF EXISTS "Certifications are publicly accessible" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can upload certs" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can update certs" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can delete certs" ON storage.objects;
 CREATE POLICY "Certifications are publicly accessible" ON storage.objects FOR SELECT USING (bucket_id = 'trainer_certifications');
 CREATE POLICY "Trainers can upload certs" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'trainer_certifications' AND auth.uid()::text = (storage.foldername(name))[1]);
 CREATE POLICY "Trainers can update certs" ON storage.objects FOR UPDATE USING (bucket_id = 'trainer_certifications' AND auth.uid()::text = (storage.foldername(name))[1]);

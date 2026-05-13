@@ -1,4 +1,4 @@
-import { extractBearerToken, getServiceSupabaseClient, resolveRequestAuth } from './_auth.js';
+import { extractBearerToken, getServiceSupabaseClient, resolveRequestAuth, setCorsHeaders } from './_auth.js';
 
 // Simple in-memory KV store for rate limiting in serverless environments (Ephemeral but helps against burst spam per lambda container)
 const rateLimitCache = new Map();
@@ -6,6 +6,12 @@ const MAX_TICKETS_PER_WINDOW = 3;
 const WINDOW_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export default async function handler(req, res) {
+    setCorsHeaders(res);
+
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }

@@ -550,6 +550,19 @@ async function login(email, password) {
 /**
  * Log out the current user
  */
+function clearAuthStorage() {
+    [
+        'oauth_role',
+        'oauth_is_signup',
+        ONLIFIT_OAUTH_SIGNUP_SOURCE,
+        ONLIFIT_OAUTH_INTENT,
+        ONLIFIT_OAUTH_LOGIN_ROLE,
+        ONLIFIT_OAUTH_LOGIN_SOURCE,
+        ONLIFIT_ROLE_STORAGE,
+        'onlifit_trainer_intent'
+    ].forEach((key) => localStorage.removeItem(key));
+}
+
 async function logout() {
     if (AUTH_BYPASS) {
         window.location.href = 'onlifit.html';
@@ -563,7 +576,9 @@ async function logout() {
         clerk && clerk.isSignedIn ? clerk.signOut() : Promise.resolve()
     ]);
 
-    window.location.href = 'onlifit.html';
+    clearAuthStorage();
+
+    window.location.replace('onlifit.html');
 }
 
 /**
@@ -784,13 +799,31 @@ async function handleOAuthCallback(options = {}) {
     }
 
     const finalRole = joinUsTrainerIntent ? 'trainer' : (profile?.role || oauthRole || user.user_metadata?.role || 'client');
+    
+    // CRITICAL BACKUP: Enforce trainer role for Join Us signups
+    // If this is a Join Us trainer signup but role detection failed, force trainer role
+    const isJoinUsTrainerSignup = (oauthIsSignup && oauthSignupSource === 'join-us') || joinUsTrainerIntent;
+    const finalRoleBackup = (isJoinUsTrainerSignup && finalRole !== 'admin') ? 'trainer' : finalRole;
+    
+    console.log('handleOAuthCallback - Role Resolution:', { 
+        finalRole, 
+        finalRoleBackup,
+        isJoinUsTrainerSignup,
+        joinUsTrainerIntent,
+        oauthIsSignup,
+        oauthSignupSource,
+        profileRole: profile?.role,
+        oauthRole,
+        userMetadataRole: user?.user_metadata?.role
+    });
+    
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
     if (!shouldRedirectNow) return;
 
-    console.log('Redirecting after OAuth. Role:', finalRole);
-    if (finalRole === 'admin') {
+    console.log('Redirecting after OAuth. Final Role:', finalRoleBackup);
+    if (finalRoleBackup === 'admin') {
         window.location.replace('admin-dashboard.html');
-    } else if (finalRole === 'trainer') {
+    } else if (finalRoleBackup === 'trainer') {
         const verificationStatus = String(profile?.verification_status || '').toLowerCase();
         const trainerApproved = verificationStatus === 'approved' || verificationStatus === 'verified';
 
@@ -813,13 +846,37 @@ async function handleOAuthCallback(options = {}) {
             window.location.replace(getDashboardPathForRole('trainer'));
         }
     } else {
-        // Client role redirect; clear any oauth intent.
+        // Client role redirect safeguard: If this was a Join Us trainer signup but somehow got classified as client,
+        // redirect to trainer onboarding instead to prevent routing errors
+        if (isJoinUsTrainerSignup && finalRole === 'client') {
+            console.error('CRITICAL: Join Us trainer signup incorrectly classified as client. Redirecting to trainer onboarding.');
+            localStorage.setItem('oauth_role', 'trainer');
+            localStorage.setItem('oauth_is_signup', 'true');
+            localStorage.setItem(ONLIFIT_OAUTH_SIGNUP_SOURCE, 'join-us');
+            localStorage.setItem(ONLIFIT_OAUTH_INTENT, 'join_us_trainer_signup');
+            
+            // Try to update profile role in database
+            try {
+                await supabaseClient
+                    .from('profiles')
+                    .update({ role: 'trainer' })
+                    .eq('id', user.id);
+            } catch (e) {
+                console.warn('Could not update profile role to trainer:', e);
+            }
+            
+            window.location.replace('trainer-onboarding.html?role=trainer&source=join-us');
+            return;
+        }
+        
+        // Normal client redirect; clear any oauth intent
         localStorage.removeItem('oauth_role');
         localStorage.removeItem('oauth_is_signup');
         localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
         localStorage.removeItem(ONLIFIT_OAUTH_INTENT);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_ROLE);
         localStorage.removeItem(ONLIFIT_OAUTH_LOGIN_SOURCE);
+        
         // Client role redirect
         // CRITICAL FIX: For existing users (profile exists), prioritize their completion status
         // Only send to onboarding if this is actually a NEW signup AND incomplete
@@ -1651,28 +1708,22 @@ async function getLastMessagesForContacts(userId, contactIds) {
         for (const contactId of contactIds) {
             const { data, error } = await supabaseClient
                 .from('messages')
-                .select('*')
+                .select('sender_id, receiver_id, text, created_at')
                 .or(`and(sender_id.eq.${userId},receiver_id.eq.${contactId}),and(sender_id.eq.${contactId},receiver_id.eq.${userId})`)
                 .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
+                .limit(1);
 
-            if (data && !error) {
-                // Get unread count for this contact
-                const { count } = await supabaseClient
-                    .from('messages')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('sender_id', contactId)
-                    .eq('receiver_id', userId)
-                    .eq('read', false);
+            if (error) continue;
 
-                lastMessages[contactId] = {
-                    text: data.text,
-                    timestamp: data.created_at,
-                    unreadCount: count || 0,
-                    isSender: data.sender_id === userId
-                };
-            }
+            const row = Array.isArray(data) ? data[0] : null;
+            if (!row) continue;
+
+            lastMessages[contactId] = {
+                text: row.text,
+                timestamp: row.created_at,
+                unreadCount: 0,
+                isSender: row.sender_id === userId
+            };
         }
 
         return lastMessages;

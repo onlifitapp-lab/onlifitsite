@@ -42,10 +42,19 @@ ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_attachments ENABLE ROW LEVEL SECURITY;
 
 -- Tickets Policies
+DROP POLICY IF EXISTS "Users can view own tickets" ON support_tickets;
+DROP POLICY IF EXISTS "Admins can view all tickets" ON support_tickets;
+DROP POLICY IF EXISTS "Users can create own tickets" ON support_tickets;
+DROP POLICY IF EXISTS "Admins can update all tickets" ON support_tickets;
 CREATE POLICY "Users can view own tickets" ON support_tickets FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Admins can view all tickets" ON support_tickets FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "Users can create own tickets" ON support_tickets FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Admins can update all tickets" ON support_tickets FOR UPDATE USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')) WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
 
 -- Ticket Messages Policies
+DROP POLICY IF EXISTS "Users can view msgs on own tickets" ON ticket_messages;
+DROP POLICY IF EXISTS "Admins can view all msgs" ON ticket_messages;
+DROP POLICY IF EXISTS "Users can add msgs to own tickets" ON ticket_messages;
 CREATE POLICY "Users can view msgs on own tickets" ON ticket_messages FOR SELECT USING (
     EXISTS (SELECT 1 FROM support_tickets WHERE support_tickets.id = ticket_id AND support_tickets.user_id = auth.uid()) 
     AND is_internal = false
@@ -57,15 +66,21 @@ CREATE POLICY "Users can add msgs to own tickets" ON ticket_messages FOR INSERT 
 );
 
 -- Ticket Attachments Policies
+DROP POLICY IF EXISTS "Users can view attachments on own tickets" ON ticket_attachments;
+DROP POLICY IF EXISTS "Admins can view all attachments" ON ticket_attachments;
+DROP POLICY IF EXISTS "Users can add attachments to own tickets" ON ticket_attachments;
 CREATE POLICY "Users can view attachments on own tickets" ON ticket_attachments FOR SELECT USING (
     EXISTS (SELECT 1 FROM support_tickets WHERE support_tickets.id = ticket_id AND support_tickets.user_id = auth.uid())
 );
 CREATE POLICY "Admins can view all attachments" ON ticket_attachments FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin'));
+CREATE POLICY "Users can add attachments to own tickets" ON ticket_attachments FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM support_tickets WHERE support_tickets.id = ticket_id AND support_tickets.user_id = auth.uid())
+);
 
 -- Enable realtime
 BEGIN;
-  DROP PUBLICATION IF EXISTS ticktes_realtime;
-  CREATE PUBLICATION ticktes_realtime FOR TABLE support_tickets, ticket_messages;
+    DROP PUBLICATION IF EXISTS tickets_realtime;
+    CREATE PUBLICATION tickets_realtime FOR TABLE support_tickets, ticket_messages;
 COMMIT;
 
 -- ================================================================

@@ -450,14 +450,21 @@
     }
 
     function init() {
-        // If user reached login from Join Us trainer CTA, persist strict trainer flow intent.
-        if (state.role === 'trainer' && state.source === 'join-us') {
+        // CRITICAL: Preserve Join Us trainer flow intent even if params exist
+        const fromJoinUsTrainer = state.role === 'trainer' && state.source === 'join-us';
+        const storedJoinUsIntent = localStorage.getItem(TRAINER_INTENT_KEY) === 'join-us'
+            || localStorage.getItem(OAUTH_INTENT_KEY) === 'join_us_trainer_signup'
+            || localStorage.getItem(OAUTH_SIGNUP_SOURCE_KEY) === 'join-us';
+
+        if (fromJoinUsTrainer) {
             persistTrainerIntent();
-        } else if (hasTrainerIntent() && state.source === 'join-us') {
+        } else if (storedJoinUsIntent) {
+            // Restore Join Us trainer flow from localStorage
             state.role = 'trainer';
             state.source = 'join-us';
+            persistTrainerIntent();
         } else {
-            // Homepage/default auth flow should remain client-first.
+            // No Join Us trainer flow detected
             clearTrainerIntent();
             state.role = 'client';
         }
@@ -467,6 +474,11 @@
 
         if (state.role === 'trainer' && state.source === 'join-us' && state.mode === 'signup') {
             setNotice('Complete signup to start your trainer application.', 'success');
+            return;
+        }
+
+        if (state.role === 'trainer' && state.source === 'join-us' && state.mode === 'signin') {
+            setNotice('Sign in to continue your trainer application.', 'success');
             return;
         }
 

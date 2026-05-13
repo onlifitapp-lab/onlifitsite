@@ -60,6 +60,14 @@ export function extractBearerToken(req) {
     return null;
 }
 
+export function setCorsHeaders(res) {
+    const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.setHeader('Access-Control-Max-Age', '86400');
+}
+
 async function getProfileById(supabase, id) {
     const { data, error } = await supabase
         .from('profiles')

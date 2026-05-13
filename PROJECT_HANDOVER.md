@@ -51,6 +51,7 @@ Here is the exact journey of what has been implemented to stabilize the platform
 ### Messaging & Notifications Stability
 *   **Schema-safe messages:** production `messages` table does not include `read` or `status`, so message logic now avoids writing to those fields.
 *   **Unread badge safety:** unread counts now gracefully skip when read columns are missing (prevents 400 loops).
+*   **Last-message preview:** last-message lookups now read only `sender_id`, `receiver_id`, `text`, `created_at` (no read/status columns), so previews render even with the lean schema.
 *   **Notification page fix:** `notifications.html` now loads `supabase-client.js` + `auth.js` in-order and includes a Back button.
 *   **SPA-safe messaging links:** message buttons now use hash-based routes (e.g., `client-dashboard.html#messages?id=...`, `bookings.html#messages?id=...`) to avoid Vercel 404s.
 

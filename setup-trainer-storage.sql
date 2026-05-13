@@ -7,6 +7,8 @@
 -- STEP 1: UPDATE PROFILES TABLE SCHEMA
 -- ============================================================
 
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
 -- Add KYC and certification columns to profiles table
 ALTER TABLE profiles
 ADD COLUMN IF NOT EXISTS kyc_front_url TEXT,
@@ -29,12 +31,20 @@ COMMENT ON COLUMN profiles.verification_status IS 'Overall verification status: 
 -- STEP 2: CREATE STORAGE BUCKET
 -- ============================================================
 
--- Note: You must create the bucket "trainer-documents" manually in the Supabase Dashboard
--- Go to: Storage → New Bucket → Name: "trainer-documents" → Public: NO → Create
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('trainer-documents', 'trainer-documents', false)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- STEP 3: SET UP STORAGE POLICIES
 -- ============================================================
+
+DROP POLICY IF EXISTS "Trainers can upload their own documents" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can view their own documents" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can update their own documents" ON storage.objects;
+DROP POLICY IF EXISTS "Trainers can delete their own documents" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can view all trainer documents" ON storage.objects;
+DROP POLICY IF EXISTS "Admins can update verification status" ON profiles;
 
 -- Policy 1: Allow trainers to upload their own documents
 CREATE POLICY "Trainers can upload their own documents"
@@ -215,7 +225,6 @@ $$ LANGUAGE plpgsql;
 -- ✅ Admin verification workflow
 
 -- Next steps:
--- 1. Create the 'trainer-documents' bucket in Supabase Dashboard (Storage → New Bucket)
--- 2. Test uploading files from the trainer onboarding form
--- 3. Build an admin panel to verify documents
--- 4. Add verification badges to trainer profiles
+-- 1. Test uploading files from the trainer onboarding form
+-- 2. Build an admin panel to verify documents
+-- 3. Add verification badges to trainer profiles

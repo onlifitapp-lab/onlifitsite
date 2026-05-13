@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { resolveRequestAuth } from './_auth.js';
+import { resolveRequestAuth, setCorsHeaders } from './_auth.js';
 
 // Simple in-memory KV store for rate limiting in serverless environments
 const rateLimitCache = new Map();
@@ -7,6 +7,12 @@ const MAX_BOOKINGS_PER_WINDOW = 5;
 const WINDOW_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 export default async function handler(req, res) {
+    setCorsHeaders(res);
+
+    if (req.method === 'OPTIONS') {
+        return res.status(204).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
