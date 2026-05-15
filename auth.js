@@ -1104,8 +1104,8 @@ async function getTrainers(options = {}) {
     const selectWithBadge = selectBase + ', has_black_status';
 
     try {
-        // 3. Fast timeout for cold starts: return cached/empty quickly (no dummy data)
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 2500));
+        // 3. Extended timeout for cold starts: wait up to 6s for trainers to load (better UX than showing empty)
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 6000));
 
         const fetchPromise = (async () => {
             // Try including the badge column; if the project hasn't been migrated yet, fall back gracefully.

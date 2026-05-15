@@ -974,6 +974,30 @@
             });
         });
 
+        // START AGGRESSIVE TRAINER PRELOAD IMMEDIATELY (do not wait for DOMContentLoaded)
+        // This ensures trainers begin loading as soon as auth.js is available
+        (async () => {
+            // Wait for auth.js and Supabase to load (they're marked defer, so they should be available by inline script execution)
+            let attempts = 0;
+            while (typeof getTrainers !== 'function' && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            if (typeof getTrainers === 'function') {
+                // Preload trainers in the background immediately
+                getTrainers({
+                    onUpdate: (trainers) => {
+                        // Update UI immediately when trainers arrive
+                        const container = document.getElementById('trainers-container');
+                        if (container && Array.isArray(trainers) && trainers.length > 0) {
+                            // Force immediate render
+                            renderDynamicTrainers('', '').catch(e => console.warn('Trainer render failed:', e));
+                        }
+                    }
+                }).catch(e => console.warn('Early trainer preload failed:', e));
+            }
+        })();
+
         async function renderDynamicTrainers(query = '', location = '') {
             const container = document.getElementById('trainers-container');
             if (!container) return;
