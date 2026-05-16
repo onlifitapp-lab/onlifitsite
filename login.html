@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
 
     <link href="styles.css" rel="stylesheet" />
+    <link href="mobile-optimizations.css" rel="stylesheet" />
 
     <style>
         body {
@@ -111,6 +112,16 @@
             font-family: Inter, sans-serif;
             outline: none;
             transition: border-color 0.2s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        @media (max-width: 480px) {
+            .auth-input {
+                font-size: 16px;
+                min-height: 48px;
+            }
         }
 
         .auth-input::placeholder {
@@ -134,6 +145,16 @@
             transition: background 0.2s ease;
             cursor: pointer;
             font-family: Inter, sans-serif;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        @media (max-width: 480px) {
+            .primary-btn {
+                font-size: 16px;
+                min-height: 48px;
+            }
         }
 
         .primary-btn:hover {
@@ -148,6 +169,64 @@
             width: 100%;
             border: 1px solid #e8e8e8;
             border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            min-height: 48px;
+            background: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #000000;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        @media (max-width: 480px) {
+            .google-btn {
+                font-size: 16px;
+                min-height: 48px;
+            }
+        }
+
+        .google-btn:hover {
+            background: #f5f5f5;
+            border-color: #000000;
+        }
+
+        .mode-btn {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid #e8e8e8;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #000000;
+            background: transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-family: Inter, sans-serif;
+            min-height: 44px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .mode-btn.active {
+            background: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .mode-btn:hover:not(.active) {
+            border-color: #000000;
+            background: rgba(0, 0, 0, 0.02);
+        }
             padding: 0.75rem 1rem;
             min-height: 48px;
             font-size: 0.95rem;

@@ -1,0 +1,389 @@
+/* Mobile Optimizations - Global Touch Target & Responsive Fixes */
+
+/* 1. GLOBAL TOUCH TARGET MINIMUMS (44x44px for accessibility) */
+button, a, input[type="button"], input[type="submit"], input[type="reset"], 
+input[type="checkbox"], input[type="radio"], select, textarea {
+    min-height: 44px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* 2. INPUT FIELDS - Mobile Optimizations */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="search"],
+textarea,
+select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    min-height: 48px; /* Touch target */
+    padding: 12px 16px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* 3. BUTTONS - All states responsive */
+button, 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"],
+a.btn,
+a[class*="button"],
+a[class*="btn"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-size: 16px; /* Prevents iOS zoom */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* 4. LINKS - Ensure they're easy to tap */
+a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 5. CHECKBOXES & RADIO BUTTONS */
+input[type="checkbox"],
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: currentColor;
+}
+
+/* 6. SIDEBARS - Mobile Collapse */
+@media (max-width: 768px) {
+    aside[class*="sidebar"],
+    .sidebar,
+    nav[class*="sidebar"] {
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 320px;
+        height: 100vh;
+        overflow-y: auto;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+    }
+
+    aside[class*="sidebar"].open,
+    .sidebar.open,
+    nav[class*="sidebar"].open {
+        transform: translateX(0);
+    }
+
+    /* Sidebar overlay */
+    .sidebar-overlay,
+    .mobile-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+    }
+
+    .sidebar-overlay.open,
+    .mobile-overlay.open {
+        display: block;
+    }
+}
+
+/* 7. MODALS - Mobile Responsive */
+@media (max-width: 768px) {
+    .modal,
+    [class*="modal"],
+    [role="dialog"] {
+        padding: 16px !important;
+    }
+
+    .modal-content,
+    [class*="modal-content"] {
+        margin: 0 !important;
+        border-radius: 12px !important;
+        max-height: 95vh !important;
+    }
+
+    .modal-header,
+    [class*="modal-header"] {
+        padding: 16px 20px !important;
+    }
+
+    .modal-body,
+    [class*="modal-body"] {
+        padding: 16px 20px !important;
+    }
+}
+
+/* 8. FORMS - Mobile Friendly */
+@media (max-width: 768px) {
+    form {
+        padding: 16px;
+    }
+
+    form > * {
+        margin-bottom: 12px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    fieldset {
+        margin: 16px 0;
+    }
+}
+
+/* 9. TABLES - Mobile Scrollable */
+@media (max-width: 768px) {
+    table {
+        font-size: 13px;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    table th,
+    table td {
+        padding: 12px 16px;
+        min-width: 80px;
+    }
+
+    /* Stack table vertically on very small screens */
+    @media (max-width: 480px) {
+        table th,
+        table td {
+            padding: 8px 12px;
+            font-size: 12px;
+            min-width: 60px;
+        }
+    }
+}
+
+/* 10. GRIDS - Responsive Column Count */
+@media (max-width: 1024px) {
+    [class*="grid-cols-4"] {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    [class*="grid-cols-2"],
+    [class*="grid-cols-3"],
+    [class*="grid-cols-4"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    [class*="lg:grid-cols"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    [class*="lg:col-span"] {
+        grid-column: auto !important;
+    }
+}
+
+/* 11. FLEX RESPONSIVE */
+@media (max-width: 768px) {
+    [class*="flex-row"] {
+        flex-direction: column !important;
+    }
+
+    [class*="gap-8"],
+    [class*="gap-6"] {
+        gap: 12px !important;
+    }
+}
+
+/* 12. PADDING & SPACING - Reduce on mobile */
+@media (max-width: 768px) {
+    [class*="px-8"],
+    [class*="px-12"] {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    [class*="py-8"],
+    [class*="py-12"] {
+        padding-top: 16px !important;
+        padding-bottom: 16px !important;
+    }
+
+    [class*="p-8"],
+    [class*="p-12"] {
+        padding: 16px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    [class*="px-6"],
+    [class*="px-8"] {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    [class*="py-6"],
+    [class*="py-8"] {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+    }
+
+    [class*="p-6"],
+    [class*="p-8"] {
+        padding: 12px !important;
+    }
+}
+
+/* 13. TEXT SIZING - Readable on mobile */
+@media (max-width: 768px) {
+    [class*="text-4xl"],
+    [class*="text-5xl"],
+    [class*="text-6xl"] {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    [class*="text-3xl"] {
+        font-size: 1.5rem !important;
+    }
+
+    [class*="text-2xl"] {
+        font-size: 1.25rem !important;
+    }
+}
+
+/* 14. FIXED ELEMENTS - Safe area for notch */
+@media (max-width: 768px) {
+    nav[class*="fixed"],
+    header[class*="fixed"],
+    footer[class*="fixed"] {
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* 15. BOTTOM SHEET OPTIMIZATION */
+@media (max-width: 768px) {
+    .bottom-sheet,
+    [class*="bottom-sheet"] {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 12px 12px 0 0;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* 16. HOVER STATE REMOVAL ON TOUCH DEVICES */
+@media (hover: none) {
+    button:hover,
+    a:hover,
+    [class*="btn"]:hover {
+        transform: none !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+    }
+
+    button:active,
+    a:active,
+    [class*="btn"]:active {
+        opacity: 0.8;
+    }
+}
+
+/* 17. ZOOM & INTERACTION IMPROVEMENTS */
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+    }
+
+    input, textarea, select {
+        font-size: 16px;
+        -webkit-user-zoom: 1;
+    }
+
+    html {
+        -webkit-user-select: none;
+        -webkit-user-zoom: 1;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+    }
+}
+
+/* 18. SPECIFIC COMPONENT FIXES */
+
+/* Dashboard Cards */
+@media (max-width: 768px) {
+    [class*="card"],
+    [class*="booking-card"],
+    [class*="stat-card"] {
+        padding: 16px !important;
+        margin-bottom: 12px;
+    }
+}
+
+/* Navigation Bars */
+@media (max-width: 768px) {
+    nav {
+        padding: 8px 16px !important;
+        min-height: 56px;
+    }
+
+    nav a, nav button {
+        min-height: 40px;
+        font-size: 14px;
+    }
+}
+
+/* 19. PREVENT TEXT SELECTION ON TOUCH */
+@media (hover: none) and (pointer: coarse) {
+    button, a, [role="button"] {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-user-drag: none;
+    }
+}
+
+/* 20. ORIENTATION CHANGES */
+@media (orientation: landscape) and (max-height: 500px) {
+    html, body {
+        height: auto;
+        min-height: auto;
+    }
+
+    nav, header {
+        min-height: 44px;
+    }
+
+    form input,
+    form button {
+        min-height: 40px;
+        font-size: 14px;
+    }
+}

@@ -16,6 +16,7 @@
     
     <!-- Tailwind CSS -->
     <link href="styles.css" rel="stylesheet" />
+    <link href="mobile-optimizations.css" rel="stylesheet" />
     
     <style>
         /* Font Size Reset - Standard 16px base */
@@ -67,34 +68,34 @@
             
             <!-- Search Bar -->
             <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-2 border border-outline-variant/50 flex flex-col md:flex-row md:items-stretch gap-2 mb-8 overflow-hidden">
-                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-4 md:py-0 md:min-h-[72px] md:border-r border-outline-variant/30">
+                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-3 md:py-0 md:min-h-[52px] md:border-r border-outline-variant/30">
                     <input id="search-query" type="text" placeholder="Try 'Yoga' or 'Weight Loss'" 
-                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
+                        class="w-full border-none focus:ring-0 text-on-surface text-base md:text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent" />
                 </div>
-                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-4 md:py-0 md:min-h-[72px]">
+                <div class="flex-1 min-w-0 flex items-center gap-3 px-4 md:px-5 py-3 md:py-0 md:min-h-[52px]">
                     <select id="search-mode" onchange="toggleLocationInput()" 
-                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer h-12 md:h-auto">
+                        class="w-full border-none focus:ring-0 text-on-surface text-base md:text-lg font-semibold outline-none p-0 bg-transparent cursor-pointer h-12 md:h-auto">
                         <option value="online">Online</option>
                         <option value="offline">Offline</option>
                     </select>
                     <input id="search-location" type="text" placeholder="Pincode or City" 
                         style="display: none;"
-                        class="w-full border-none focus:ring-0 text-on-surface text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent h-12 md:h-auto" />
+                        class="w-full border-none focus:ring-0 text-on-surface text-base md:text-lg font-semibold placeholder:text-on-surface-variant/50 outline-none p-0 bg-transparent h-12 md:h-auto" />
                 </div>
                 <button onclick="performSearch()" 
-                    class="bg-primary text-on-primary px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-all w-full md:w-auto md:min-h-[72px] flex items-center justify-center">
+                    class="bg-primary text-on-primary px-6 md:px-8 py-3 md:py-0 rounded-xl font-bold hover:opacity-90 transition-all w-full md:w-auto md:min-h-[52px] flex items-center justify-center">
                     Search
                 </button>
             </div>
 
             <!-- Filter Tags -->
             <div class="flex flex-wrap gap-3 justify-center">
-                <button onclick="filterBySpecialty('all')" class="filter-tag active px-4 py-2 rounded-full border-2 border-primary bg-primary text-on-primary font-bold text-sm transition-all">All</button>
-                <button onclick="filterBySpecialty('Weight Loss')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Weight Loss</button>
-                <button onclick="filterBySpecialty('Yoga')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Yoga</button>
-                <button onclick="filterBySpecialty('Strength')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Strength</button>
-                <button onclick="filterBySpecialty('Cardio')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Cardio</button>
-                <button onclick="filterBySpecialty('Sports')" class="filter-tag px-4 py-2 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all">Sports</button>
+                <button onclick="filterBySpecialty('all')" class="filter-tag active px-4 py-2 md:py-2.5 rounded-full border-2 border-primary bg-primary text-on-primary font-bold text-sm transition-all min-h-[44px] flex items-center">All</button>
+                <button onclick="filterBySpecialty('Weight Loss')" class="filter-tag px-4 py-2 md:py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all min-h-[44px] flex items-center">Weight Loss</button>
+                <button onclick="filterBySpecialty('Yoga')" class="filter-tag px-4 py-2 md:py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all min-h-[44px] flex items-center">Yoga</button>
+                <button onclick="filterBySpecialty('Strength')" class="filter-tag px-4 py-2 md:py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all min-h-[44px] flex items-center">Strength</button>
+                <button onclick="filterBySpecialty('Cardio')" class="filter-tag px-4 py-2 md:py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all min-h-[44px] flex items-center">Cardio</button>
+                <button onclick="filterBySpecialty('Sports')" class="filter-tag px-4 py-2 md:py-2.5 rounded-full border-2 border-outline text-on-surface-variant font-bold text-sm hover:border-primary hover:text-primary transition-all min-h-[44px] flex items-center">Sports</button>
             </div>
         </div>
     </section>

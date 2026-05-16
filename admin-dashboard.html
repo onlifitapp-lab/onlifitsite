@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link href="mobile-optimizations.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -50,6 +51,36 @@
             height: 100vh;
             overflow-y: auto;
             border-right: 1px solid #E8E8E8;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 80vw;
+                max-width: 280px;
+                height: 100vh;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 999;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 998;
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
         }
 
         .sidebar h1 {
@@ -123,6 +154,22 @@
             padding: 40px;
         }
 
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            .admin-container {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 16px;
+            }
+        }
+
         .content-header {
             display: flex;
             justify-content: space-between;
@@ -155,12 +202,44 @@
             margin-bottom: 32px;
         }
 
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+
         .stat-card {
             background: #FFFFFF;
             padding: 28px;
             border-radius: 16px;
             border: 1px solid #E8E8E8;
             transition: all 0.2s ease;
+        }
+
+        @media (max-width: 768px) {
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-card .value {
+                font-size: 24px;
+            }
+
+            .stat-card h3 {
+                font-size: 11px;
+            }
+
+            .stat-card .change {
+                font-size: 12px;
+            }
         }
 
         .stat-card:hover {
@@ -205,6 +284,13 @@
             overflow: hidden;
         }
 
+        @media (max-width: 768px) {
+            .data-table-container {
+                overflow-x: auto;
+                border-radius: 8px;
+            }
+        }
+
         .table-header {
             padding: 24px;
             border-bottom: 1px solid #E8E8E8;
@@ -213,83 +299,19 @@
             align-items: center;
         }
 
-        .search-bar {
-            font-family: 'Inter', sans-serif;
-            padding: 12px 16px;
-            border: 1px solid #D0D0D0;
-            border-radius: 12px;
-            width: 320px;
-            font-size: 15px;
-            transition: all 0.2s ease;
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: #000000;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-primary {
-            background: #FF5A5F;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #e04f54;
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: #10B981;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .btn-danger {
-            background: #EF4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            opacity: 1;
-        }
-
-        .btn-secondary {
-            background: #F5F5F5;
-            color: #000000;
-            border: 1px solid #E8E8E8;
-        }
-
-        .btn-secondary:hover {
-            background: #EBEBEB;
-            border-color: #D0D0D0;
+        @media (max-width: 768px) {
+            .table-header {
+                padding: 16px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
+            }
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-        }
-
-        thead {
-            background: #FAFAFA;
+            min-width: 600px;
         }
 
         th {
@@ -311,8 +333,18 @@
             color: #000000;
         }
 
-        tbody tr:hover {
-            background: #FAFAFA;
+        @media (max-width: 768px) {
+            th, td {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            th, td {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         }
 
         /* Badges */
@@ -374,6 +406,20 @@
             border: 1px solid #E8E8E8;
         }
 
+        @media (max-width: 768px) {
+            .modal-content {
+                border-radius: 12px;
+                max-height: 95vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal-content {
+                margin: 16px;
+                border-radius: 8px;
+            }
+        }
+
         .modal-header {
             padding: 24px 28px;
             border-bottom: 1px solid #E8E8E8;
@@ -382,16 +428,24 @@
             align-items: center;
         }
 
-        .modal-header h3 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 24px;
-            font-weight: 700;
-            color: #000000;
-            letter-spacing: -0.5px;
+        @media (max-width: 768px) {
+            .modal-header {
+                padding: 16px 20px;
+            }
+
+            .modal-header h3 {
+                font-size: 18px;
+            }
         }
 
         .modal-body {
             padding: 28px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-body {
+                padding: 16px 20px;
+            }
         }
 
         .modal-footer {
