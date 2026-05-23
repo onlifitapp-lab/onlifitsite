@@ -369,20 +369,20 @@
 
         <!-- Highlights Bar -->
         <div class="bg-surface-container-lowest border-y border-outline-variant/30 py-8 px-6">
-            <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div class="flex flex-col items-center gap-2">
+            <div class="max-w-7xl mx-auto flex gap-6 overflow-x-auto md:overflow-visible md:grid md:grid-cols-4 md:gap-8 text-center">
+                <div class="flex flex-col items-center gap-2 min-w-[140px]">
                     <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
                     <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Verified Profiles</p>
                 </div>
-                <div class="flex flex-col items-center gap-2">
+                <div class="flex flex-col items-center gap-2 min-w-[140px]">
                     <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
                     <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Flexible Booking</p>
                 </div>
-                <div class="flex flex-col items-center gap-2">
+                <div class="flex flex-col items-center gap-2 min-w-[140px]">
                     <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">forum</span>
                     <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant">In-app Messaging</p>
                 </div>
-                <div class="flex flex-col items-center gap-2">
+                <div class="flex flex-col items-center gap-2 min-w-[140px]">
                     <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">location_on</span>
                     <p class="text-xs uppercase tracking-widest font-bold text-on-surface-variant">Online &amp; Offline</p>
                 </div>
@@ -398,7 +398,7 @@
                         goals.</p>
                 </div>
 
-                <div id="trainers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <div id="trainers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 mb-12">
                     <!-- Populated by JS -->
                     <div class="col-span-full py-20 text-center">
                         <div
@@ -977,6 +977,56 @@
 
         // START AGGRESSIVE TRAINER PRELOAD IMMEDIATELY (do not wait for DOMContentLoaded)
         // This ensures trainers begin loading as soon as auth.js is available
+        let homepageTrainersLoading = false;
+        let homepageTrainersRendered = false;
+        let homepageLastKey = '';
+        const HOMEPAGE_TRAINER_LIMIT = 6;
+
+        function getTrainerRenderKey(trainers) {
+            if (!Array.isArray(trainers)) return '';
+            return trainers.map(t => t?.id || '').filter(Boolean).join('|');
+        }
+
+        function renderHomepageTrainers(trainers, options = {}) {
+            const container = document.getElementById('trainers-container');
+            if (!container) return;
+
+            if (!Array.isArray(trainers) || trainers.length === 0) {
+                container.innerHTML = `
+                <div class="col-span-full py-20 text-center">
+                    <span class="material-symbols-outlined text-6xl text-on-surface-variant/20 mb-4">search_off</span>
+                    <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No trainers found</h3>
+                    <p class="text-on-surface-variant">Try adjusting your search criteria.</p>
+                </div>`;
+                homepageTrainersRendered = true;
+                return;
+            }
+
+            if (typeof window.renderPremiumTrainerCardHTML !== 'function') {
+                container.innerHTML = `
+                    <div class="col-span-full py-20 text-center">
+                        <span class="material-symbols-outlined text-6xl text-on-surface-variant/20 mb-4">error</span>
+                        <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">Unable to load trainer cards</h3>
+                        <p class="text-on-surface-variant">Please refresh the page.</p>
+                    </div>`;
+                homepageTrainersRendered = true;
+                return;
+            }
+
+            const limit = Number.isFinite(options.limit) ? options.limit : HOMEPAGE_TRAINER_LIMIT;
+            const limited = limit ? trainers.slice(0, limit) : trainers;
+            const key = getTrainerRenderKey(limited);
+            if (key && key === homepageLastKey) return;
+            homepageLastKey = key;
+
+            requestAnimationFrame(() => {
+                container.innerHTML = limited
+                    .map(tRaw => window.renderPremiumTrainerCardHTML(tRaw, { context: 'public' }))
+                    .join('');
+                homepageTrainersRendered = true;
+            });
+        }
+
         (async () => {
             // Wait for auth.js and Supabase to load (they're marked defer, so they should be available by inline script execution)
             let attempts = 0;
@@ -986,16 +1036,20 @@
             }
             if (typeof getTrainers === 'function') {
                 // Preload trainers in the background immediately
-                getTrainers({
+                if (homepageTrainersLoading) return;
+                homepageTrainersLoading = true;
+                const preload = getTrainers({
                     onUpdate: (trainers) => {
                         // Update UI immediately when trainers arrive
-                        const container = document.getElementById('trainers-container');
-                        if (container && Array.isArray(trainers) && trainers.length > 0) {
-                            // Force immediate render
-                            renderDynamicTrainers('', '').catch(e => console.warn('Trainer render failed:', e));
-                        }
+                        renderHomepageTrainers(trainers);
                     }
                 }).catch(e => console.warn('Early trainer preload failed:', e));
+
+                preload.then((trainers) => {
+                    renderHomepageTrainers(trainers);
+                }).finally(() => {
+                    homepageTrainersLoading = false;
+                });
             }
         })();
 
@@ -1003,47 +1057,11 @@
             const container = document.getElementById('trainers-container');
             if (!container) return;
 
-            const renderTrainers = (trainers) => {
-                if (!Array.isArray(trainers) || trainers.length === 0) {
-                    container.innerHTML = `
-                <div class="col-span-full py-20 text-center">
-                    <span class="material-symbols-outlined text-6xl text-on-surface-variant/20 mb-4">search_off</span>
-                    <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No trainers found</h3>
-                    <p class="text-on-surface-variant">Try adjusting your search criteria.</p>
-                </div>`;
-                    return;
-                }
-
-                container.innerHTML = trainers.map(tRaw => {
-                    const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : tRaw;
-
-                    return `
-            <div class="col-span-1">
-                <a href="trainer-profile.html?id=${t.id}" class="block group h-full transition-transform duration-300 hover:-translate-y-1">
-                    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-elevated transition-shadow border border-outline-variant/30 flex flex-col h-full">
-                        <div class="relative h-64 w-full bg-gradient-to-br from-primary/5 to-primary/20 flex items-center justify-center overflow-hidden">
-                            ${renderTrainerAvatar(t)}
-                        </div>
-
-                        <div class="p-5 flex flex-col flex-grow">
-                            <h3 class="font-headline font-bold text-xl text-on-surface mb-1 group-hover:text-primary transition-colors">${escapeHtml(t?.name || 'Trainer')}</h3>
-                            ${renderTrainerMetaLine(t)}
-                            ${renderTrainerRatingBlock(t)}
-                            ${renderTrainerBadgeLine(t)}
-                            ${renderTrainerBioBlock(t)}
-                            ${renderTrainerPriceBlock(t)}
-                            ${renderTrainerOfferLine()}
-                        </div>
-                    </div>
-                </a>
-            </div>
-        `;
-                }).join('');
-            };
-
             if (query || location) {
                 const trainers = await searchTrainers(query, location);
-                renderTrainers(trainers);
+                homepageTrainersRendered = false;
+                homepageLastKey = '';
+                renderHomepageTrainers(trainers, { limit: 0 });
                 return;
             }
 
@@ -1054,14 +1072,17 @@
                     <p class="text-on-surface-variant">Fetching the latest trainer list.</p>
                 </div>`;
 
-            const trainers = await getTrainers({
-                onUpdate: (freshTrainers) => {
-                    renderTrainers(freshTrainers);
+            if (!homepageTrainersRendered) {
+                if (!homepageTrainersLoading) {
+                    homepageTrainersLoading = true;
+                    const trainers = await getTrainers({
+                        onUpdate: (freshTrainers) => {
+                            renderHomepageTrainers(freshTrainers);
+                        }
+                    });
+                    renderHomepageTrainers(trainers);
+                    homepageTrainersLoading = false;
                 }
-            });
-
-            if (Array.isArray(trainers) && trainers.length > 0) {
-                renderTrainers(trainers);
             }
         }
 

@@ -675,8 +675,10 @@
         const panelCount = document.getElementById('panel-count');
         const visibleCount = document.getElementById('visible-count');
 
+        const canRenderPremium = typeof window.renderPremiumTrainerCardHTML === 'function';
+
         const html = trainers.length
-            ? trainers.map((trainer, index) => renderTrainerCard(trainer, index)).join('')
+            ? trainers.map((trainer, index) => (canRenderPremium ? renderPremiumMapTrainerCard(trainer, index) : renderTrainerCard(trainer, index))).join('')
             : `<div class="text-center py-16 text-on-surface-variant">
                     <span class="material-symbols-outlined text-5xl mb-3">search_off</span>
                     <p class="font-bold">No trainers found</p>
@@ -688,7 +690,49 @@
         if (panelCount) panelCount.textContent = String(trainers.length);
         if (visibleCount) visibleCount.textContent = `${trainers.length} trainers`;
 
-        attachTrainerCardHandlers();
+        if (canRenderPremium) attachPremiumMapCardHandlers();
+        else attachTrainerCardHandlers();
+    }
+
+    function renderPremiumMapTrainerCard(trainer, index) {
+        const trainerId = String(trainer?.id || '');
+        if (!trainerId) return '';
+
+        const distance = Number.isFinite(trainer.distanceKm) ? `${trainer.distanceKm.toFixed(1)} km` : '';
+        const locationLabel = buildTrainerLocationLabel(trainer);
+        const locationWithDistance = [distance, locationLabel].filter(Boolean).join(' • ');
+
+        const tForCard = {
+            ...trainer,
+            city: null,
+            state: null,
+            location: locationWithDistance || trainer.location || ''
+        };
+
+        return `
+            <div class="onlifit-map-premium-card" data-trainer-id="${escapeHtml(trainerId)}" data-index="${index}">
+                ${window.renderPremiumTrainerCardHTML(tForCard, { context: 'public' })}
+            </div>
+        `;
+    }
+
+    function attachPremiumMapCardHandlers() {
+        document.querySelectorAll('.onlifit-map-premium-card').forEach(wrapper => {
+            const trainerId = wrapper.getAttribute('data-trainer-id');
+            if (!trainerId) return;
+
+            wrapper.addEventListener('click', (e) => {
+                try {
+                    if (e && e.target && e.target.closest && e.target.closest('a,button,input,textarea,select,label')) {
+                        return;
+                    }
+                } catch {}
+
+                e.preventDefault();
+                e.stopPropagation();
+                focusTrainer(trainerId);
+            }, true);
+        });
     }
 
     function renderTrainerCard(trainer, index) {

@@ -409,10 +409,10 @@
             // Show loading state for similar trainers
             document.getElementById('similar-trainers').innerHTML = `
                 <h2 class="font-headline text-lg font-bold mb-4">Similar Trainers You May Like</h2>
-                <div class="grid md:grid-cols-3 gap-4">
-                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
-                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
-                    <div class="animate-pulse p-4 bg-surface-container-low rounded-xl h-48"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                    <div class="animate-pulse bg-surface-container-low rounded-2xl h-96"></div>
+                    <div class="animate-pulse bg-surface-container-low rounded-2xl h-96"></div>
+                    <div class="animate-pulse bg-surface-container-low rounded-2xl h-96"></div>
                 </div>
             `;
             
@@ -621,74 +621,55 @@
 
         async function renderSimilarTrainers() {
             try {
-                // Find trainers with similar tags/goals - fetch only needed fields
-                const trainerTags = trainer.tags || [];
-                const { data: similarTrainers, error } = await supabase
-                    .from('profiles')
-                    .select('id, name, avatar_url, tags, rating, review_count, location, city, state, training_mode, plans')
-                    .eq('role', 'trainer')
-                    .neq('id', trainer.id)
-                    .limit(3);
+                const trainerTagsRaw = trainer?.tags;
+                const trainerTags = Array.isArray(trainerTagsRaw)
+                    ? trainerTagsRaw
+                    : String(trainerTagsRaw || '')
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(Boolean);
 
-                if (error) throw error;
-
-                // Filter trainers that share at least one tag with current trainer
-                let filteredTrainers = similarTrainers || [];
-                if (trainerTags.length > 0 && filteredTrainers.length > 0) {
-                    const matchingTrainers = filteredTrainers.filter(t => 
-                        (t.tags || []).some(tag => trainerTags.includes(tag))
-                    );
-                    // Use matching trainers if found, otherwise use all
-                    if (matchingTrainers.length > 0) {
-                        filteredTrainers = matchingTrainers;
-                    }
+                let candidates = [];
+                if (typeof window.getTrainers === 'function') {
+                    const all = await window.getTrainers();
+                    candidates = Array.isArray(all) ? all : [];
+                } else {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('id, name, avatar_url, tags, rating, review_count, location, city, state, training_mode, plans')
+                        .eq('role', 'trainer')
+                        .neq('id', trainer.id)
+                        .limit(24);
+                    if (error) throw error;
+                    candidates = data || [];
                 }
 
-                const trainersToShow = filteredTrainers.slice(0, 3);
+                candidates = candidates.filter(t => t?.id && t.id !== trainer.id);
+
+                if (trainerTags.length > 0) {
+                    const matching = candidates.filter(t => {
+                        const tags = Array.isArray(t?.tags)
+                            ? t.tags
+                            : String(t?.tags || '')
+                                .split(',')
+                                .map(s => s.trim())
+                                .filter(Boolean);
+                        return tags.some(tag => trainerTags.includes(tag));
+                    });
+                    if (matching.length > 0) candidates = matching;
+                }
+
+                const trainersToShow = candidates.slice(0, 3);
+
+                if (typeof window.renderPremiumTrainerCardHTML !== 'function') {
+                    throw new Error('renderPremiumTrainerCardHTML is not available');
+                }
 
                 document.getElementById('similar-trainers').innerHTML = `
                     <h2 class="font-headline text-lg font-bold mb-4">Similar Trainers You May Like</h2>
                     <p class="text-sm text-on-surface-variant mb-6">Trainers with similar expertise and goals</p>
-                    <div class="grid md:grid-cols-3 gap-4">
-                        ${trainersToShow.map(t => {
-                            const meta = getTrainerMeta(t);
-                            const price = getHourlyPrice(t);
-                            const tags = Array.isArray(t.tags) ? t.tags.slice(0, 2) : [];
-
-                            return `
-                                <a href="trainer-profile.html?id=${t.id}" class="block p-4 bg-surface-container-low rounded-xl border border-outline-variant/30 hover:border-primary/50 hover:shadow-lg transition-all">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center overflow-hidden">
-                                            ${renderSmallAvatar(t)}
-                                        </div>
-                                        <div class="flex-1">
-                                            <h3 class="font-bold text-sm mb-1">${escapeHtml(t.name || 'Trainer')}</h3>
-                                            <div class="flex items-center gap-1 text-xs">${renderSimilarRating(t)}</div>
-                                        </div>
-                                    </div>
-
-                                    ${tags.length ? `
-                                        <div class="flex flex-wrap gap-1 mb-3">
-                                            ${tags.map(tag => `
-                                                <span class="px-2 py-0.5 bg-primary text-on-primary text-[10px] font-semibold rounded-full">${escapeHtml(tag)}</span>
-                                            `).join('')}
-                                        </div>
-                                    ` : ''}
-
-                                    ${meta ? `
-                                        <div class="text-xs text-on-surface-variant mb-2 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[12px]">location_on</span>
-                                            ${escapeHtml(meta)}
-                                        </div>
-                                    ` : ''}
-
-                                    <div class="flex items-center justify-between pt-3 border-t border-outline-variant/20">
-                                        <span class="text-xs text-on-surface-variant">${price ? 'Starting at' : 'Pricing'}</span>
-                                        <span class="text-sm font-black text-primary">${price ? formatPrice(price) : 'View pricing'}</span>
-                                    </div>
-                                </a>
-                            `;
-                        }).join('')}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                        ${trainersToShow.map(tRaw => window.renderPremiumTrainerCardHTML(tRaw, { context: 'public' })).join('')}
                     </div>
                     <div class="mt-6 text-center">
                         <a href="trainers.html" class="inline-flex items-center gap-2 px-6 py-3 border-2 border-outline-variant rounded-xl font-bold text-sm hover:border-primary hover:text-primary transition-all">

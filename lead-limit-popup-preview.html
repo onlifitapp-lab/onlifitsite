@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Limit Popup Preview | Onlifit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #000000;
+      --secondary: #1a1a1a;
+      --surface: #ffffff;
+      --background: #f5f5f5;
+      --text: #000000;
+      --muted: #666666;
+      --border: #e8e8e8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: Inter, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(0,0,0,.08), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(26,26,26,.08), transparent 30%),
+        linear-gradient(180deg, #fafafa 0%, #f4f4f4 100%);
+      color: var(--text);
+    }
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(8px);
+    }
+    .is-hidden { display: none; }
+    .modal {
+      position: relative;
+      width: min(92vw, 420px);
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      border-radius: 28px;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 30px 80px rgba(0,0,0,.28);
+    }
+    .hero {
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 45%, #000000 100%);
+      color: white;
+      padding: 18px;
+    }
+    .eyebrow {
+      font-size: 10px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.7);
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+    .title-row { display: flex; gap: 12px; align-items: flex-start; }
+    .title-copy { min-width: 0; }
+    .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.15);
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+    h1 {
+      font-family: Poppins, sans-serif;
+      margin: 0;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .hero p {
+      margin: 10px 0 0;
+      color: rgba(255,255,255,.85);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .content { padding: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 12px;
+      background: #fff;
+    }
+    .card.pro { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.15); }
+    .label { font-size: 10px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 4px; }
+    .label.free { color: #666; }
+    .label.pro { color: #000; }
+    .card strong { display: block; font-size: 13px; margin-top: 4px; }
+    .card span { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; line-height: 1.35; }
+    .panel {
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: #fafafa;
+      padding: 12px;
+    }
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .rows { display: grid; gap: 8px; }
+    .row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 9px 10px;
+    }
+    .row strong { display: block; font-size: 12px; line-height: 1.25; }
+    .row span { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; margin-top: 2px; }
+    .dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+    .dot .material-symbols-outlined { font-size: 16px; }
+    .dot.green { background: #ecfdf5; color: #059669; }
+    .dot.blue { background: #eff6ff; color: #0284c7; }
+    .dot.red { background: #fef2f2; color: #e11d48; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .btn {
+      min-height: 48px;
+      border-radius: 18px;
+      border: none;
+      font-family: Inter, sans-serif;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn.primary { background: #000; color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,.15); }
+    .btn.secondary { background: #fff; color: #000; border: 1px solid var(--border); }
+    .note {
+      margin-top: 10px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.1);
+      font-size: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+    <div class="hero">
+      <div class="title-row">
+        <div class="icon"><span class="material-symbols-outlined" style="font-size:28px;">lock</span></div>
+        <div class="title-copy">
+          <div class="eyebrow">Upgrade Required</div>
+          <h1 id="popup-title">Free plan lead limit reached</h1>
+          <p>You’ve already received your free lead. New client clicks can still be seen, but replying to new messages is locked until you upgrade.</p>
+        </div>
+      </div>
+      <div class="badge"><span class="material-symbols-outlined" style="font-size:16px;">visibility</span> Profile still visible in search</div>
+    </div>
+    <div class="content">
+      <div class="grid">
+        <div class="card">
+          <div class="label free">Free</div>
+          <strong>1 lead only</strong>
+          <span>Read clicks, but no more replies.</span>
+        </div>
+        <div class="card pro">
+          <div class="label pro">Pro / Elite</div>
+          <strong>Unlimited replies</strong>
+          <span>Higher ranking and more leads.</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Still active</h2>
+        <div class="rows">
+          <div class="row">
+            <div class="dot green"><span class="material-symbols-outlined">visibility</span></div>
+            <div>
+              <strong>Profile stays visible</strong>
+              <span>Clients can still find you in search.</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="dot blue"><span class="material-symbols-outlined">ads_click</span></div>
+            <div>
+              <strong>Clicks are still tracked</strong>
+              <span>You can review visits and interest signals.</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="dot red"><span class="material-symbols-outlined">do_not_disturb_on</span></div>
+            <div>
+              <strong>Replies are paused</strong>
+              <span>New lead messages stay locked until upgrade.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="upgrade-now-btn" class="btn primary" type="button">Upgrade now</button>
+        <button id="later-btn" class="btn secondary" type="button">Later</button>
+      </div>
+
+      <div class="note">This is the exact free-plan lock popup style: dark premium header, compact cards, and a clear upgrade path.</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('upgrade-now-btn')?.addEventListener('click', () => {
+      window.location.href = 'pricing.html';
+    });
+
+    document.getElementById('later-btn')?.addEventListener('click', () => {
+      document.querySelector('.modal')?.classList.add('is-hidden');
+      document.querySelector('.backdrop')?.classList.add('is-hidden');
+    });
+
+    document.querySelector('.backdrop')?.addEventListener('click', () => {
+      document.querySelector('.modal')?.classList.add('is-hidden');
+      document.querySelector('.backdrop')?.classList.add('is-hidden');
+    });
+  </script>
+</body>
+</html>

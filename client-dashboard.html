@@ -70,14 +70,6 @@
             background: linear-gradient(90deg, rgba(255,90,95,0.12) 0%, rgba(255,90,95,0) 100%);
         }
 
-        /* Mobile sidebar toggle */
-        @media (max-width: 767px) {
-            .sidebar-overlay { display: none; }
-            .sidebar-overlay.open { display: block; }
-            .sidebar-panel { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); }
-            .sidebar-panel.open { transform: translateX(0); }
-        }
-
         /* Booking card hover */
         .booking-card {
             transition: all 0.35s cubic-bezier(.22,1,.36,1);
@@ -136,6 +128,12 @@
             justify-content: center;
             padding: 0 6px;
         }
+
+        @media (max-width: 767px) {
+            body {
+                overflow-x: hidden;
+            }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -147,19 +145,19 @@
   gtag('config', 'G-4W2306MJ1Y');
 </script>
 </head>
-<body class="bg-surface-container-low font-body text-on-surface">
+<body class="app-shell bg-surface-container-low font-body text-on-surface">
 
 <!-- â”€â”€ Top Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
-    <div class="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
-        <div class="flex items-center gap-8">
-            <button id="sidebar-toggle" class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">menu</span>
+<nav class="app-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="trainer-nav-inner flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-3 md:gap-8 min-w-0">
+            <button id="sidebar-toggle" class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-white/70 hover:text-primary transition-colors" aria-label="Open menu">
+                <span class="material-symbols-outlined text-[28px]">menu</span>
             </button>
-            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
-            <div class="hidden md:flex gap-6 items-center font-headline font-bold text-sm">
-                <a href="about.html" class="text-on-surface-variant hover:text-primary transition-colors">About</a>
-                <a href="pricing.html" class="text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+            <a href="onlifit.html" class="text-2xl md:text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant truncate">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center">
+                <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
             </div>
         </div>
         <div id="nav-auth" class="flex items-center gap-4"></div>
@@ -167,10 +165,10 @@
 </nav>
 
 <!-- â”€â”€ Mobile Sidebar Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<div id="sidebar-overlay" class="sidebar-overlay fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onclick="closeSidebar()"></div>
+<div id="sidebar-overlay" class="sidebar-overlay app-sidebar-overlay fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onclick="closeSidebar()"></div>
 
 <!-- â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<aside id="sidebar-panel" class="sidebar-panel fixed left-0 top-0 z-40 h-screen w-64 pt-20 bg-surface-container-lowest border-r border-outline-variant/20 flex-col gap-2 py-6 font-headline text-sm flex">
+<aside id="sidebar-panel" class="sidebar-panel app-sidebar-panel fixed left-0 top-0 z-40 h-screen w-72 md:w-64 pt-20 bg-surface-container-lowest border-r border-b md:border-b-0 border-outline-variant/30 flex flex-col gap-2 py-6 font-headline text-sm overflow-y-auto md:overflow-visible shadow-2xl md:shadow-none">
     <!-- User info -->
     <div class="px-6 mb-6 flex items-center gap-3">
         <div id="sidebar-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-base font-bold text-primary shadow-md ring-2 ring-surface-container-low">
@@ -182,28 +180,28 @@
         </div>
     </div>
 
-    <nav class="flex-1 space-y-1">
-        <a class="sidebar-link active flex items-center gap-3 px-6 py-3 text-primary font-bold rounded-r-full mr-4" href="/client/overview" data-route="overview">
+    <nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0 flex-1">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant hover:translate-x-1 hover:text-primary" href="/client/overview" data-route="overview">
             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
             <span>Dashboard</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/bookings" data-route="bookings">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/bookings" data-route="bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/messages" data-route="messages">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/messages" data-route="messages">
             <span class="material-symbols-outlined text-[20px]">chat</span>
             <span>Messages</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/find-trainers" data-route="find-trainers">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/find-trainers" data-route="find-trainers">
             <span class="material-symbols-outlined text-[20px]">search</span>
             <span>Find Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/saved-trainers" data-route="saved-trainers">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/saved-trainers" data-route="saved-trainers">
             <span class="material-symbols-outlined text-[20px]">favorite</span>
             <span>Saved Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:text-primary" href="/client/settings" data-route="settings">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/settings" data-route="settings">
             <span class="material-symbols-outlined text-[20px]">settings</span>
             <span>Settings</span>
         </a>
@@ -218,7 +216,7 @@
 </aside>
 
 <!-- â”€â”€ Main Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<main class="flex-1 md:ml-64 p-6 md:p-8 pt-24 md:pt-28 min-h-screen relative">
+<main class="app-main app-main--with-sidebar flex-1 min-h-screen bg-surface-container-low relative">
     <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <span class="material-symbols-outlined animate-spin text-primary text-4xl">autorenew</span>
     </div>
@@ -227,7 +225,7 @@
 
 
     <!-- Header -->
-    <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+    <header class="dash-header mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
         <div>
             <h1 id="welcome-heading" class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">
                 Welcome back!
@@ -240,9 +238,9 @@
     </header>
 
     <!-- â”€â”€ Stats Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+    <div class="overview-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
         <!-- Upcoming Sessions -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-1 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-1 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -257,7 +255,7 @@
         </div>
 
         <!-- Completed Sessions -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-2 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-2 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-tertiary/5 rounded-full blob-pulse" style="animation-delay: 1s;"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -271,7 +269,7 @@
         </div>
 
         <!-- Active Trainers -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-3 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-3 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-secondary/5 rounded-full blob-pulse" style="animation-delay: 2s;"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -285,7 +283,7 @@
         </div>
 
         <!-- Total Spent -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-4 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-4 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse" style="animation-delay: 3s;"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -301,20 +299,20 @@
 
     <!-- â”€â”€ Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     </section><section id="view-bookings" class="route-view hidden anim-slide-up">
-    <header class="mb-8">
+    <header class="dash-header mb-6 mt-2">
         <h2 class="text-3xl font-black font-headline text-on-surface">My Trainers</h2>
         <p class="text-on-surface-variant text-sm mt-1">Manage your upcoming and past sessions.</p>
     </header>
-<div class="grid grid-cols-12 gap-6" id="bookings-section">
+    <div class="bookings-layout dash-panel-grid grid grid-cols-12 gap-6" id="bookings-section">
 
         <!-- Upcoming Bookings (main) -->
         <div class="col-span-12 lg:col-span-8 space-y-6">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 class="font-headline text-xl font-bold text-on-surface">Upcoming Sessions</h2>
-                <div class="flex gap-2">
-                    <button id="filter-all" onclick="setFilter('all')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-secondary text-on-secondary transition-all">All</button>
-                    <button id="filter-confirmed" onclick="setFilter('confirmed')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all">Confirmed</button>
-                    <button id="filter-pending" onclick="setFilter('pending')" class="filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all">Pending</button>
+                <div class="dash-booking-filters flex gap-2">
+                    <button id="filter-all" onclick="setFilter('all')" class="filter-btn px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary transition-all">All</button>
+                    <button id="filter-confirmed" onclick="setFilter('confirmed')" class="filter-btn px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant transition-all">Confirmed</button>
+                    <button id="filter-pending" onclick="setFilter('pending')" class="filter-btn px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant transition-all">Pending</button>
                 </div>
             </div>
 
@@ -325,7 +323,7 @@
 
             <!-- Empty State -->
             <div id="empty-state" class="hidden">
-                <div class="bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
+                <div class="dash-bookings-empty bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
                     <div class="w-28 h-28 bg-primary-container/40 rounded-full flex items-center justify-center mb-6">
                         <span class="material-symbols-outlined text-primary/60 text-6xl">fitness_center</span>
                     </div>
@@ -430,7 +428,7 @@
             <!-- Populated by JS -->
         </div>
         <div id="no-past" class="hidden">
-            <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
+            <div class="dash-bookings-empty bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
                 <p class="text-sm text-on-surface-variant">Completed sessions will appear here.</p>
             </div>
         </div>
@@ -438,18 +436,18 @@
 
 </section>
     <section id="view-messages" class="route-view hidden anim-slide-up">
-        <header class="mb-8">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
             <p class="text-on-surface-variant text-sm mt-1">Chat with your trainers without leaving your dashboard.</p>
         </header>
 
-        <div class="flex flex-col md:flex-row overflow-hidden bg-white border border-outline-variant/30 rounded-2xl" style="height: calc(100vh - 220px);">
+        <div class="messages-shell dash-messages-shell min-h-[70vh] flex flex-col md:flex-row overflow-hidden bg-white border border-outline-variant/30 rounded-2xl shadow-sm">
             <!-- Sidebar (Contacts) -->
-            <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
-                <div class="p-5 border-b border-outline-variant/50">
+            <aside id="contacts-sidebar" class="dash-contacts-sidebar w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
+                <div class="contacts-search-wrap p-6 border-b border-outline-variant/50">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                        <input id="contacts-search" type="text" placeholder="Search contacts..." class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                        <input id="contacts-search" type="text" placeholder="Search contacts..." class="dash-contacts-search w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
                     </div>
                 </div>
 
@@ -460,7 +458,7 @@
 
             <!-- Message View -->
             <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
-                <div id="chat-header" class="px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+                <div id="chat-header" class="dash-chat-header px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
                     <div class="flex items-center gap-3">
                         <button type="button" onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
                             <span class="material-symbols-outlined text-on-surface">arrow_back</span>
@@ -484,7 +482,7 @@
                 </div>
 
                 <!-- Chat History -->
-                <div id="chat-history" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
+                <div id="chat-history" class="dash-chat-history flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
                     <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
                         <span class="material-symbols-outlined text-7xl mb-6">chat_bubble</span>
                         <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
@@ -494,7 +492,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                <div id="message-input-area" class="dash-chat-input p-6 border-t border-outline-variant/50 bg-white hidden">
                     <div class="flex gap-3 items-end">
                         <button type="button" class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all flex-shrink-0"><span class="material-symbols-outlined">add</span></button>
                         <div class="flex-1 relative">
@@ -508,33 +506,43 @@
     </section>
 
     <section id="view-find-trainers" class="route-view hidden anim-slide-up">
-        <header class="mb-8">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
-            <p class="text-on-surface-variant text-sm mt-1">Discover experts tailored to your goals.</p>
+            <p class="text-on-surface-variant text-sm mt-2">Discover experts tailored to your goals.</p>
         </header>
 
-        <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-            <div class="flex flex-col md:flex-row gap-3 md:items-end mb-5">
-                <div class="flex-1">
+        <div class="find-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+            <div class="find-trainers-controls grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 items-end mb-6">
+                <div>
                     <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Search</label>
-                    <input id="trainer-search-input" type="text" placeholder="Name, specialty, goals..." class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    <input id="trainer-search-input" type="text" placeholder="Name, specialty, goals..." class="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
                 </div>
-                <div class="flex-1">
+                <div>
                     <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Location</label>
-                    <input id="trainer-location-input" type="text" placeholder="City or Online" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
+                    <input id="trainer-location-input" type="text" placeholder="City or Online" class="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
                 </div>
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-outline-variant/40 bg-white text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                        <input id="trainer-black-only" type="checkbox" class="w-4 h-4 rounded border-outline-variant" />
-                        Show only OnliFit Black
+
+                <div>
+                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">OnliFit Black</label>
+                    <label class="w-full h-12 px-4 rounded-xl border border-outline-variant/40 bg-surface-container-low flex items-center justify-between cursor-pointer select-none transition-colors focus-within:ring-1 focus-within:ring-primary">
+                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Show only</span>
+                        <span class="relative inline-flex items-center">
+                            <input id="trainer-black-only" type="checkbox" class="sr-only peer" />
+                            <span class="w-11 h-6 rounded-full bg-outline-variant/40 peer-checked:bg-primary/80 transition-colors"></span>
+                            <span class="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
+                        </span>
                     </label>
-                    <button id="trainer-search-btn" type="button" class="px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2 opacity-0 select-none">Search</label>
+                    <button id="trainer-search-btn" type="button" class="w-full h-12 inline-flex items-center justify-center px-6 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
                         Search
                     </button>
                 </div>
             </div>
 
-            <div id="find-trainers-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div id="find-trainers-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                 <!-- Populated by JS -->
             </div>
 
@@ -545,13 +553,13 @@
     </section>
 
     <section id="view-saved-trainers" class="route-view hidden anim-slide-up">
-        <header class="mb-8">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Saved Trainers</h2>
             <p class="text-on-surface-variant text-sm mt-1">Your shortlisted trainers, all in one place.</p>
         </header>
 
-        <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-            <div id="saved-trainers-results" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="saved-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
+            <div id="saved-trainers-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                 <!-- Populated by JS -->
             </div>
 
@@ -565,7 +573,7 @@
     </section>
 
     <section id="view-settings" class="route-view hidden anim-slide-up">
-        <header class="mb-8">
+        <header class="dash-header mb-6 mt-2">
             <button type="button" onclick="router.navigate('overview')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
                 <span class="material-symbols-outlined text-[18px]">arrow_back</span>
                 Back to Dashboard
@@ -574,7 +582,7 @@
             <p class="text-on-surface-variant text-sm mt-1">Update your profile details.</p>
         </header>
 
-        <div class="max-w-2xl space-y-6">
+        <div class="max-w-2xl dash-settings-shell space-y-6">
             <!-- Profile -->
             <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
                 <div class="flex items-center justify-between mb-4">
@@ -603,7 +611,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex items-center gap-3">
+                <div class="mt-6 flex flex-wrap items-center gap-3">
                     <button id="client-settings-save" type="button" onclick="saveClientSettings()" class="px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
                         Save Changes
                     </button>
@@ -631,7 +639,7 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex items-center gap-3">
+                <div class="mt-6 flex flex-wrap items-center gap-3">
                     <button id="client-password-save" type="button" onclick="changeClientPassword()" class="px-6 py-3 bg-secondary text-on-secondary rounded-xl text-sm font-bold hover:opacity-90 transition-all">
                         Update Password
                     </button>
@@ -697,7 +705,7 @@
 </div>
 
 <!-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-<footer class="md:ml-64 bg-surface-container-low w-full py-8 px-6 md:px-8">
+<footer class="app-main--with-sidebar bg-surface-container-low w-full py-8 px-6 md:px-8">
     <div class="flex flex-col sm:flex-row justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-8 gap-4">
         <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">© 2024 Onlifit. All rights reserved.</p>
         <div class="flex gap-6">
@@ -785,12 +793,20 @@
     function openSidebar() {
         document.getElementById('sidebar-panel').classList.add('open');
         document.getElementById('sidebar-overlay').classList.add('open');
+        document.body.classList.add('overflow-hidden');
     }
     function closeSidebar() {
         document.getElementById('sidebar-panel').classList.remove('open');
         document.getElementById('sidebar-overlay').classList.remove('open');
+        document.body.classList.remove('overflow-hidden');
     }
     document.getElementById('sidebar-toggle').addEventListener('click', openSidebar);
+
+    document.querySelectorAll('#sidebar-panel .sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 768) closeSidebar();
+        });
+    });
 
     // â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let currentFilter = 'all';
@@ -992,7 +1008,7 @@
             return `
             <div class="bg-white rounded-xl p-4 border border-outline-variant/20 flex items-center gap-4 opacity-80 hover:opacity-100 transition-opacity flex-wrap sm:flex-nowrap">
                 <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-lg flex-shrink-0">
-                    ${trainer?.avatar_url || 'U'}
+                    ${renderAvatarInner(trainer || {})}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-on-surface">${trainer?.name || 'Trainer'}</p>
@@ -1003,7 +1019,7 @@
                         <span class="text-sm font-bold text-on-surface-variant">${formatPrice(b.price || 0)}</span>
                         <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider status-completed hidden sm:inline-block">Completed</span>
                     </div>
-                    <button onclick="openReviewModal('${b.trainer_id}', '${trainer?.name.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-primary/10 text-primary font-bold text-xs rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 whitespace-nowrap">
+                    <button onclick='openReviewModal(${JSON.stringify(b.trainer_id)}, ${JSON.stringify(trainer?.name || "Trainer")})' class="px-3 py-1.5 bg-primary/10 text-primary font-bold text-xs rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 whitespace-nowrap">
                         <span class="material-symbols-outlined text-[14px]">star</span> Rate Trainer
                     </button>
                 </div>
@@ -1036,6 +1052,13 @@
             if (!trainer) return '';
             const meta = getTrainerMeta(trainer);
             const subtitle = trainer.specialty ? escapeHtml(trainer.specialty) : (Array.isArray(trainer.tags) && trainer.tags[0] ? escapeHtml(trainer.tags[0]) : '');
+
+            const rating = Number(trainer?.rating);
+            const count = Number(trainer?.review_count);
+            const ratingHtml = (Number.isFinite(rating) && Number.isFinite(count) && count > 0)
+                ? `<span class="inline-flex items-center gap-1 text-xs font-black text-on-surface"><span class="material-symbols-outlined text-[16px] text-yellow-400">star</span>${escapeHtml(Number.isInteger(rating) ? String(rating) : rating.toFixed(1))}</span>`
+                : `<span class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">New</span>`;
+
             return `
             <a href="trainer-profile.html?id=${tid}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-container-low transition-all group">
                 <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -1045,8 +1068,8 @@
                     <p class="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors truncate">${escapeHtml(trainer.name || 'Trainer')}</p>
                     ${subtitle ? `<p class="text-[10px] text-on-surface-variant truncate">${subtitle}</p>` : (meta ? `<p class="text-[10px] text-on-surface-variant truncate">${escapeHtml(meta)}</p>` : '')}
                 </div>
-                <span class="flex items-center gap-1 text-xs font-bold text-on-surface">
-                    ${renderRatingInline(trainer)}
+                <span class="flex items-center justify-end flex-shrink-0">
+                    ${ratingHtml}
                 </span>
             </a>`;
         }));
@@ -1072,9 +1095,9 @@
     function setFilter(filter) {
         currentFilter = filter;
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.className = 'filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-all';
+            btn.className = 'filter-btn px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant transition-all';
         });
-        document.getElementById('filter-' + filter).className = 'filter-btn px-3 py-1.5 text-xs font-bold uppercase tracking-widest rounded-full bg-secondary text-on-secondary transition-all';
+        document.getElementById('filter-' + filter).className = 'filter-btn px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary transition-all';
         renderBookings();
     }
 
@@ -1215,31 +1238,6 @@
 <script>
 /* --- Client dashboard SPA router + in-page views (messages/find/saved/settings) --- */
 
-// Saved Trainers (localStorage)
-const SAVED_TRAINERS_KEY = 'onlifit_saved_trainers';
-function getSavedTrainerIds() {
-    try {
-        return JSON.parse(localStorage.getItem(SAVED_TRAINERS_KEY) || '[]') || [];
-    } catch {
-        return [];
-    }
-}
-function setSavedTrainerIds(ids) {
-    try {
-        localStorage.setItem(SAVED_TRAINERS_KEY, JSON.stringify(Array.from(new Set(ids))));
-    } catch {}
-}
-function isTrainerSaved(id) {
-    return getSavedTrainerIds().includes(id);
-}
-function toggleSavedTrainer(id) {
-    const ids = getSavedTrainerIds();
-    const idx = ids.indexOf(id);
-    if (idx >= 0) ids.splice(idx, 1);
-    else ids.unshift(id);
-    setSavedTrainerIds(ids);
-    return ids.includes(id);
-}
 function escapeHtml(str) {
     return String(str ?? '')
         .replace(/&/g, '&amp;')
@@ -1284,15 +1282,18 @@ function renderRatingInline(t) {
     if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
         const ratingText = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
         return `
-            <div class="mb-3">
-                <div class="text-sm font-bold text-on-surface leading-none">${escapeHtml(ratingText)}</div>
-                <div class="text-xs text-on-surface-variant font-medium mt-1">(${count} review${count === 1 ? '' : 's'})</div>
+            <div class="mt-4 flex items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface text-xs font-bold">
+                    ${escapeHtml(ratingText)}
+                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                </span>
+                <span class="text-xs text-on-surface-variant font-medium">(${count} review${count === 1 ? '' : 's'})</span>
             </div>
         `;
     }
 
     return `
-        <div class="mb-3">
+        <div class="mt-4">
             <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold uppercase tracking-wider">
                 New
             </span>
@@ -1336,57 +1337,24 @@ function openTrainerProfile(trainerId, evt) {
 }
 
 function trainerCardHTML(tRaw) {
-    const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : tRaw;
-    const id = t.id;
-    const name = escapeHtml(t.name || 'Trainer');
-    const meta = getTrainerMeta(t);
-    const saved = isTrainerSaved(id);
-    const description = (t.bio || t.specialty || (Array.isArray(t.tags) && t.tags[0]) || '').trim();
-
-    return `
-        <div onclick="openTrainerProfile(${JSON.stringify(id)}, event)" class="relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm cursor-pointer hover:shadow-md transition-shadow">
-            <div class="relative h-56 bg-gradient-to-br from-primary/10 to-primary-container/20 flex items-center justify-center overflow-hidden">
-                ${renderAvatarInner(t)}
-                <button type="button" class="absolute top-3 right-3 px-3 py-2 rounded-xl text-xs font-bold ${saved ? 'bg-primary text-white' : 'bg-white/90 text-on-surface-variant hover:text-primary'} transition-all shadow-sm"
-                    onclick="handleToggleSavedTrainer(${JSON.stringify(id)}); event.stopPropagation();">
-                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' ${saved ? 1 : 0};">favorite</span>
-                </button>
-            </div>
-
-            <div class="p-5 flex flex-col">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <p class="font-headline font-bold text-on-surface text-xl leading-tight">${name}</p>
-                        ${meta ? `<p class="text-sm text-on-surface-variant mt-1">${escapeHtml(meta)}</p>` : ''}
-                    </div>
-                </div>
-
-                ${renderRatingInline(t)}
-                ${renderTrainerBadgeLine(t)}
-                ${description ? `<p class="text-sm text-on-surface-variant mb-4 line-clamp-2 flex-grow">${escapeHtml(description)}</p>` : ''}
-
-                <div class="mt-auto pt-3">
-                    <div class="flex items-baseline gap-1">${renderTrainerPriceLine(t)}</div>
-                    ${renderTrainerOfferLine()}
-                    <div class="mt-4 flex gap-2 justify-end">
-                        <a href="client-dashboard.html#messages?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
-                        <a href="trainer-profile.html?id=${encodeURIComponent(id)}" class="px-4 py-2 bg-surface-container-low text-on-surface-variant rounded-xl text-xs font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
+    if (typeof window.renderPremiumTrainerCardHTML === 'function') {
+        return window.renderPremiumTrainerCardHTML(tRaw, { context: 'dashboard' });
+    }
+    return '';
 }
 
-function handleToggleSavedTrainer(trainerId) {
-    toggleSavedTrainer(trainerId);
-    // Refresh active views
-    if (window.location.pathname.startsWith('/client/saved-trainers')) {
-        onSavedTrainersRouteActivated();
-    }
-    if (window.location.pathname.startsWith('/client/find-trainers')) {
-        renderFindTrainers();
-    }
+let savedTrainerChangeListenerAttached = false;
+function ensureSavedTrainerChangeListener() {
+    if (savedTrainerChangeListenerAttached) return;
+    window.addEventListener('onlifit:saved-trainers-changed', () => {
+        if (window.location.pathname.startsWith('/client/saved-trainers')) {
+            onSavedTrainersRouteActivated();
+        }
+        if (window.location.pathname.startsWith('/client/find-trainers')) {
+            renderFindTrainers();
+        }
+    });
+    savedTrainerChangeListenerAttached = true;
 }
 
 let findTrainersInitialized = false;
@@ -1431,6 +1399,7 @@ async function onFindTrainersRouteActivated() {
         if (loc) loc.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFindTrainers(); });
         if (black) black.addEventListener('change', () => renderFindTrainers());
 
+        ensureSavedTrainerChangeListener();
         findTrainersInitialized = true;
     }
     await renderFindTrainers();

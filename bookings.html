@@ -79,6 +79,21 @@
         justify-content: center;
         padding: 0 6px;
     }
+
+    @keyframes popupScale {
+        from { transform: translateY(16px) scale(0.96); opacity: 0; }
+        to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .popup-scale {
+        animation: popupScale 0.22s cubic-bezier(.22,1,.36,1);
+    }
+
+    @media (max-width: 767px) {
+        body { overflow-x: hidden; }
+        .trainer-nav-inner { gap: 0.75rem; }
+        #nav-auth { gap: 0.5rem; }
+    }
 </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -90,13 +105,16 @@
   gtag('config', 'G-4W2306MJ1Y');
 </script>
 </head>
-<body class="bg-surface-container-low font-body text-on-surface">
+<body class="app-shell bg-surface-container-low font-body text-on-surface">
 <!-- TopNavBar (Fixed) -->
-<nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
-    <div class="flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
-        <div class="flex items-center gap-8">
-            <a href="onlifit.html" class="text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant">Onlifit</a>
-            <div class="md:flex gap-6 items-center">
+<nav class="app-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="trainer-nav-inner flex items-center justify-between px-4 md:px-8 py-3 md:py-4 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-3 md:gap-8 min-w-0">
+            <button id="trainer-sidebar-toggle" type="button" class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-white/70 hover:text-primary transition-colors" aria-label="Open menu">
+                <span class="material-symbols-outlined text-[28px]">menu</span>
+            </button>
+            <a href="onlifit.html" class="text-2xl md:text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant truncate">Onlifit</a>
+            <div class="hidden md:flex gap-6 items-center">
                 <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
             </div>
@@ -105,10 +123,12 @@
     </div>
 </nav>
 
-<div class="flex min-h-screen pt-20">
+<div id="trainer-sidebar-overlay" class="trainer-sidebar-overlay app-sidebar-overlay fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onclick="closeTrainerSidebar()"></div>
+
+<div class="flex min-h-screen">
 <!-- SideNavBar -->
-<aside class="w-full md:w-64 relative md:fixed left-0 top-0 pt-2 md:pt-20 bg-surface-container-lowest border-b md:border-r md:border-b-0 border-outline-variant/30 flex flex-row md:flex-col gap-2 py-4 md:py-6 font-headline text-sm overflow-x-auto md:overflow-visible">
-<div class="hidden md:flex px-6 mb-8 items-center gap-3">
+<aside id="trainer-sidebar-panel" class="trainer-sidebar-panel app-sidebar-panel fixed left-0 top-0 z-40 h-screen w-72 md:w-64 pt-20 bg-surface-container-lowest border-r border-b md:border-b-0 border-outline-variant/30 flex flex-col gap-2 py-6 font-headline text-sm overflow-y-auto md:overflow-visible shadow-2xl md:shadow-none">
+<div class="px-6 mb-8 flex items-center gap-3">
 <div id="trainer-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-md">
     T
 </div>
@@ -117,7 +137,7 @@
 <p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-black">Certified Pro</p>
 </div>
 </div>
-<nav class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0">
+<nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0">
 <a class="flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="/trainer/dashboard">
 <span class="material-symbols-outlined">dashboard</span>
 <span>Dashboard</span>
@@ -143,13 +163,13 @@
 </aside>
 
 <!-- Main Content Canvas -->
-<main class="flex flex-row md:flex-col px-4 md:px-0 gap-2 md:gap-0 md:ml-64 p-8 bg-surface-container-low relative">
+<main class="app-main app-main--with-sidebar flex-1 bg-surface-container-low relative">
     <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <span class="material-symbols-outlined text-primary text-4xl animate-spin">autorenew</span>
     </div>
 
     <section id="view-dashboard" class="route-view active-view anim-slide-up">
-        <header class="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+        <header class="dash-header mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
             <div>
                 <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
                 <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back! Manage your sessions.</p>
@@ -159,26 +179,26 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+        <div class="trainer-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
                 <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-upcoming">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+            <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
                 <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-completed">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Sessions Delivered (7d)</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+            <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
                 <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-unread-messages">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Unread Messages</p>
             </div>
-            <div id="profile-visits-card" class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+            <div id="profile-visits-card" class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
                 <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-profile-visits">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Profile Visits (7d)</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="trainer-dashboard-panels dash-panel-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
                 <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
                     <h3 class="font-headline text-lg font-black">Next Sessions</h3>
@@ -218,14 +238,14 @@
     </section>
 
     <section id="view-bookings" class="route-view hidden anim-slide-up">
-        <header class="mb-6 mt-2">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Bookings</h2>
             <p class="text-on-surface-variant text-sm mt-1">Real-time booking requests and scheduled sessions.</p>
         </header>
 
         <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
-            <div class="p-4 md:p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="flex flex-wrap gap-2" id="booking-filters">
+            <div class="trainer-bookings-controls dash-bookings-controls p-4 md:p-6 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="trainer-booking-filters dash-booking-filters flex flex-wrap gap-2" id="booking-filters">
                     <button type="button" data-filter="all" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary">All</button>
                     <button type="button" data-filter="upcoming" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Upcoming</button>
                     <button type="button" data-filter="past" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Past</button>
@@ -233,15 +253,15 @@
                 </div>
                 <div class="w-full md:w-80 relative">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="dash-bookings-search w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                 </div>
             </div>
 
-            <div id="trainer-bookings-summary" class="px-6 py-3 text-xs font-semibold text-on-surface-variant border-b border-outline-variant/20"></div>
+            <div id="trainer-bookings-summary" class="dash-bookings-summary px-6 py-3 text-xs font-semibold text-on-surface-variant border-b border-outline-variant/20"></div>
             <div id="trainer-bookings-list" class="divide-y divide-outline-variant/20"></div>
         </div>
 
-        <div id="trainer-bookings-empty" class="hidden bg-white rounded-2xl p-10 border border-dashed border-outline-variant/40 text-center mt-6">
+        <div id="trainer-bookings-empty" class="dash-bookings-empty hidden bg-white rounded-2xl p-10 border border-dashed border-outline-variant/40 text-center mt-6">
             <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">event</span>
             <h3 class="text-xl font-bold font-headline">No bookings found</h3>
             <p class="text-sm text-on-surface-variant mt-2">When clients book you, they'll appear here.</p>
@@ -249,24 +269,24 @@
     </section>
 
     <section id="view-messages" class="route-view hidden anim-slide-up">
-        <header class="mb-6 mt-2">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
             <p class="text-on-surface-variant text-sm mt-1">Chat with your clients without leaving the dashboard.</p>
         </header>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden min-h-[70vh] flex">
-            <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
+        <div class="trainer-messages-shell dash-messages-shell bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden min-h-[70vh] flex">
+            <aside id="contacts-sidebar" class="dash-contacts-sidebar w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
                 <div class="p-6 border-b border-outline-variant/50">
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="dash-contacts-search w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                     </div>
                 </div>
                 <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30"></div>
             </aside>
 
             <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
-                <div id="chat-header" class="px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
+                <div id="chat-header" class="dash-chat-header px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
                     <div class="flex items-center gap-3">
                         <button onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
                             <span class="material-symbols-outlined text-on-surface">arrow_back</span>
@@ -285,7 +305,7 @@
                     </div>
                 </div>
 
-                <div id="chat-history" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
+                <div id="chat-history" class="dash-chat-history flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
                     <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
                         <span class="material-symbols-outlined text-7xl text-on-surface-variant mb-6 block">forum</span>
                         <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
@@ -293,7 +313,7 @@
                     </div>
                 </div>
 
-                <div id="message-input-area" class="p-6 border-t border-outline-variant/50 bg-white hidden">
+                <div id="message-input-area" class="dash-chat-input p-6 border-t border-outline-variant/50 bg-white hidden">
                     <div class="mb-4 rounded-xl border border-outline-variant/40 bg-surface-container-low p-3">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
@@ -389,25 +409,25 @@
     </section>
 
     <section id="view-earnings" class="route-view hidden anim-slide-up">
-        <header class="mb-6 mt-2">
+        <header class="dash-header mb-6 mt-2">
             <h2 class="text-3xl font-black font-headline text-on-surface">Insights</h2>
             <p class="text-on-surface-variant text-sm mt-1">Actionable stats based on your real bookings.</p>
         </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+        <div class="trainer-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+            <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
                 <h3 class="text-2xl font-black font-headline" id="insight-value-7d">—</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (7d)</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
                 <h3 class="text-2xl font-black font-headline" id="insight-value-30d">—</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Booking Value (30d)</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
                 <h3 class="text-2xl font-black font-headline" id="insight-clients-30d">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Unique Clients (30d)</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
+                <div class="trainer-stat-card dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high">
                 <h3 class="text-2xl font-black font-headline" id="insight-upcoming">0</h3>
                 <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-2">Upcoming Sessions</p>
             </div>
@@ -424,25 +444,25 @@
 <section id="view-settings" class="route-view hidden anim-slide-up">
     
     <!-- Header -->
-    <div class="mb-8">
+    <header class="dash-header mb-6 mt-2">
         <button onclick="router.navigate('dashboard')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
-            <span class="material-symbols-outlined text-lg">arrow_back</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
             Back to Dashboard
         </button>
-        <h1 class="font-headline text-4xl font-black mb-2">Account Settings</h1>
-        <p class="text-on-surface-variant">Manage your profile and account preferences</p>
-    </div>
+        <h2 class="text-3xl font-black font-headline text-on-surface">Account Settings</h2>
+        <p class="text-on-surface-variant text-sm mt-1">Manage your profile and account preferences</p>
+    </header>
 
     <!-- Success/Error Messages -->
     <div id="alert-container" class="mb-6"></div>
 
     <!-- Settings Form -->
-    <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+    <div class="trainer-settings-shell dash-settings-shell bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
         
         <!-- Profile Picture Section -->
-        <div class="p-8 border-b border-outline-variant/30">
+        <div class="p-5 md:p-8 border-b border-outline-variant/30">
             <h2 class="font-headline text-xl font-bold mb-6">Profile Picture</h2>
-            <div class="flex items-center gap-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div class="relative">
                     <img id="avatar-preview" src="" alt="Profile" class="avatar-preview bg-primary-container" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div id="avatar-placeholder" class="avatar-preview bg-primary-container flex items-center justify-center text-4xl font-bold text-primary" style="display:none;">
@@ -451,7 +471,7 @@
                 </div>
                 <div class="flex-1">
                     <input type="file" id="avatar-input" accept="image/*" class="hidden">
-                    <button onclick="document.getElementById('avatar-input').click()" class="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
+                    <button onclick="document.getElementById('avatar-input').click()" class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
                         Upload New Photo
                     </button>
                     <p class="text-xs text-on-surface-variant">JPG, PNG or GIF. Max size 2MB.</p>
@@ -460,7 +480,7 @@
         </div>
 
         <!-- Personal Information -->
-        <div class="p-8 border-b border-outline-variant/30">
+        <div class="p-5 md:p-8 border-b border-outline-variant/30">
             <h2 class="font-headline text-xl font-bold mb-6">Personal Information</h2>
             <form id="profile-form" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
@@ -518,7 +538,7 @@
         </div>
 
         <!-- Security Section -->
-        <div class="p-8 border-b border-outline-variant/30">
+        <div class="p-5 md:p-8 border-b border-outline-variant/30">
             <h2 class="font-headline text-xl font-bold mb-6">Security</h2>
             <form id="password-form" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
@@ -531,14 +551,14 @@
                         <input type="password" id="confirm-password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                 </div>
-                <button type="button" onclick="changePassword()" class="px-6 py-2 bg-secondary text-white rounded-lg font-semibold hover:bg-primary transition-all">
+                <button type="button" onclick="changePassword()" class="w-full sm:w-auto px-6 py-2 bg-secondary text-white rounded-lg font-semibold hover:bg-primary transition-all">
                     Update Password
                 </button>
             </form>
         </div>
 
         <!-- Trainer-Specific Settings (Hidden for clients) -->
-        <div id="trainer-settings" class="p-8 border-b border-outline-variant/30 hidden">
+        <div id="trainer-settings" class="p-5 md:p-8 border-b border-outline-variant/30 hidden">
             <h2 class="font-headline text-xl font-bold mb-6">Professional Details</h2>
             <form id="trainer-form" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
@@ -561,48 +581,48 @@
                     <label class="block text-sm font-semibold mb-4">Pricing &amp; Packages</label>
                     <div class="space-y-4">
                         <!-- Hourly Rate -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Per Session / Hourly Rate</label>
                                 <input type="text" id="basic-label" placeholder="e.g., 1 Hour Session" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
-                            <div class="w-32">
+                            <div class="w-full sm:w-32">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
                                 <input type="number" id="basic-price" placeholder="999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
 
                         <!-- Weekly Package -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Weekly Package</label>
                                 <input type="text" id="standard-label" placeholder="e.g., 1 Week (5 Sessions)" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
-                            <div class="w-32">
+                            <div class="w-full sm:w-32">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
                                 <input type="number" id="standard-price" placeholder="3499" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
 
                         <!-- Monthly Package -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Monthly Package</label>
                                 <input type="text" id="premium-label" placeholder="e.g., 1 Month Unlimited" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
-                            <div class="w-32">
+                            <div class="w-full sm:w-32">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
                                 <input type="number" id="premium-price" placeholder="9999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
                         </div>
 
                         <!-- Transformation / Long-term Package -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Transformation / Long-term Program</label>
                                 <input type="text" id="transformation-label" placeholder="e.g., 3-Month Transformation" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
-                            <div class="w-32">
+                            <div class="w-full sm:w-32">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Price (₹)</label>
                                 <input type="number" id="transformation-price" placeholder="25999" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                             </div>
@@ -629,10 +649,10 @@
         </div>
 
         <!-- Save Button -->
-        <div class="p-8 bg-surface-container-low">
-            <div class="flex items-center justify-between">
+        <div class="p-5 md:p-8 bg-surface-container-low">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <p class="text-sm text-on-surface-variant">Changes will be saved to your profile</p>
-                <button onclick="saveSettings()" id="save-btn" class="px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all flex items-center gap-2">
+                <button onclick="saveSettings()" id="save-btn" class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all flex items-center gap-2">
                     <span id="save-text">Save Changes</span>
                     <span id="save-spinner" class="spinner hidden"></span>
                 </button>
@@ -642,6 +662,83 @@
 
 </section>
 </main>
+</div>
+
+<div id="lead-limit-modal" class="fixed inset-0 z-[120] hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeLeadLimitPopup()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="popup-scale w-full max-w-md max-h-[calc(100vh-32px)] overflow-y-auto rounded-[28px] bg-white shadow-2xl">
+            <div class="bg-gradient-to-br from-primary via-secondary to-primary p-5 text-white">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[28px]">lock</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-black uppercase tracking-[0.32em] text-white/70 mb-2">Upgrade Required</p>
+                        <h3 class="text-[20px] font-black leading-[1] max-w-[12ch]">Free plan lead limit reached</h3>
+                        <p class="mt-2 text-[13px] text-white/85 leading-[1.5] max-w-[34ch]">You’ve already received your free lead. New client clicks can still be seen, but replying to new messages is locked until you upgrade.</p>
+                    </div>
+                </div>
+                <div class="mt-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-white/90">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    Profile still visible in search
+                </div>
+            </div>
+
+            <div class="p-5 space-y-3.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3.5">
+                        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-on-surface-variant mb-2">Free</p>
+                        <p class="text-sm font-bold text-on-surface">1 lead only</p>
+                        <p class="text-xs text-on-surface-variant mt-1 leading-[1.35]">Read clicks, but no more replies.</p>
+                    </div>
+                    <div class="rounded-2xl border border-primary/20 bg-primary/5 p-3.5">
+                        <p class="text-[10px] font-black uppercase tracking-[0.24em] text-primary mb-2">Pro / Elite</p>
+                        <p class="text-sm font-bold text-on-surface">Unlimited replies</p>
+                        <p class="text-xs text-on-surface-variant mt-1 leading-[1.35]">Higher ranking and more leads.</p>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl border border-outline-variant/40 bg-surface-container-low p-3.5">
+                    <p class="text-[10px] font-black uppercase tracking-[0.24em] text-on-surface-variant mb-2.5">Still active</p>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-3 rounded-xl bg-white px-3 py-2 border border-outline-variant/30">
+                            <div class="mt-0.5 w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface leading-tight">Profile stays visible</p>
+                                <p class="text-xs text-on-surface-variant mt-0.5 leading-[1.35]">Clients can still find you in search.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 rounded-xl bg-white px-3 py-2 border border-outline-variant/30">
+                            <div class="mt-0.5 w-8 h-8 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px]">ads_click</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface leading-tight">Clicks are still tracked</p>
+                                <p class="text-xs text-on-surface-variant mt-0.5 leading-[1.35]">You can review visits and interest signals.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 rounded-xl bg-white px-3 py-2 border border-outline-variant/30">
+                            <div class="mt-0.5 w-8 h-8 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-[18px]">do_not_disturb_on</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-on-surface leading-tight">Replies are paused</p>
+                                <p class="text-xs text-on-surface-variant mt-0.5 leading-[1.35]">New lead messages stay locked until upgrade.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <a href="pricing.html" class="w-full rounded-2xl bg-primary px-4 py-3 text-center font-bold text-on-primary shadow-lg shadow-primary/20 hover:opacity-90 transition-all">Upgrade now</a>
+                    <button type="button" onclick="closeLeadLimitPopup()" class="w-full rounded-2xl border border-outline-variant bg-white px-4 py-3 font-bold text-on-surface hover:bg-surface-container transition-all">Later</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -686,8 +783,102 @@
     let typingSub = null;
     let messagesRealtimeChannel = null;
     let trainerCalcResult = null;
+    let leadLimitPopupShown = false;
 
     let bootPromise = null;
+
+    function getTrainerSubscriptionTier() {
+        const raw = String(
+            trainerUser?.subscription_tier ||
+            trainerUser?.plan_tier ||
+            trainerUser?.membership_tier ||
+            trainerUser?.subscription_status ||
+            trainerUser?.plan_status ||
+            ''
+        ).toLowerCase().trim();
+
+        if (raw.includes('elite')) return 'elite';
+        if (raw.includes('pro')) return 'pro';
+        if (raw.includes('free')) return 'free';
+        if (trainerUser?.hasBlackStatus) return 'elite-black';
+
+        return 'free';
+    }
+
+    function getLeadCapForTier(tier) {
+        if (tier === 'free') return 1;
+        return Number.POSITIVE_INFINITY;
+    }
+
+    async function getLeadSignalCount30d() {
+        if (!trainerUser) return 0;
+
+        const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+        try {
+            const { count, error } = await supabaseClient
+                .from('profile_visits')
+                .select('*', { count: 'exact', head: true })
+                .eq('trainer_id', trainerUser.id)
+                .gte('visited_at', since);
+
+            if (error) throw error;
+            return Number(count ?? 0);
+        } catch {
+            return 0;
+        }
+    }
+
+    function openLeadLimitPopup() {
+        if (leadLimitPopupShown) return;
+        leadLimitPopupShown = true;
+        document.getElementById('lead-limit-modal')?.classList.remove('hidden');
+    }
+
+    function closeLeadLimitPopup() {
+        document.getElementById('lead-limit-modal')?.classList.add('hidden');
+    }
+
+    function openTrainerSidebar() {
+        document.getElementById('trainer-sidebar-panel')?.classList.add('open');
+        document.getElementById('trainer-sidebar-overlay')?.classList.add('open');
+        document.body.classList.add('overflow-hidden');
+    }
+
+    function closeTrainerSidebar() {
+        document.getElementById('trainer-sidebar-panel')?.classList.remove('open');
+        document.getElementById('trainer-sidebar-overlay')?.classList.remove('open');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function bindTrainerSidebar() {
+        const toggle = document.getElementById('trainer-sidebar-toggle');
+        if (toggle && !toggle.dataset.bound) {
+            toggle.dataset.bound = '1';
+            toggle.addEventListener('click', openTrainerSidebar);
+        }
+
+        document.querySelectorAll('#trainer-sidebar-panel a').forEach(link => {
+            if (link.dataset.closeBound) return;
+            link.dataset.closeBound = '1';
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) closeTrainerSidebar();
+            });
+        });
+    }
+
+    async function maybeShowLeadLimitPopup() {
+        const tier = getTrainerSubscriptionTier();
+        if (tier !== 'free') return false;
+
+        const leadCount = await getLeadSignalCount30d();
+        if (leadCount >= getLeadCapForTier(tier)) {
+            openLeadLimitPopup();
+            return true;
+        }
+
+        return false;
+    }
 
     function escapeHtml(str) {
         return String(str ?? '')
@@ -1458,6 +1649,10 @@
         const text = String(input.value || '').trim();
         if (!text) return;
 
+        if (await maybeShowLeadLimitPopup()) {
+            return;
+        }
+
         input.value = '';
         await sendMessage(trainerUser.id, activeChatContactId, text);
         await renderChatHistory();
@@ -1558,6 +1753,7 @@
         await updateProfileVisits7d();
         await updatePerformanceStats(bookings);
         await renderNextSessions(bookings);
+        await maybeShowLeadLimitPopup();
     }
 
     async function renderRoute(route) {
@@ -1778,7 +1974,10 @@ class DashboardRouter {
 const router = new DashboardRouter();
 
 // Boot data + listeners even if user never clicks the sidebar.
-window.addEventListener('load', () => { void bootTrainerDashboard(); });
+window.addEventListener('load', () => {
+    void bootTrainerDashboard();
+    bindTrainerSidebar();
+});
 
     let settingsUser = null;
 

@@ -378,6 +378,20 @@
                 <button id="email-submit-btn" class="primary-btn" type="submit">Sign in with Email</button>
             </form>
 
+            <form id="recovery-form" class="auth-form hidden">
+                <div>
+                    <label for="recovery-password" style="display: none;">New password</label>
+                    <input id="recovery-password" class="auth-input" type="password" autocomplete="new-password" required minlength="6" placeholder="New password" />
+                </div>
+
+                <div>
+                    <label for="recovery-confirm" style="display: none;">Confirm new password</label>
+                    <input id="recovery-confirm" class="auth-input" type="password" autocomplete="new-password" required minlength="6" placeholder="Confirm new password" />
+                </div>
+
+                <button id="recovery-submit-btn" class="primary-btn" type="submit">Update password</button>
+            </form>
+
             <div class="auth-forgot-row">
                 <button id="forgot-password-link" type="button" class="auth-link" style="font-size: 0.8rem;">Forgot password?</button>
             </div>

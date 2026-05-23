@@ -97,7 +97,7 @@
         <!-- Profile Picture Section -->
         <div class="p-8 border-b border-outline-variant/30">
             <h2 class="font-headline text-xl font-bold mb-6">Profile Picture</h2>
-            <div class="flex items-center gap-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div class="relative">
                     <img id="avatar-preview" src="" alt="Profile" class="avatar-preview bg-primary-container" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div id="avatar-placeholder" class="avatar-preview bg-primary-container flex items-center justify-center text-4xl font-bold text-primary" style="display:none;">
@@ -106,7 +106,7 @@
                 </div>
                 <div class="flex-1">
                     <input type="file" id="avatar-input" accept="image/*" class="hidden">
-                    <button onclick="document.getElementById('avatar-input').click()" class="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
+                    <button onclick="document.getElementById('avatar-input').click()" class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
                         Upload New Photo
                     </button>
                     <p class="text-xs text-on-surface-variant">JPG, PNG or GIF. Max size 2MB.</p>

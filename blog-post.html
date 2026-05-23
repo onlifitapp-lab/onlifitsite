@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=block" rel="stylesheet" />
   <link href="styles.css" rel="stylesheet" />
   <link href="mobile-optimizations.css" rel="stylesheet" />
   <link href="blog.css" rel="stylesheet" />
@@ -43,6 +44,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-client.js"></script>
+  <script src="auth.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const slugOrId = params.get('slug') || '';
@@ -121,19 +123,9 @@
     }
 
     function buildTrainerCards(trainers) {
-      return (trainers || []).map((trainer) => {
-        const onlifitBlack = trainer.onlifitBlack === 'Yes';
-        return `
-        <article class="trainer-card">
-          <div>
-            <p class="trainer-name">${escapeHtml(trainer.name)}</p>
-            <p class="trainer-meta">Rating ${escapeHtml(trainer.rating)} | ${escapeHtml(trainer.price)}</p>
-            ${onlifitBlack ? '<p class="trainer-meta" style="font-weight:700;color:#111;">❤️ OnliFit Black</p>' : ''}
-          </div>
-          <a class="view-profile-btn" href="${escapeHtml(trainer.profileUrl || 'trainers.html')}">View Profile</a>
-        </article>
-      `;
-      }).join('');
+      const list = Array.isArray(trainers) ? trainers : [];
+      if (typeof window.renderPremiumTrainerCardHTML !== 'function') return '';
+      return list.map((tRaw) => window.renderPremiumTrainerCardHTML(tRaw, { context: 'public' })).join('');
     }
 
     function estimateReadTime(content) {
@@ -169,10 +161,29 @@
       try {
         let trainers = [];
 
+        if (typeof getTrainers === 'function') {
+          const all = await getTrainers();
+          trainers = Array.isArray(all) ? all : [];
+
+          const cat = String(category || '').trim().toLowerCase();
+          if (cat) {
+            const filtered = trainers.filter((t) => {
+              const specialty = String(t?.specialty || '').toLowerCase();
+              const tags = Array.isArray(t?.tags) ? t.tags.join(' ').toLowerCase() : String(t?.tags || '').toLowerCase();
+              return specialty.includes(cat) || tags.includes(cat);
+            });
+            if (filtered.length) trainers = filtered;
+          }
+
+          trainers.sort((a, b) => (Number(b?.rating) || 0) - (Number(a?.rating) || 0));
+          return trainers.slice(0, 3);
+        }
+
+        // Fallback direct DB fetch (only if auth.js isn't available)
         if (category) {
           const { data: categoryTrainers } = await supabase
             .from('profiles')
-            .select('id, name, rating, plans, has_black_status, role, specialty')
+            .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, session_mode, specialty, bio, plans, tags, has_black_status')
             .eq('role', 'trainer')
             .ilike('specialty', `%${category}%`)
             .order('rating', { ascending: false })
@@ -183,24 +194,14 @@
         if (!trainers.length) {
           const { data: fallbackTrainers } = await supabase
             .from('profiles')
-            .select('id, name, rating, plans, has_black_status, role')
+            .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, session_mode, specialty, bio, plans, tags, has_black_status')
             .eq('role', 'trainer')
             .order('rating', { ascending: false })
             .limit(3);
           trainers = fallbackTrainers || [];
         }
 
-        return trainers.map((t) => {
-          const plans = t.plans || {};
-          const numericPrice = Number(plans.basic_price || plans.standard_price || plans.premium_price || 0);
-          return {
-            name: t.name || 'Trainer',
-            rating: Number.isFinite(Number(t.rating)) ? Number(t.rating).toFixed(1) : 'New',
-            price: numericPrice > 0 ? `INR ${numericPrice.toLocaleString('en-IN')}/session` : 'Price on request',
-            profileUrl: `trainer-profile.html?id=${encodeURIComponent(t.id)}`,
-            onlifitBlack: t.has_black_status ? 'Yes' : 'No'
-          };
-        });
+        return trainers;
       } catch (err) {
         console.error('Failed to fetch trainers:', err);
         return [];
@@ -234,8 +235,9 @@
       const bottom = fragments.slice(ctaInsertIndex).join('');
 
       const trainers = await fetchRecommendedTrainers(post.category);
-      const trainerSection = trainers.length
-        ? `<div class="trainer-grid">${buildTrainerCards(trainers)}</div>`
+      const trainerCards = buildTrainerCards(trainers);
+      const trainerSection = trainers.length && trainerCards
+        ? `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 mt-4">${trainerCards}</div>`
         : '<p class="post-subtitle">Trainers will be available soon</p>';
 
       const readTime = post.read_time || estimateReadTime(post.content || '');

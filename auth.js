@@ -2,8 +2,18 @@
 // GLOBAL OAUTH CATCHER: Run this immediately on ANY page load.
 // Important: do NOT strip `?code=` / `#access_token=` until a session is actually established,
 // otherwise we can lose the ability to exchange the code and end up “stuck” on the homepage.
-// Demo/preview mode disabled: always use real Supabase auth + data.
-const AUTH_BYPASS = false;
+// TEMP DEV-ONLY AUTH BYPASS (local testing only). Remove after testing.
+const DEV_AUTH_BYPASS = (() => {
+    if (typeof window === 'undefined') return false;
+    const host = (window.location.hostname || '').toLowerCase();
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1';
+    const isLocalFile = window.location.protocol === 'file:';
+    const flagEnabled = localStorage.getItem('onlifit_dev_auth_bypass') === '1';
+    return flagEnabled && (isLocalHost || isLocalFile);
+})();
+
+// Demo/preview mode disabled by default; guarded behind DEV flag only.
+const AUTH_BYPASS = DEV_AUTH_BYPASS;
 const ONLIFIT_CLERK_KEY_STORAGE = 'onlifit_clerk_publishable_key';
 const ONLIFIT_ROLE_STORAGE = 'onlifit_user_role';
 const ONLIFIT_OAUTH_SIGNUP_SOURCE = 'oauth_signup_source';
@@ -224,6 +234,40 @@ function resolveAuthBaseUrl() {
 function resolveAppPath(cleanPath, htmlFallback) {
     return supportsCleanRoutes() ? cleanPath : htmlFallback;
 }
+
+let _appNavSyncTimer = 0;
+
+function syncAppNavHeight() {
+    if (typeof document === 'undefined') return;
+    const nav = document.querySelector('.app-nav');
+    if (!nav) return;
+    const height = Math.ceil(nav.getBoundingClientRect().height || 0);
+    if (height > 0) {
+        document.documentElement.style.setProperty('--app-nav-h', `${height}px`);
+    }
+}
+
+function initAppLayoutSync() {
+    if (typeof window === 'undefined') return;
+
+    const run = () => syncAppNavHeight();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run, { once: true });
+    } else {
+        run();
+    }
+
+    window.addEventListener('resize', () => {
+        if (_appNavSyncTimer) window.clearTimeout(_appNavSyncTimer);
+        _appNavSyncTimer = window.setTimeout(run, 120);
+    }, { passive: true });
+
+    window.addEventListener('orientationchange', () => {
+        window.setTimeout(run, 120);
+    });
+}
+
+initAppLayoutSync();
 
 function getDashboardPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
@@ -1100,28 +1144,45 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience';
-    const selectWithBadge = selectBase + ', has_black_status';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience';
+    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, kyc_verified, certificates_verified, verification_status, experience';
+    const selectWithBadgeFull = selectBaseFull + ', has_black_status';
+    const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
     try {
         // 3. Extended timeout for cold starts: wait up to 6s for trainers to load (better UX than showing empty)
         const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 6000));
 
         const fetchPromise = (async () => {
-            // Try including the badge column; if the project hasn't been migrated yet, fall back gracefully.
-            let res = await supabaseClient
-                .from('profiles')
-                .select(selectWithBadge)
-                .eq('role', 'trainer');
+            // Try richer selects first, but fall back when optional columns are missing.
+            const candidates = [
+                selectWithBadgeFull,
+                selectWithBadgeSlim,
+                selectBaseFull,
+                selectBaseSlim
+            ];
 
-            if (res?.error && isMissingColumnError(res.error, 'has_black_status')) {
-                res = await supabaseClient
+            for (const selectStr of candidates) {
+                const res = await supabaseClient
                     .from('profiles')
-                    .select(selectBase)
+                    .select(selectStr)
                     .eq('role', 'trainer');
+
+                if (!res?.error) return res;
+
+                // Missing optional columns: try next candidate.
+                const err = res.error;
+                if (isMissingColumnError(err, 'has_black_status')) continue;
+                if (isMissingColumnError(err, 'latitude') || isMissingColumnError(err, 'longitude')) continue;
+
+                return res;
             }
 
-            return res;
+            // Shouldn't happen, but keep a safe fallback.
+            return await supabaseClient
+                .from('profiles')
+                .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
+                .eq('role', 'trainer');
         })();
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
@@ -1259,25 +1320,35 @@ async function submitReview(trainerId, rating, text) {
 }
 
 async function searchTrainers(query, location) {
+    const rawQuery = (query || '').toString().trim();
+    // Supabase .or() filters treat commas as condition separators, so a user typing commas can break the query.
+    const safeQuery = rawQuery.replace(/,/g, ' ').trim();
+
+    const rawLocation = (location || '').toString().trim();
+
     // If we have cached trainers, pre-filter them locally for instant rendering
     if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
         let filtered = _cachedTrainers;
-        if (query) {
-            const lowQ = query.toLowerCase();
+        if (safeQuery) {
+            const lowQ = safeQuery.toLowerCase();
             filtered = filtered.filter(t => 
                 (t.name && t.name.toLowerCase().includes(lowQ)) || 
                 (t.specialty && t.specialty.toLowerCase().includes(lowQ)) || 
-                (t.bio && t.bio.toLowerCase().includes(lowQ))
+                (t.bio && t.bio.toLowerCase().includes(lowQ)) ||
+                (Array.isArray(t.tags) && t.tags.join(' ').toLowerCase().includes(lowQ))
             );
         }
-        if (location) {
-            filtered = filtered.filter(t => t.location && t.location.toLowerCase().includes(location.toLowerCase()));
+        if (rawLocation) {
+            const lowLoc = rawLocation.toLowerCase();
+            filtered = filtered.filter(t => (t.location || '').toLowerCase().includes(lowLoc));
         }
         return filtered;
     }
 
-    const selectBase = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude';
-    const selectWithBadge = selectBase + ', has_black_status';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude';
+    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags';
+    const selectWithBadgeFull = selectBaseFull + ', has_black_status';
+    const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
     const buildQuery = (selectStr) => {
         let q = supabaseClient
@@ -1285,20 +1356,34 @@ async function searchTrainers(query, location) {
             .select(selectStr)
             .eq('role', 'trainer');
 
-        if (query) {
-            q = q.or(`name.ilike.%${query}%,specialty.ilike.%${query}%,bio.ilike.%${query}%`);
+        if (safeQuery) {
+            q = q.or(`name.ilike.%${safeQuery}%,specialty.ilike.%${safeQuery}%,bio.ilike.%${safeQuery}%`);
         }
 
-        if (location) {
-            q = q.ilike('location', `%${location}%`);
+        if (rawLocation) {
+            q = q.ilike('location', `%${rawLocation}%`);
         }
 
         return q;
     };
 
-    let { data, error } = await buildQuery(selectWithBadge);
-    if (error && isMissingColumnError(error, 'has_black_status')) {
-        ({ data, error } = await buildQuery(selectBase));
+    const candidates = [
+        selectWithBadgeFull,
+        selectWithBadgeSlim,
+        selectBaseFull,
+        selectBaseSlim
+    ];
+
+    let data = null;
+    let error = null;
+    for (const selectStr of candidates) {
+        ({ data, error } = await buildQuery(selectStr));
+        if (!error) break;
+
+        if (isMissingColumnError(error, 'has_black_status')) continue;
+        if (isMissingColumnError(error, 'latitude') || isMissingColumnError(error, 'longitude')) continue;
+
+        break;
     }
 
     if (error) {
@@ -1384,8 +1469,10 @@ async function createBooking(clientId, trainerId, planType, details) {
 let _messageReadColumn = null;
 
 async function resolveMessageReadColumn() {
-    // The current messages schema has no read/is_read column.
-    _messageReadColumn = null;
+    if (_messageReadColumn !== null) return _messageReadColumn;
+
+    // The current schema uses `read`; keep `is_read` as a fallback for older DBs.
+    _messageReadColumn = 'read';
     return _messageReadColumn;
 }
 
@@ -1843,6 +1930,272 @@ function renderTrainerBadgesHtml(trainer, options = {}) {
 window.normalizeTrainerBadges = normalizeTrainerBadges;
 window.renderOnlifitBadgeHtml = renderOnlifitBadgeHtml;
 window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
+
+// ─── PREMIUM TRAINER CARD (GLOBAL REUSABLE COMPONENT) ─────────────────────────
+// One unified card used across all trainer listings (homepage, trainers directory,
+// client dashboard Find/Saved, similar trainers, map listing, etc.)
+(function () {
+    const SAVED_TRAINERS_KEY = 'onlifit_saved_trainers';
+
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function normalizeTrainingMode(mode) {
+        const m = String(mode || '').toLowerCase();
+        if (m === 'both') return 'Online & Offline';
+        if (m === 'offline') return 'Offline';
+        if (m === 'online') return 'Online';
+        return '';
+    }
+
+    function getTrainerMetaLine(t) {
+        const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
+        const location = (cityState || t?.location || '').trim();
+        const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
+        return [location, mode].filter(Boolean).join(' • ');
+    }
+
+    function getHourlyPrice(t) {
+        const raw = t?.plans?.hourly?.price;
+        const n = typeof raw === 'string' ? Number(raw) : raw;
+        return Number.isFinite(n) && n > 0 ? n : null;
+    }
+
+    function getSavedTrainerIds() {
+        try {
+            const ids = JSON.parse(localStorage.getItem(SAVED_TRAINERS_KEY) || '[]') || [];
+            return Array.isArray(ids) ? ids : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function setSavedTrainerIds(ids) {
+        try {
+            const unique = Array.from(new Set((Array.isArray(ids) ? ids : []).map(String)));
+            localStorage.setItem(SAVED_TRAINERS_KEY, JSON.stringify(unique));
+        } catch {
+            // non-fatal
+        }
+    }
+
+    function isTrainerSaved(id) {
+        const tid = String(id || '');
+        if (!tid) return false;
+        return getSavedTrainerIds().includes(tid);
+    }
+
+    function toggleSavedTrainer(id) {
+        const tid = String(id || '');
+        if (!tid) return false;
+        const ids = getSavedTrainerIds();
+        const idx = ids.indexOf(tid);
+        if (idx >= 0) ids.splice(idx, 1);
+        else ids.unshift(tid);
+        setSavedTrainerIds(ids);
+        return ids.includes(tid);
+    }
+
+    function setFavoriteButtonState(btn, saved) {
+        try {
+            if (!btn) return;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            btn.classList.toggle('bg-primary', !!saved);
+            btn.classList.toggle('text-white', !!saved);
+            btn.classList.toggle('bg-white/90', !saved);
+            btn.classList.toggle('text-on-surface-variant', !saved);
+            if (icon) {
+                icon.style.fontVariationSettings = saved ? "'FILL' 1" : "'FILL' 0";
+            }
+        } catch {
+            // non-fatal
+        }
+    }
+
+    function emitSavedTrainersChanged() {
+        try {
+            window.dispatchEvent(new CustomEvent('onlifit:saved-trainers-changed', {
+                detail: { ids: getSavedTrainerIds() }
+            }));
+        } catch {
+            // non-fatal
+        }
+    }
+
+    function onlifitToggleSavedTrainerFromCard(evt, trainerId) {
+        try {
+            if (evt?.stopPropagation) evt.stopPropagation();
+            if (evt?.preventDefault) evt.preventDefault();
+        } catch {}
+
+        const saved = toggleSavedTrainer(trainerId);
+        const btn = evt?.currentTarget || null;
+        setFavoriteButtonState(btn, saved);
+        emitSavedTrainersChanged();
+        return saved;
+    }
+
+    function onlifitOpenTrainerProfile(trainerId, evt) {
+        try {
+            if (evt && evt.target && evt.target.closest && evt.target.closest('a,button,input,textarea,select,label')) {
+                return;
+            }
+        } catch {}
+        window.location.href = 'trainer-profile.html?id=' + encodeURIComponent(trainerId);
+    }
+
+    function renderTrainerImageArea(t, options) {
+        const url = (t?.avatar_url || '').trim();
+        const name = (t?.name || 'Trainer').trim();
+        const initial = (name.charAt(0) || 'T').toUpperCase();
+        const hasUrl = url && /^https?:\/\//i.test(url);
+
+        const cornerBadges = (typeof window.renderTrainerBadgesHtml === 'function')
+            ? window.renderTrainerBadgesHtml(t, { variant: 'corner', size: 'sm' })
+            : '';
+
+        const saved = !!options?.saved;
+        const favBtnTone = saved ? 'bg-primary text-white' : 'bg-white/90 text-on-surface-variant hover:text-primary';
+        const favFill = saved ? 1 : 0;
+
+        return `
+            <div class="relative h-56 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden">
+                ${hasUrl
+                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" loading="lazy" />`
+                    : `<div class="w-full h-full flex items-center justify-center">
+                            <span class="text-5xl font-black text-primary">${escapeHtml(initial)}</span>
+                       </div>`
+                }
+                ${cornerBadges || ''}
+                <button type="button"
+                    class="absolute top-3 right-3 h-10 w-10 inline-flex items-center justify-center rounded-xl text-xs font-bold ${favBtnTone} transition-all shadow-sm"
+                    onclick="onlifitToggleSavedTrainerFromCard(event, ${JSON.stringify(String(t?.id || ''))})"
+                    aria-label="Save trainer">
+                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' ${favFill};">favorite</span>
+                </button>
+            </div>
+        `;
+    }
+
+    function renderRatingBlock(t) {
+        const rating = Number(t?.rating);
+        const count = Number(t?.review_count);
+        if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
+            const ratingText = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
+            return `
+                <div class="mt-4 flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface text-xs font-bold">
+                        ${escapeHtml(ratingText)}
+                        <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                    </span>
+                    <span class="text-xs text-on-surface-variant font-medium">(${count} review${count === 1 ? '' : 's'})</span>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="mt-4">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold uppercase tracking-wider">
+                    New
+                </span>
+            </div>
+        `;
+    }
+
+    function renderInlineBadges(t) {
+        const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
+            ? window.renderTrainerBadgesHtml(t, { variant: 'inline', size: 'sm' })
+            : '';
+        return badgeHtml ? `<div class="mt-3">${badgeHtml}</div>` : '';
+    }
+
+    function renderPriceLine(t) {
+        const price = getHourlyPrice(t);
+        if (price) {
+            return `<span class="text-primary font-bold text-xl">Rs ${Number(price).toLocaleString('en-IN')}</span><span class="text-on-surface-variant text-sm">/hr</span>`;
+        }
+        return `<span class="text-primary font-bold">View pricing</span>`;
+    }
+
+    function renderOfferLine() {
+        return `<p class="mt-2 text-sm font-semibold text-primary">1st free class</p>`;
+    }
+
+    function getDefaultMessageHref(id, options) {
+        const tid = encodeURIComponent(String(id || ''));
+        if (options?.messageHref) return String(options.messageHref);
+        if (options?.context === 'dashboard') {
+            return `client-dashboard.html#messages?id=${tid}`;
+        }
+        const redirect = `client-dashboard.html#messages?id=${tid}`;
+        return `login.html?redirect=${encodeURIComponent(redirect)}`;
+    }
+
+    function renderPremiumTrainerCardHTML(tRaw, options = {}) {
+        const t = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(tRaw) : (tRaw || {});
+        const id = String(t?.id || '');
+        if (!id) return '';
+
+        const name = escapeHtml(t?.name || 'Trainer');
+        const meta = getTrainerMetaLine(t);
+        const description = String((t?.bio || t?.specialty || (Array.isArray(t?.tags) && t.tags[0]) || '') || '').trim();
+
+        const profileHref = options?.profileHref || (`trainer-profile.html?id=${encodeURIComponent(id)}`);
+        const messageHref = getDefaultMessageHref(id, options);
+        const saved = typeof options?.saved === 'boolean' ? options.saved : isTrainerSaved(id);
+
+        return `
+            <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
+                ${renderTrainerImageArea({ ...t, id }, { saved })}
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="font-headline font-bold text-on-surface text-lg leading-snug truncate pr-10">${name}</p>
+                            ${meta ? `
+                                <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1 min-w-0">
+                                    <span class="material-symbols-outlined text-[16px]">location_on</span>
+                                    <span class="truncate">${escapeHtml(meta)}</span>
+                                </p>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    ${renderRatingBlock(t)}
+                    ${renderInlineBadges(t)}
+
+                    ${description
+                        ? `<p class="mt-3 text-sm text-on-surface-variant line-clamp-2 flex-grow">${escapeHtml(description)}</p>`
+                        : '<div class="flex-grow"></div>'
+                    }
+
+                    <div class="mt-auto pt-4">
+                        <div class="flex items-baseline gap-1">${renderPriceLine(t)}</div>
+                        ${renderOfferLine()}
+                        <div class="mt-4 grid grid-cols-2 gap-2">
+                            <a href="${escapeHtml(messageHref)}" class="h-10 inline-flex items-center justify-center px-4 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
+                            <a href="${escapeHtml(profileHref)}" class="h-10 inline-flex items-center justify-center px-4 bg-surface-container-low text-on-surface-variant rounded-xl text-xs font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Expose globally for reuse
+    window.getSavedTrainerIds = getSavedTrainerIds;
+    window.setSavedTrainerIds = setSavedTrainerIds;
+    window.isTrainerSaved = isTrainerSaved;
+    window.toggleSavedTrainer = toggleSavedTrainer;
+    window.onlifitToggleSavedTrainerFromCard = onlifitToggleSavedTrainerFromCard;
+    window.onlifitOpenTrainerProfile = onlifitOpenTrainerProfile;
+    window.renderPremiumTrainerCardHTML = renderPremiumTrainerCardHTML;
+})();
 
 const OFFLINE_LOCATION_CACHE_KEY = 'onlifit_offline_location_v1';
 let offlineLocationRequestPromise = null;

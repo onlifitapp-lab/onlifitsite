@@ -14,7 +14,8 @@
         mode: (getParam('tab') || '').toLowerCase() === 'signup' ? 'signup' : 'signin',
         role: (getParam('role') || '').toLowerCase() === 'trainer' ? 'trainer' : 'client',
         source: (getParam('source') || '').toLowerCase(),
-        isBusy: false
+        isBusy: false,
+        isRecovery: false
     };
 
     function persistTrainerIntent() {
@@ -67,6 +68,7 @@
             document.getElementById('mode-signin'),
             document.getElementById('mode-signup'),
             document.getElementById('email-submit-btn'),
+            document.getElementById('recovery-submit-btn'),
             document.getElementById('google-auth-btn'),
             document.getElementById('forgot-password-link'),
             document.getElementById('switch-mode-link')
@@ -80,6 +82,8 @@
     }
 
     function updateModeUi() {
+        if (state.isRecovery) return;
+
         const signinBtn = document.getElementById('mode-signin');
         const signupBtn = document.getElementById('mode-signup');
         const subtitle = document.getElementById('auth-subtitle');
@@ -425,6 +429,80 @@
         }
     }
 
+    function isRecoveryFlow() {
+        const hash = window.location.hash || '';
+        if (!hash || !hash.startsWith('#')) return false;
+        const params = new URLSearchParams(hash.slice(1));
+        return String(params.get('type') || '').toLowerCase() === 'recovery';
+    }
+
+    function enterRecoveryMode() {
+        state.isRecovery = true;
+
+        setNotice('', 'error');
+
+        const subtitle = document.getElementById('auth-subtitle');
+        if (subtitle) subtitle.textContent = 'Set a new password to regain access.';
+
+        document.getElementById('auth-mode-switcher')?.classList.add('hidden');
+        document.getElementById('email-auth-form')?.classList.add('hidden');
+        document.getElementById('recovery-form')?.classList.remove('hidden');
+        document.querySelector('.auth-forgot-row')?.classList.add('hidden');
+        document.querySelector('.divider')?.classList.add('hidden');
+        document.getElementById('google-auth-btn')?.classList.add('hidden');
+        document.querySelector('.switch-text')?.classList.add('hidden');
+    }
+
+    async function handleRecoverySubmit(event) {
+        event.preventDefault();
+        if (state.isBusy) return;
+
+        const password = document.getElementById('recovery-password')?.value || '';
+        const confirm = document.getElementById('recovery-confirm')?.value || '';
+
+        if (password.length < 6) {
+            setNotice('Password must be at least 6 characters long.', 'error');
+            return;
+        }
+
+        if (password !== confirm) {
+            setNotice('Passwords do not match. Please re-enter.', 'error');
+            return;
+        }
+
+        setNotice('', 'error');
+        setBusy(true);
+
+        try {
+            const { error } = await supabaseClient.auth.updateUser({ password });
+            if (error) {
+                setNotice(error.message || 'Unable to update password right now.', 'error');
+                return;
+            }
+
+            // Remove tokens from the URL hash after successful update.
+            try {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            } catch {}
+
+            setNotice('Password updated. Redirecting to your dashboard...', 'success');
+
+            let role = localStorage.getItem(ROLE_STORAGE_KEY) || state.role || 'client';
+            try {
+                if (typeof getCurrentUser === 'function') {
+                    const current = await getCurrentUser();
+                    if (current?.role) role = current.role;
+                }
+            } catch {}
+
+            setTimeout(() => {
+                window.location.href = getSafeDashboardHref(role);
+            }, 800);
+        } finally {
+            setBusy(false);
+        }
+    }
+
     function setupEvents() {
         document.getElementById('mode-signin')?.addEventListener('click', () => {
             state.mode = 'signin';
@@ -445,6 +523,7 @@
         });
 
         document.getElementById('email-auth-form')?.addEventListener('submit', handleEmailAuth);
+        document.getElementById('recovery-form')?.addEventListener('submit', handleRecoverySubmit);
         document.getElementById('google-auth-btn')?.addEventListener('click', handleGoogleAuth);
         document.getElementById('forgot-password-link')?.addEventListener('click', handleForgotPassword);
     }
@@ -470,6 +549,12 @@
         }
 
         setupEvents();
+
+        if (isRecoveryFlow()) {
+            enterRecoveryMode();
+            return;
+        }
+
         updateModeUi();
 
         if (state.role === 'trainer' && state.source === 'join-us' && state.mode === 'signup') {

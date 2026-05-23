@@ -66,42 +66,92 @@ input[type="radio"] {
     accent-color: currentColor;
 }
 
-/* 6. SIDEBARS - Mobile Collapse */
-@media (max-width: 768px) {
-    aside[class*="sidebar"],
-    .sidebar,
-    nav[class*="sidebar"] {
-        position: fixed !important;
-        left: 0;
-        top: 0;
-        width: 100%;
-        max-width: 320px;
-        height: 100vh;
-        overflow-y: auto;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        z-index: 999;
-    }
+/* 6. APP LAYOUT TOKENS */
+:root {
+    --app-nav-h: 72px;
+    --app-page-pad-x: 2rem;
+    --app-page-pad-y: 2rem;
+    --app-section-gap: 2rem;
+    --app-card-pad: 1.5rem;
+    --app-sidebar-w: 16rem;
+}
 
-    aside[class*="sidebar"].open,
-    .sidebar.open,
-    nav[class*="sidebar"].open {
+@media (max-width: 767px) {
+    :root {
+        --app-page-pad-x: 1rem;
+        --app-page-pad-y: 1rem;
+        --app-section-gap: 1.25rem;
+        --app-card-pad: 1rem;
+    }
+}
+
+/* 7. APP SHELL + NAV */
+.app-shell {
+    min-height: 100vh;
+}
+
+.app-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding-top: env(safe-area-inset-top);
+}
+
+.app-main {
+    min-height: 100vh;
+    padding-top: calc(var(--app-nav-h) + var(--app-page-pad-y));
+    padding-left: var(--app-page-pad-x);
+    padding-right: var(--app-page-pad-x);
+    padding-bottom: calc(var(--app-page-pad-y) + env(safe-area-inset-bottom));
+}
+
+.app-main--with-sidebar {
+    margin-left: var(--app-sidebar-w);
+}
+
+@media (max-width: 767px) {
+    .app-main--with-sidebar {
+        margin-left: 0;
+    }
+}
+
+/* 8. APP SIDEBAR */
+.app-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+}
+
+.app-sidebar-overlay.open {
+    display: block;
+}
+
+.app-sidebar-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(.4, 0, .2, 1);
+}
+
+.app-sidebar-panel.open {
+    transform: translateX(0);
+}
+
+@media (min-width: 768px) {
+    .app-sidebar-panel {
         transform: translateX(0);
     }
 
-    /* Sidebar overlay */
-    .sidebar-overlay,
-    .mobile-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 998;
-    }
-
-    .sidebar-overlay.open,
-    .mobile-overlay.open {
-        display: block;
+    .app-sidebar-overlay {
+        display: none !important;
     }
 }
 
@@ -131,7 +181,7 @@ input[type="radio"] {
     }
 }
 
-/* 8. FORMS - Mobile Friendly */
+/* 9. FORMS - Mobile Friendly */
 @media (max-width: 768px) {
     form {
         padding: 16px;
@@ -152,7 +202,7 @@ input[type="radio"] {
     }
 }
 
-/* 9. TABLES - Mobile Scrollable */
+/* 10. TABLES - Mobile Scrollable */
 @media (max-width: 768px) {
     table {
         font-size: 13px;
@@ -178,107 +228,142 @@ input[type="radio"] {
     }
 }
 
-/* 10. GRIDS - Responsive Column Count */
-@media (max-width: 1024px) {
-    [class*="grid-cols-4"] {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+/* 11. DASHBOARD LAYOUT HELPERS */
+.dash-header {
+    margin-bottom: var(--app-section-gap);
+}
+
+.dash-stats-grid {
+    margin-bottom: var(--app-section-gap);
+}
+
+.dash-panel-grid {
+    gap: 1.5rem;
+}
+
+@media (max-width: 767px) {
+    .dash-header {
+        margin-bottom: 1rem;
+    }
+
+    .dash-header h1,
+    .dash-header h2 {
+        font-size: 1.6rem;
+        line-height: 1.1;
+    }
+
+    .dash-header p {
+        margin-top: 0.4rem;
+    }
+
+    .dash-stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .dash-stat-card {
+        padding: var(--app-card-pad) !important;
+    }
+
+    .dash-stat-card h3 {
+        font-size: 1.85rem !important;
+        line-height: 1;
+    }
+
+    .dash-panel-grid {
+        gap: 1rem !important;
     }
 }
 
-@media (max-width: 768px) {
-    [class*="grid-cols-2"],
-    [class*="grid-cols-3"],
-    [class*="grid-cols-4"] {
-        grid-template-columns: 1fr !important;
+/* 12. DASHBOARD SECTION OVERRIDES */
+@media (max-width: 767px) {
+    .dash-bookings-controls {
+        padding: 1rem !important;
+        gap: 0.75rem !important;
     }
 
-    [class*="lg:grid-cols"] {
-        grid-template-columns: 1fr !important;
+    .dash-booking-filters {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
     }
 
-    [class*="lg:col-span"] {
-        grid-column: auto !important;
+    .dash-booking-filters button {
+        flex: 0 0 auto;
     }
-}
 
-/* 11. FLEX RESPONSIVE */
-@media (max-width: 768px) {
-    [class*="flex-row"] {
+    .dash-bookings-summary {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    .dash-bookings-search {
+        height: 48px;
+    }
+
+    .dash-bookings-empty {
+        padding: 1.5rem !important;
+    }
+
+    .dash-messages-shell {
         flex-direction: column !important;
+        min-height: auto !important;
+        height: auto !important;
     }
 
-    [class*="gap-8"],
-    [class*="gap-6"] {
-        gap: 12px !important;
+    .dash-contacts-sidebar {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .dash-contacts-search {
+        height: 48px;
+    }
+
+    .dash-chat-header {
+        padding: 0.85rem 1rem !important;
+    }
+
+    .dash-chat-history {
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+
+    .dash-chat-input {
+        padding: 1rem !important;
+        position: sticky;
+        bottom: 0;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    }
+
+    .dash-settings-shell {
+        border-radius: 1.25rem !important;
     }
 }
 
-/* 12. PADDING & SPACING - Reduce on mobile */
-@media (max-width: 768px) {
-    [class*="px-8"],
-    [class*="px-12"] {
-        padding-left: 16px !important;
-        padding-right: 16px !important;
-    }
-
-    [class*="py-8"],
-    [class*="py-12"] {
-        padding-top: 16px !important;
-        padding-bottom: 16px !important;
-    }
-
-    [class*="p-8"],
-    [class*="p-12"] {
-        padding: 16px !important;
-    }
+/* 12.1 MESSAGING SHELL STABILITY */
+.dash-messages-shell,
+#chat-view,
+#contacts-sidebar {
+    min-height: 0;
 }
 
-@media (max-width: 480px) {
-    [class*="px-6"],
-    [class*="px-8"] {
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-    }
-
-    [class*="py-6"],
-    [class*="py-8"] {
-        padding-top: 12px !important;
-        padding-bottom: 12px !important;
-    }
-
-    [class*="p-6"],
-    [class*="p-8"] {
-        padding: 12px !important;
-    }
+.dash-chat-history,
+#chat-history {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* 13. TEXT SIZING - Readable on mobile */
-@media (max-width: 768px) {
-    [class*="text-4xl"],
-    [class*="text-5xl"],
-    [class*="text-6xl"] {
-        font-size: 1.75rem !important;
-        line-height: 1.2 !important;
-    }
-
-    [class*="text-3xl"] {
-        font-size: 1.5rem !important;
-    }
-
-    [class*="text-2xl"] {
-        font-size: 1.25rem !important;
-    }
+.dash-contacts-sidebar,
+#contacts-sidebar {
+    min-height: 0;
 }
 
-/* 14. FIXED ELEMENTS - Safe area for notch */
-@media (max-width: 768px) {
-    nav[class*="fixed"],
-    header[class*="fixed"],
-    footer[class*="fixed"] {
-        padding-top: max(12px, env(safe-area-inset-top));
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-    }
+#contacts-list {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* 15. BOTTOM SHEET OPTIMIZATION */
@@ -336,28 +421,25 @@ input[type="radio"] {
     }
 }
 
-/* 18. SPECIFIC COMPONENT FIXES */
-
-/* Dashboard Cards */
-@media (max-width: 768px) {
-    [class*="card"],
-    [class*="booking-card"],
-    [class*="stat-card"] {
-        padding: 16px !important;
-        margin-bottom: 12px;
+/* 18. APP NAV INTERACTIONS */
+@media (max-width: 767px) {
+    .app-nav a,
+    .app-nav button {
+        min-height: 44px;
+        font-size: 14px;
     }
 }
 
-/* Navigation Bars */
-@media (max-width: 768px) {
-    nav {
-        padding: 8px 16px !important;
-        min-height: 56px;
+/* 18.1 CHAT INPUT SAFE AREA + STICKY ON MOBILE */
+@media (max-width: 767px) {
+    #message-input-area {
+        position: sticky;
+        bottom: 0;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     }
 
-    nav a, nav button {
-        min-height: 40px;
-        font-size: 14px;
+    #chat-history {
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
     }
 }
 
