@@ -75,6 +75,12 @@
             justify-content: center;
             padding: 0 6px;
         }
+
+        @media (min-width: 1440px) {
+            .chat-bubble-wrap {
+                max-width: 60ch;
+            }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -105,7 +111,7 @@
 
     <!-- Main Content (Two-Pane) -->
     <main class="flex-1 flex overflow-hidden">
-        
+        <div class="w-full max-w-screen-2xl mx-auto flex flex-1 overflow-hidden">
         <!-- Sidebar (Contacts) -->
         <aside id="contacts-sidebar" class="w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
             <div class="p-6 border-b border-outline-variant/50">
@@ -117,7 +123,20 @@
             </div>
             
             <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
-                <!-- Contacts will be injected here -->
+                <div class="p-4 flex items-center gap-3" aria-hidden="true">
+                    <div class="w-12 h-12 rounded-full skeleton"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="skeleton-line skeleton" style="width: 55%;"></div>
+                        <div class="skeleton-line skeleton" style="width: 75%;"></div>
+                    </div>
+                </div>
+                <div class="p-4 flex items-center gap-3" aria-hidden="true">
+                    <div class="w-12 h-12 rounded-full skeleton"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="skeleton-line skeleton" style="width: 50%;"></div>
+                        <div class="skeleton-line skeleton" style="width: 70%;"></div>
+                    </div>
+                </div>
             </div>
         </aside>
 
@@ -167,6 +186,7 @@
                 </div>
             </div>
         </section>
+        </div>
     </main>
 </div>
 
@@ -385,7 +405,7 @@
             
             return `
                 <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                    <div class="max-w-[80%]">
+                    <div class="chat-bubble-wrap max-w-[80%]">
                         <div class="px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white chat-bubble-sent shadow-lg shadow-primary/10' : 'bg-surface-container-low text-on-surface chat-bubble-received border border-outline-variant/30'}">
                             ${m.text}
                         </div>

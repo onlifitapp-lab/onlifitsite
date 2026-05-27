@@ -129,6 +129,12 @@
             padding: 0 6px;
         }
 
+        @media (min-width: 1440px) {
+            .chat-bubble-wrap {
+                max-width: 60ch;
+            }
+        }
+
         @media (max-width: 767px) {
             body {
                 overflow-x: hidden;
@@ -220,6 +226,7 @@
     <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
         <span class="material-symbols-outlined animate-spin text-primary text-4xl">autorenew</span>
     </div>
+    <div class="w-full max-w-screen-2xl mx-auto">
     <section id="view-overview" class="route-view active-view anim-slide-up">
     
 
@@ -303,6 +310,7 @@
         <h2 class="text-3xl font-black font-headline text-on-surface">My Trainers</h2>
         <p class="text-on-surface-variant text-sm mt-1">Manage your upcoming and past sessions.</p>
     </header>
+    <div class="space-y-6">
     <div class="bookings-layout dash-panel-grid grid grid-cols-12 gap-6" id="bookings-section">
 
         <!-- Upcoming Bookings (main) -->
@@ -318,7 +326,16 @@
 
             <!-- Bookings List Container -->
             <div id="bookings-list" class="space-y-4">
-                <!-- Populated by JS -->
+                <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 skeleton-card skeleton" aria-hidden="true">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="skeleton-line skeleton" style="width: 40%;"></div>
+                        <div class="skeleton-line skeleton" style="width: 20%;"></div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="skeleton-line skeleton"></div>
+                        <div class="skeleton-line skeleton" style="width: 70%;"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Empty State -->
@@ -400,7 +417,20 @@
                     <a href="/client/find-trainers" class="text-xs text-primary font-bold hover:underline">+ Add</a>
                 </div>
                 <div id="trainers-list" class="space-y-3">
-                    <!-- Populated by JS -->
+                    <div class="flex items-center gap-3" aria-hidden="true">
+                        <div class="w-10 h-10 rounded-full skeleton"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton-line skeleton" style="width: 60%;"></div>
+                            <div class="skeleton-line skeleton" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3" aria-hidden="true">
+                        <div class="w-10 h-10 rounded-full skeleton"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton-line skeleton" style="width: 55%;"></div>
+                            <div class="skeleton-line skeleton" style="width: 35%;"></div>
+                        </div>
+                    </div>
                 </div>
                 <div id="no-trainers" class="hidden text-center py-4">
                     <p class="text-xs text-on-surface-variant">No trainers yet. Book your first session!</p>
@@ -433,6 +463,7 @@
             </div>
         </div>
     </div>
+    </div>
 
 </section>
     <section id="view-messages" class="route-view hidden anim-slide-up">
@@ -440,7 +471,7 @@
             <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
             <p class="text-on-surface-variant text-sm mt-1">Chat with your trainers without leaving your dashboard.</p>
         </header>
-
+        <div class="space-y-6">
         <div class="messages-shell dash-messages-shell min-h-[70vh] flex flex-col md:flex-row overflow-hidden bg-white border border-outline-variant/30 rounded-2xl shadow-sm">
             <!-- Sidebar (Contacts) -->
             <aside id="contacts-sidebar" class="dash-contacts-sidebar w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
@@ -452,7 +483,13 @@
                 </div>
 
                 <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
-                    <!-- Contacts will be injected here -->
+                    <div class="p-4 flex items-center gap-3" aria-hidden="true">
+                        <div class="w-12 h-12 rounded-full skeleton"></div>
+                        <div class="flex-1 space-y-2">
+                            <div class="skeleton-line skeleton" style="width: 55%;"></div>
+                            <div class="skeleton-line skeleton" style="width: 70%;"></div>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
@@ -503,6 +540,7 @@
                 </div>
             </section>
         </div>
+        </div>
     </section>
 
     <section id="view-find-trainers" class="route-view hidden anim-slide-up">
@@ -510,7 +548,7 @@
             <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
             <p class="text-on-surface-variant text-sm mt-2">Discover experts tailored to your goals.</p>
         </header>
-
+        <div class="space-y-6">
         <div class="find-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
             <div class="find-trainers-controls grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 items-end mb-6">
                 <div>
@@ -550,6 +588,7 @@
                 No trainers found. Try a different search.
             </div>
         </div>
+        </div>
     </section>
 
     <section id="view-saved-trainers" class="route-view hidden anim-slide-up">
@@ -557,7 +596,7 @@
             <h2 class="text-3xl font-black font-headline text-on-surface">Saved Trainers</h2>
             <p class="text-on-surface-variant text-sm mt-1">Your shortlisted trainers, all in one place.</p>
         </header>
-
+        <div class="space-y-6">
         <div class="saved-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
             <div id="saved-trainers-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                 <!-- Populated by JS -->
@@ -570,6 +609,7 @@
                 </a>
             </div>
         </div>
+        </div>
     </section>
 
     <section id="view-settings" class="route-view hidden anim-slide-up">
@@ -581,8 +621,8 @@
             <h2 class="text-3xl font-black font-headline text-on-surface">Settings</h2>
             <p class="text-on-surface-variant text-sm mt-1">Update your profile details.</p>
         </header>
-
-        <div class="max-w-2xl dash-settings-shell space-y-6">
+        <div class="space-y-6">
+        <div class="max-w-3xl dash-settings-shell space-y-6">
             <!-- Profile -->
             <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
                 <div class="flex items-center justify-between mb-4">
@@ -647,7 +687,9 @@
                 </div>
             </div>
         </div>
+        </div>
     </section>
+    </div>
 </main>
 
 <!-- â”€â”€ Review Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
@@ -1723,7 +1765,7 @@ async function loadMessages() {
 
         return `
             <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
-                <div class="max-w-[80%]">
+                <div class="chat-bubble-wrap max-w-[80%]">
                     <div class="px-4 py-3 rounded-2xl text-sm ${isMe ? 'bg-primary text-white chat-bubble-sent shadow-lg shadow-primary/10' : 'bg-surface-container-low text-on-surface chat-bubble-received border border-outline-variant/30'}">
                         ${escapeHtml(m.text)}
                     </div>

@@ -2065,9 +2065,9 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const favFill = saved ? 1 : 0;
 
         return `
-            <div class="relative h-56 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden">
+                <div class="relative h-56 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden">
                 ${hasUrl
-                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="w-full h-full object-cover" loading="lazy" />`
+                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" loading="lazy" decoding="async" />`
                     : `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-5xl font-black text-primary">${escapeHtml(initial)}</span>
                        </div>`
@@ -2151,7 +2151,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const saved = typeof options?.saved === 'boolean' ? options.saved : isTrainerSaved(id);
 
         return `
-            <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
+            <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
                 ${renderTrainerImageArea({ ...t, id }, { saved })}
                 <div class="p-5 flex flex-col flex-grow">
                     <div class="flex items-start justify-between gap-3">
