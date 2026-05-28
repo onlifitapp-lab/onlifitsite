@@ -2282,9 +2282,9 @@ async function renderAuthNav() {
     if (AUTH_BYPASS) {
         const dashboardHref = getDashboardPathForRole(user.role);
         const desktopHtml = `
-            <div class="flex items-center gap-3">
-                <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[20px]">grid_view</span>
+            <div class="flex items-center gap-2">
+                <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                    <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
                     <span>Dashboard</span>
                 </a>
                 <span class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant">Guest mode</span>
@@ -2310,12 +2310,12 @@ async function renderAuthNav() {
                     : 'client-dashboard.html';
 
             const desktopHtml = `
-                <div class="flex items-center gap-3">
-                    <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                <div class="flex items-center gap-2">
+                    <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                        <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
                         <span>Dashboard</span>
                     </a>
-                    <button onclick="logout()" class="px-4 py-2 text-sm font-bold rounded-lg bg-primary text-on-primary hover:opacity-90 transition-all">Logout</button>
+                    <button onclick="logout()" class="px-4 text-sm font-bold rounded-lg bg-primary text-on-primary hover:opacity-90 transition-all inline-flex items-center h-9">Logout</button>
                 </div>
             `;
 
@@ -2338,16 +2338,16 @@ async function renderAuthNav() {
         const messagesHref = getMessagesPathForRole(user.role);
 
         const desktopHtml = `
-            <div class="flex items-center justify-end gap-3 sm:gap-6 w-full">
+            <div class="flex items-center justify-end gap-2 sm:gap-4 w-full">
                 <!-- Notifications -->
-                <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
-                    <span class="material-symbols-outlined text-[24px]">notifications</span>
+                <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full">
+                    <span class="material-symbols-outlined text-[20px] leading-none">notifications</span>
                     ${unreadCount > 0 ? `<span class="absolute -top-1 -right-0 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white">${unreadCount}</span>` : ''}
                 </a>
 
                 <!-- Messages -->
-                <a href="${messagesHref}" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:block">
-                    <span class="material-symbols-outlined text-[24px]">chat_bubble</span>
+                <a href="${messagesHref}" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full">
+                    <span class="material-symbols-outlined text-[20px] leading-none">chat_bubble</span>
                 </a>
 
                 <!-- Vertical Divider -->
@@ -2355,18 +2355,18 @@ async function renderAuthNav() {
 
                 <!-- Dashboard link (Grid + Text) -->
                 <a href="${dashboardHref}" 
-                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[20px]">grid_view</span>
+                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                    <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
                     <span>Dashboard</span>
                 </a>
 
                 <!-- Name Initial / Avatar (S circle) -->
-                <div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center text-sm font-bold text-primary ml-1">
+                <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center text-sm font-bold text-primary">
                     ${user.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
 
                 <!-- Logout Button -->
-                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all ml-1">Logout</button>
+                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all inline-flex items-center h-9">Logout</button>
             </div>
         `;
         

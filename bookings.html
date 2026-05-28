@@ -25,6 +25,7 @@
 
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        line-height: 1;
         vertical-align: middle;
     }
 
@@ -117,7 +118,7 @@
     <div class="trainer-nav-inner flex items-center justify-between px-4 md:px-8 py-2.5 md:py-3 max-w-screen-2xl mx-auto">
         <div class="flex items-center gap-3 md:gap-6 min-w-0">
             <button id="trainer-sidebar-toggle" type="button" class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-white/70 hover:text-primary transition-colors" aria-label="Open menu">
-                <span class="material-symbols-outlined text-[28px]">menu</span>
+                <span class="material-symbols-outlined text-[28px] leading-none">menu</span>
             </button>
             <a href="onlifit.html" class="text-2xl md:text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant truncate">Onlifit</a>
             <div class="hidden md:flex gap-6 items-center">
@@ -145,25 +146,25 @@
 </div>
 <nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0">
 <a class="flex items-center gap-3 px-6 py-2.5 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="/trainer/dashboard">
-<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">dashboard</span>
 <span>Dashboard</span>
 </a>
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/bookings">
-<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">calendar_today</span>
 <span>Bookings</span>
 </a>
     <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="bookings.html#messages">
-<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">chat_bubble</span>
 <span>Messages</span>
 </a>
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
-<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">settings</span>
 <span>Settings</span>
 </a>
 </nav>
 <div class="flex-shrink-0 md:px-6 md:mt-auto md:pb-8">
 <a href="/trainer/earnings" class="px-6 md:w-full py-2.5 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all sidebar-link">
-<span class="material-symbols-outlined text-[18px]">analytics</span> Insights
+<span class="material-symbols-outlined text-[18px] leading-none">analytics</span> Insights
 </a>
 </div>
 </aside>
@@ -176,33 +177,33 @@
     <div class="w-full max-w-screen-2xl mx-auto">
 
     <section id="view-dashboard" class="route-view active-view anim-slide-up">
-        <header class="dash-header mb-8 flex flex-col sm:flex-row justify-between sm:items-end gap-4 anim-slide-up">
+        <header class="dash-header mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4 anim-slide-up">
             <div>
                 <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Trainer Dashboard</h1>
                 <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back! Manage your sessions.</p>
             </div>
             <div class="flex gap-2">
-                <span class="px-4 py-2 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant" id="current-date">Loading...</span>
+                <span class="inline-flex items-center h-9 px-4 bg-white rounded-full border border-surface-container-high text-sm font-medium text-on-surface-variant" id="current-date">Loading...</span>
             </div>
         </header>
 
         <div class="space-y-8">
         <div class="trainer-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-0">
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-upcoming">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-1.5">Upcoming Sessions</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-upcoming">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Upcoming Sessions</p>
             </div>
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-completed">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-1.5">Sessions Delivered (7d)</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-completed">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Sessions Delivered (7d)</p>
             </div>
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-unread-messages">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-1.5">Unread Messages</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-unread-messages">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Unread Messages</p>
             </div>
             <div id="profile-visits-card" class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline" id="stat-profile-visits">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mt-1.5">Profile Visits (7d)</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-profile-visits">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Profile Visits (7d)</p>
             </div>
         </div>
 
@@ -265,15 +266,15 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
             <div class="trainer-bookings-controls dash-bookings-controls p-4 md:p-5 border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                <div class="trainer-booking-filters dash-booking-filters flex flex-wrap gap-2" id="booking-filters">
-                    <button type="button" data-filter="all" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary">All</button>
-                    <button type="button" data-filter="upcoming" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Upcoming</button>
-                    <button type="button" data-filter="past" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Past</button>
-                    <button type="button" data-filter="cancelled" class="px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Cancelled</button>
+                <div class="trainer-booking-filters dash-booking-filters flex flex-wrap items-center gap-2" id="booking-filters">
+                    <button type="button" data-filter="all" class="inline-flex items-center h-10 px-4 rounded-full text-xs font-black uppercase tracking-widest bg-primary-container text-primary">All</button>
+                    <button type="button" data-filter="upcoming" class="inline-flex items-center h-10 px-4 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Upcoming</button>
+                    <button type="button" data-filter="past" class="inline-flex items-center h-10 px-4 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Past</button>
+                    <button type="button" data-filter="cancelled" class="inline-flex items-center h-10 px-4 rounded-full text-xs font-black uppercase tracking-widest bg-surface-container-low text-on-surface-variant">Cancelled</button>
                 </div>
                 <div class="w-full md:w-80 relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="dash-bookings-search w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] leading-none pointer-events-none">search</span>
+                    <input id="bookings-search" type="text" placeholder="Search by client or plan…" class="dash-bookings-search w-full h-10 pl-10 pr-4 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                 </div>
             </div>
 
@@ -313,8 +314,8 @@
             <aside id="contacts-sidebar" class="dash-contacts-sidebar w-full md:w-[320px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
                 <div class="p-6 border-b border-outline-variant/50">
                     <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="dash-contacts-search w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] leading-none pointer-events-none">search</span>
+                        <input id="contacts-search" type="text" placeholder="Search contacts…" class="dash-contacts-search w-full h-10 pl-10 pr-4 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all" />
                     </div>
                 </div>
                 <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
@@ -490,14 +491,14 @@
     <!-- Header -->
     <header class="dash-header mb-6 mt-2">
         <button onclick="router.navigate('dashboard')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
-            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span class="material-symbols-outlined text-[18px] leading-none">arrow_back</span>
             Back to Dashboard
         </button>
         <h2 class="text-3xl font-black font-headline text-on-surface">Account Settings</h2>
         <p class="text-on-surface-variant text-sm mt-1">Manage your profile and account preferences</p>
     </header>
 
-    <div class="space-y-6">
+    <div class="space-y-8">
     <!-- Success/Error Messages -->
     <div id="alert-container"></div>
 
@@ -506,16 +507,16 @@
     <div class="trainer-settings-shell dash-settings-shell bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
         
         <!-- Profile Picture Section -->
-        <div class="p-5 md:p-6 border-b border-outline-variant/30">
-            <h2 class="font-headline text-xl font-bold mb-4">Profile Picture</h2>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+        <div class="p-6 md:p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-5">Profile Picture</h2>
+            <div class="flex flex-col sm:flex-row sm:items-start gap-6">
                 <div class="relative">
                     <img id="avatar-preview" src="" alt="Profile" class="avatar-preview bg-primary-container" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div id="avatar-placeholder" class="avatar-preview bg-primary-container flex items-center justify-center text-4xl font-bold text-primary" style="display:none;">
                         <span id="avatar-initials">U</span>
                     </div>
                 </div>
-                <div class="flex-1">
+                <div class="flex-1 space-y-2">
                     <input type="file" id="avatar-input" accept="image/*" class="hidden">
                     <button onclick="document.getElementById('avatar-input').click()" class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all mb-2">
                         Upload New Photo
@@ -526,56 +527,56 @@
         </div>
 
         <!-- Personal Information -->
-        <div class="p-5 md:p-6 border-b border-outline-variant/30">
-            <h2 class="font-headline text-xl font-bold mb-5">Personal Information</h2>
-            <form id="profile-form" class="space-y-5">
-                <div class="grid md:grid-cols-2 gap-5">
+        <div class="p-6 md:p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-6">Personal Information</h2>
+            <form id="profile-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Full Name</label>
+                        <label class="block text-sm font-semibold mb-3">Full Name</label>
                         <input type="text" id="name" required="" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Email Address</label>
+                        <label class="block text-sm font-semibold mb-3">Email Address</label>
                         <input type="email" id="email" required="" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                 </div>
                 
-                <div class="grid md:grid-cols-2 gap-5">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Phone Number</label>
+                        <label class="block text-sm font-semibold mb-3">Phone Number</label>
                         <input type="tel" id="phone" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold mb-2">Training Mode</label>
+                        <label class="block text-sm font-semibold mb-3">Training Mode</label>
                         <div class="flex flex-col sm:flex-row sm:flex-wrap gap-4">
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="training_mode" value="online" class="text-primary focus:ring-primary w-4 h-4" checked="" onchange="toggleLocationFields()">
+                                <input type="radio" name="training_mode" value="online" class="text-primary focus:ring-primary w-4 h-4 leading-none" checked="" onchange="toggleLocationFields()">
                                 <span class="text-sm font-medium">Online Only</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="training_mode" value="offline" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
+                                <input type="radio" name="training_mode" value="offline" class="text-primary focus:ring-primary w-4 h-4 leading-none" onchange="toggleLocationFields()">
                                 <span class="text-sm font-medium">Offline (In-Person)</span>
                             </label>
                             <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="radio" name="training_mode" value="both" class="text-primary focus:ring-primary w-4 h-4" onchange="toggleLocationFields()">
+                                <input type="radio" name="training_mode" value="both" class="text-primary focus:ring-primary w-4 h-4 leading-none" onchange="toggleLocationFields()">
                                 <span class="text-sm font-medium">Both (Online &amp; Offline)</span>
                             </label>
                         </div>
-                        <p class="text-xs text-on-surface-variant mt-2">Choose how you want to deliver sessions. Offline options will ask for your location.</p>
+                        <p class="text-xs text-on-surface-variant mt-3">Choose how you want to deliver sessions. Offline options will ask for your location.</p>
                     </div>
 
-                    <div id="location-fields" class="md:col-span-2 grid md:grid-cols-2 gap-5 hidden">
+                    <div id="location-fields" class="md:col-span-2 grid md:grid-cols-2 gap-6 hidden">
                         <div>
-                            <label class="block text-sm font-semibold mb-2">City</label>
+                            <label class="block text-sm font-semibold mb-3">City</label>
                             <input type="text" id="city" placeholder="e.g. Mumbai" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold mb-2">State</label>
+                            <label class="block text-sm font-semibold mb-3">State</label>
                             <input type="text" id="state" placeholder="e.g. Maharashtra" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold mb-2">Full Address / Gym Location</label>
+                            <label class="block text-sm font-semibold mb-3">Full Address / Gym Location</label>
                             <textarea id="address" rows="2" placeholder="Where do you train your offline clients?" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
                         </div>
                     </div>
@@ -584,16 +585,16 @@
         </div>
 
         <!-- Security Section -->
-        <div class="p-5 md:p-6 border-b border-outline-variant/30">
-            <h2 class="font-headline text-xl font-bold mb-5">Security</h2>
-            <form id="password-form" class="space-y-5">
-                <div class="grid md:grid-cols-2 gap-5">
+        <div class="p-6 md:p-8 border-b border-outline-variant/30">
+            <h2 class="font-headline text-xl font-bold mb-6">Security</h2>
+            <form id="password-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold mb-2">New Password</label>
+                        <label class="block text-sm font-semibold mb-3">New Password</label>
                         <input type="password" id="new-password" placeholder="Enter new password" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Confirm Password</label>
+                        <label class="block text-sm font-semibold mb-3">Confirm Password</label>
                         <input type="password" id="confirm-password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                 </div>
@@ -604,30 +605,30 @@
         </div>
 
         <!-- Trainer-Specific Settings (Hidden for clients) -->
-        <div id="trainer-settings" class="p-5 md:p-6 border-b border-outline-variant/30 hidden">
-            <h2 class="font-headline text-xl font-bold mb-5">Professional Details</h2>
-            <form id="trainer-form" class="space-y-5">
-                <div class="grid md:grid-cols-2 gap-5">
+        <div id="trainer-settings" class="p-6 md:p-8 border-b border-outline-variant/30 hidden">
+            <h2 class="font-headline text-xl font-bold mb-6">Professional Details</h2>
+            <form id="trainer-form" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Specialty</label>
+                        <label class="block text-sm font-semibold mb-3">Specialty</label>
                         <input type="text" id="specialty" placeholder="e.g., Weight Loss, Strength Training" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold mb-2">Experience</label>
+                        <label class="block text-sm font-semibold mb-3">Experience</label>
                         <input type="text" id="experience" placeholder="e.g., 5+ years" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold mb-2">About / Bio</label>
+                    <label class="block text-sm font-semibold mb-3">About / Bio</label>
                     <textarea id="bio" rows="4" placeholder="Tell clients about your training philosophy, achievements, and what makes you unique..." class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold mb-3">Pricing &amp; Packages</label>
-                    <div class="space-y-3">
+                    <label class="block text-sm font-semibold mb-4">Pricing &amp; Packages</label>
+                    <div class="space-y-4">
                         <!-- Hourly Rate -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Per Session / Hourly Rate</label>
                                 <input type="text" id="basic-label" placeholder="e.g., 1 Hour Session" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
@@ -639,7 +640,7 @@
                         </div>
 
                         <!-- Weekly Package -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Weekly Package</label>
                                 <input type="text" id="standard-label" placeholder="e.g., 1 Week (5 Sessions)" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
@@ -651,7 +652,7 @@
                         </div>
 
                         <!-- Monthly Package -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Monthly Package</label>
                                 <input type="text" id="premium-label" placeholder="e.g., 1 Month Unlimited" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
@@ -663,7 +664,7 @@
                         </div>
 
                         <!-- Transformation / Long-term Package -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                             <div class="flex-1">
                                 <label class="block text-xs font-semibold mb-1 text-on-surface-variant">Transformation / Long-term Program</label>
                                 <input type="text" id="transformation-label" placeholder="e.g., 3-Month Transformation" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all">
@@ -679,8 +680,8 @@
 
                 <!-- Certifications Section -->
                 <div>
-                    <label class="block text-sm font-semibold mb-2">Certifications &amp; Credentials</label>
-                    <p class="text-xs text-on-surface-variant mb-2">Upload your certifications to get verified badge and build trust with clients</p>
+                    <label class="block text-sm font-semibold mb-3">Certifications &amp; Credentials</label>
+                    <p class="text-xs text-on-surface-variant mb-3">Upload your certifications to get verified badge and build trust with clients</p>
                     <div class="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center hover:border-primary transition-all cursor-pointer" onclick="document.getElementById('cert-input').click()">
                         <input type="file" id="cert-input" accept="image/*,application/pdf" multiple="" class="hidden">
                         <span class="material-symbols-outlined text-4xl text-on-surface-variant mb-2 block">upload_file</span>
@@ -695,7 +696,7 @@
         </div>
 
         <!-- Save Button -->
-        <div class="p-5 md:p-6 bg-surface-container-low">
+        <div class="p-6 md:p-8 bg-surface-container-low">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <p class="text-sm text-on-surface-variant">Changes will be saved to your profile</p>
                 <button onclick="saveSettings()" id="save-btn" class="w-full sm:w-auto px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-secondary transition-all flex items-center gap-2">

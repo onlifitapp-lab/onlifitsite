@@ -1,69 +1,71 @@
 /* Mobile Optimizations - Global Touch Target & Responsive Fixes */
 
 /* 1. GLOBAL TOUCH TARGET MINIMUMS (44x44px for accessibility) */
-button, a, input[type="button"], input[type="submit"], input[type="reset"], 
-input[type="checkbox"], input[type="radio"], select, textarea {
-    min-height: 44px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
+@media (max-width: 767px) {
+    button, a, input[type="button"], input[type="submit"], input[type="reset"], 
+    input[type="checkbox"], input[type="radio"], select, textarea {
+        min-height: 44px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
 
-/* 2. INPUT FIELDS - Mobile Optimizations */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="date"],
-input[type="time"],
-input[type="search"],
-textarea,
-select {
-    font-size: 16px; /* Prevents iOS zoom on focus */
-    min-height: 48px; /* Touch target */
-    padding: 12px 16px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
+    /* 2. INPUT FIELDS - Mobile Optimizations */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="time"],
+    input[type="search"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        min-height: 48px; /* Touch target */
+        padding: 12px 16px;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
 
-/* 3. BUTTONS - All states responsive */
-button, 
-input[type="button"], 
-input[type="submit"], 
-input[type="reset"],
-a.btn,
-a[class*="button"],
-a[class*="btn"] {
-    min-height: 44px;
-    min-width: 44px;
-    padding: 12px 16px;
-    cursor: pointer;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    font-size: 16px; /* Prevents iOS zoom */
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-touch-callout: none;
-}
+    /* 3. BUTTONS - All states responsive */
+    button, 
+    input[type="button"], 
+    input[type="submit"], 
+    input[type="reset"],
+    a.btn,
+    a[class*="button"],
+    a[class*="btn"] {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 16px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        font-size: 16px; /* Prevents iOS zoom */
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
 
-/* 4. LINKS - Ensure they're easy to tap */
-a {
-    min-height: 44px;
-    min-width: 44px;
-    display: inline-flex;
-    align-items: center;
-}
+    /* 4. LINKS - Ensure they're easy to tap */
+    a {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
 
-/* 5. CHECKBOXES & RADIO BUTTONS */
-input[type="checkbox"],
-input[type="radio"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    accent-color: currentColor;
+    /* 5. CHECKBOXES & RADIO BUTTONS */
+    input[type="checkbox"],
+    input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: currentColor;
+    }
 }
 
 /* 6. APP LAYOUT TOKENS */
