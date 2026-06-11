@@ -195,7 +195,7 @@
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/messages" data-route="messages">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="client-dashboard.html#messages" data-route="messages">
             <span class="material-symbols-outlined text-[20px]">chat</span>
             <span>Messages</span>
         </a>
@@ -500,7 +500,10 @@
                         <button type="button" onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
                             <span class="material-symbols-outlined text-on-surface">arrow_back</span>
                         </button>
-                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-lg shadow-sm">U</div>
+                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-sm overflow-hidden">
+                            <img id="active-avatar-img" alt="" class="hidden w-full h-full object-cover object-center" />
+                            <span id="active-avatar-fallback">U</span>
+                        </div>
                         <div>
                             <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
                             <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
@@ -1714,9 +1717,8 @@ async function selectChat(id, name, avatar) {
     chatView?.classList.add('flex');
 
     const nameEl = document.getElementById('active-name');
-    const avatarEl = document.getElementById('active-avatar');
     if (nameEl) nameEl.textContent = name;
-    if (avatarEl) avatarEl.textContent = avatar !== 'undefined' && avatar !== 'null' ? avatar : 'U';
+    setActiveAvatar(name, avatar);
 
     if (typingChannel) typingChannel.unsubscribe();
     typingChannel = subscribeToTyping(user.id, id, (isTypingNow) => {
@@ -1735,6 +1737,39 @@ async function selectChat(id, name, avatar) {
     await loadContacts();
     await loadMessages();
     await markMessagesAsRead(id, user.id);
+}
+
+function setActiveAvatar(name, avatarUrl) {
+    const imgEl = document.getElementById('active-avatar-img');
+    const fallbackEl = document.getElementById('active-avatar-fallback');
+    if (!imgEl || !fallbackEl) return;
+
+    const safeName = String(name || '').trim();
+    const initials = safeName ? safeName.charAt(0).toUpperCase() : 'U';
+    fallbackEl.textContent = initials;
+
+    const url = String(avatarUrl || '').trim();
+    const isValid = /^https?:\/\//i.test(url);
+
+    if (!isValid) {
+        imgEl.classList.add('hidden');
+        imgEl.removeAttribute('src');
+        fallbackEl.classList.remove('hidden');
+        return;
+    }
+
+    imgEl.onload = () => {
+        imgEl.classList.remove('hidden');
+        fallbackEl.classList.add('hidden');
+    };
+    imgEl.onerror = () => {
+        imgEl.classList.add('hidden');
+        imgEl.removeAttribute('src');
+        fallbackEl.classList.remove('hidden');
+    };
+
+    imgEl.src = url;
+    imgEl.alt = safeName || 'Trainer avatar';
 }
 
 function closeChat() {
@@ -1900,12 +1935,6 @@ class DashboardRouter {
         window.addEventListener('popstate', () => this.handleRoute());
 
         window.addEventListener('load', () => {
-            if (window.location.protocol !== 'file:' && window.location.hash) {
-                const hashRoute = window.location.hash.replace('#', '');
-                if (hashRoute) {
-                    history.replaceState(null, '', '/client/' + hashRoute + window.location.search);
-                }
-            }
             this.handleRoute();
         });
 
@@ -1946,9 +1975,10 @@ class DashboardRouter {
             route = (window.location.hash || '#overview').replace('#', '') || 'overview';
         } else {
             const path = window.location.pathname;
+            const hashRoute = (window.location.hash || '').replace('#', '').split('?')[0];
             route = path.replace(/^\/client\/?/i, '');
-            if (!route || route === 'client' || route === 'client-dashboard.html' || route.endsWith('.html')) {
-                route = 'overview';
+            if (!route || route === 'client' || route === 'client-dashboard' || route === 'client-dashboard.html' || route.endsWith('.html')) {
+                route = hashRoute || 'overview';
             }
         }
 
@@ -2005,7 +2035,11 @@ class DashboardRouter {
             return;
         }
 
-        history.pushState(null, '', '/client/' + clean + (search || ''));
+        if (clean === 'messages') {
+            history.pushState(null, '', '/client-dashboard#messages' + (search || ''));
+        } else {
+            history.pushState(null, '', '/client/' + clean + (search || ''));
+        }
         this.handleRoute();
     }
 }

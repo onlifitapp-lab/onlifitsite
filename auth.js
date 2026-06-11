@@ -278,8 +278,8 @@ function getDashboardPathForRole(role) {
 
 function getMessagesPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
-    if (normalized === 'trainer') return resolveAppPath('/trainer/messages', 'messages.html');
-    if (normalized === 'client') return resolveAppPath('/client/messages', 'messages.html');
+    if (normalized === 'trainer') return resolveAppPath('/trainer/bookings#messages', 'bookings.html#messages');
+    if (normalized === 'client') return resolveAppPath('/client-dashboard#messages', 'client-dashboard.html#messages');
     return 'messages.html';
 }
 
@@ -1954,10 +1954,18 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         return '';
     }
 
-    function getTrainerMetaLine(t) {
+    function getTrainerLocation(t) {
         const cityState = [t?.city, t?.state].filter(Boolean).join(', ');
-        const location = (cityState || t?.location || '').trim();
-        const mode = normalizeTrainingMode(t?.training_mode || t?.session_mode);
+        return (cityState || t?.location || '').trim();
+    }
+
+    function getTrainerMode(t) {
+        return normalizeTrainingMode(t?.training_mode || t?.session_mode);
+    }
+
+    function getTrainerMetaLine(t) {
+        const location = getTrainerLocation(t);
+        const mode = getTrainerMode(t);
         return [location, mode].filter(Boolean).join(' • ');
     }
 
@@ -2065,19 +2073,19 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const favFill = saved ? 1 : 0;
 
         return `
-                <div class="relative h-56 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden">
+                <div class="relative h-36 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden border-b border-outline-variant/20">
                 ${hasUrl
-                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" loading="lazy" decoding="async" />`
+                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" style="object-position: 50% 18%;" loading="lazy" decoding="async" />`
                     : `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-5xl font-black text-primary">${escapeHtml(initial)}</span>
                        </div>`
                 }
                 ${cornerBadges || ''}
                 <button type="button"
-                    class="absolute top-3 right-3 h-10 w-10 inline-flex items-center justify-center rounded-xl text-xs font-bold ${favBtnTone} transition-all shadow-sm"
+                    class="absolute top-3 right-3 h-9 w-9 inline-flex items-center justify-center rounded-lg text-xs font-bold ${favBtnTone} transition-all shadow-sm"
                     onclick="onlifitToggleSavedTrainerFromCard(event, ${JSON.stringify(String(t?.id || ''))})"
                     aria-label="Save trainer">
-                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' ${favFill};">favorite</span>
+                    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' ${favFill};">favorite</span>
                 </button>
             </div>
         `;
@@ -2089,19 +2097,19 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         if (Number.isFinite(rating) && Number.isFinite(count) && count > 0) {
             const ratingText = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
             return `
-                <div class="mt-4 flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface text-xs font-bold">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface text-xs font-bold">
                         ${escapeHtml(ratingText)}
                         <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
                     </span>
-                    <span class="text-xs text-on-surface-variant font-medium">(${count} review${count === 1 ? '' : 's'})</span>
+                    <span class="text-xs text-on-surface-variant font-medium">${count} review${count === 1 ? '' : 's'}</span>
                 </div>
             `;
         }
 
         return `
-            <div class="mt-4">
-                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold uppercase tracking-wider">
+            <div>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant text-xs font-bold uppercase tracking-wider">
                     New
                 </span>
             </div>
@@ -2112,19 +2120,19 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const badgeHtml = (typeof window.renderTrainerBadgesHtml === 'function')
             ? window.renderTrainerBadgesHtml(t, { variant: 'inline', size: 'sm' })
             : '';
-        return badgeHtml ? `<div class="mt-3">${badgeHtml}</div>` : '';
+        return badgeHtml ? `<div class="flex flex-wrap items-center gap-2">${badgeHtml}</div>` : '';
     }
 
     function renderPriceLine(t) {
         const price = getHourlyPrice(t);
         if (price) {
-            return `<span class="text-primary font-bold text-xl">Rs ${Number(price).toLocaleString('en-IN')}</span><span class="text-on-surface-variant text-sm">/hr</span>`;
+            return `<span class="text-primary font-bold text-base">Rs ${Number(price).toLocaleString('en-IN')}</span><span class="text-on-surface-variant text-xs">/hr</span>`;
         }
-        return `<span class="text-primary font-bold">View pricing</span>`;
+        return `<span class="text-primary font-bold text-sm">View pricing</span>`;
     }
 
     function renderOfferLine() {
-        return `<p class="mt-2 text-sm font-semibold text-primary">1st free class</p>`;
+        return `<span class="inline-flex items-center rounded-full bg-primary/10 text-primary text-[11px] font-bold px-2 py-0.5">1st class free</span>`;
     }
 
     function getDefaultMessageHref(id, options) {
@@ -2144,7 +2152,11 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
 
         const name = escapeHtml(t?.name || 'Trainer');
         const meta = getTrainerMetaLine(t);
-        const description = String((t?.bio || t?.specialty || (Array.isArray(t?.tags) && t.tags[0]) || '') || '').trim();
+        const description = String((t?.bio || (Array.isArray(t?.tags) && t.tags[0]) || '') || '').trim();
+        const specialty = String(t?.specialty || '').trim();
+        const experience = String(t?.experience || '').trim();
+        const location = getTrainerLocation(t);
+        const mode = getTrainerMode(t);
 
         const profileHref = options?.profileHref || (`trainer-profile.html?id=${encodeURIComponent(id)}`);
         const messageHref = getDefaultMessageHref(id, options);
@@ -2153,33 +2165,48 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         return `
             <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
                 ${renderTrainerImageArea({ ...t, id }, { saved })}
-                <div class="p-5 flex flex-col flex-grow">
+                <div class="p-3 flex flex-col flex-grow">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="font-headline font-bold text-on-surface text-lg leading-snug truncate pr-10">${name}</p>
-                            ${meta ? `
-                                <p class="text-sm text-on-surface-variant mt-1 flex items-center gap-1 min-w-0">
-                                    <span class="material-symbols-outlined text-[16px]">location_on</span>
-                                    <span class="truncate">${escapeHtml(meta)}</span>
+                            <p class="font-headline font-bold text-on-surface text-base leading-snug truncate pr-10">${name}</p>
+                            ${specialty ? `
+                                <p class="text-[13px] font-semibold text-on-surface mt-1 truncate">${escapeHtml(specialty)}</p>
+                            ` : ''}
+                            ${(location || mode) ? `
+                                <p class="text-[12px] text-on-surface-variant mt-1 flex items-center gap-2 min-w-0">
+                                    ${location ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">location_on</span><span class="truncate">${escapeHtml(location)}</span></span>` : ''}
+                                    ${mode ? `<span class="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">${escapeHtml(mode)}</span>` : ''}
                                 </p>
                             ` : ''}
                         </div>
                     </div>
 
-                    ${renderRatingBlock(t)}
-                    ${renderInlineBadges(t)}
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        ${renderRatingBlock(t)}
+                        ${renderInlineBadges(t)}
+                        ${(experience)
+                            ? `<span class="inline-flex items-center gap-1 rounded-full bg-surface-container-low px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                                    ${escapeHtml(experience)} exp
+                               </span>`
+                            : ''
+                        }
+                    </div>
 
                     ${description
-                        ? `<p class="mt-3 text-sm text-on-surface-variant line-clamp-2 flex-grow">${escapeHtml(description)}</p>`
+                        ? `<p class="mt-2 text-[12px] text-on-surface-variant line-clamp-2 flex-grow">${escapeHtml(description)}</p>`
                         : '<div class="flex-grow"></div>'
                     }
 
-                    <div class="mt-auto pt-4">
-                        <div class="flex items-baseline gap-1">${renderPriceLine(t)}</div>
-                        ${renderOfferLine()}
-                        <div class="mt-4 grid grid-cols-2 gap-2">
-                            <a href="${escapeHtml(messageHref)}" class="h-10 inline-flex items-center justify-center px-4 bg-primary/10 text-primary rounded-xl text-xs font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
-                            <a href="${escapeHtml(profileHref)}" class="h-10 inline-flex items-center justify-center px-4 bg-surface-container-low text-on-surface-variant rounded-xl text-xs font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View Profile</a>
+                    <div class="mt-auto pt-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-baseline gap-1 text-sm">${renderPriceLine(t)}</div>
+                                ${renderOfferLine()}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a href="${escapeHtml(messageHref)}" class="h-8 inline-flex items-center justify-center px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
+                                <a href="${escapeHtml(profileHref)}" class="h-8 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View Profile</a>
+                            </div>
                         </div>
                     </div>
                 </div>
