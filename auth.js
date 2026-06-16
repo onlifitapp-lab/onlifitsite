@@ -883,12 +883,19 @@ async function handleOAuthCallback(options = {}) {
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
     if (!shouldRedirectNow) return;
 
+    // Normalize legacy verification status values (backwards compatibility)
+    function normalizeVerificationStatus(status) {
+        const s = String(status || '').toLowerCase();
+        if (s === 'approved') return 'verified';
+        return s;
+    }
+
     console.log('Redirecting after OAuth. Final Role:', finalRoleBackup);
     if (finalRoleBackup === 'admin') {
         window.location.replace('admin-dashboard.html');
     } else if (finalRoleBackup === 'trainer') {
-        const verificationStatus = String(profile?.verification_status || '').toLowerCase();
-        const trainerApproved = verificationStatus === 'approved' || verificationStatus === 'verified';
+        const verificationStatus = normalizeVerificationStatus(profile?.verification_status);
+        const trainerApproved = verificationStatus === 'verified';
 
         const onboardingUrl = (joinUsTrainerIntent || shouldKeepTrainerIntent)
             ? 'trainer-onboarding.html?role=trainer&source=join-us'
@@ -1931,7 +1938,7 @@ function normalizeTrainerBadges(record) {
         record.is_black
     );
 
-    const verificationStatus = String(record.verification_status || '').toLowerCase();
+    const verificationStatus = normalizeVerificationStatus(record.verification_status);
     const isFullyVerified = verificationStatus === 'verified' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
 
     return { ...record, hasBlackStatus, isFullyVerified };
