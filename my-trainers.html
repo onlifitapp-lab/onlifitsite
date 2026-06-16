@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Trainers | Onlifit</title>
+    <link href="styles.css" rel="stylesheet" />
+    <link href="mobile-optimizations.css" rel="stylesheet" />
+</head>
+<body class="bg-surface h-full font-body text-on-surface">
+<div class="max-w-screen-2xl mx-auto p-6">
+    <header class="mb-8">
+        <a href="client-dashboard.html" class="text-sm text-on-surface-variant hover:text-primary">&larr; Back</a>
+        <h1 class="text-3xl font-black font-headline mt-3">My Trainers</h1>
+        <p class="text-on-surface-variant mt-1">Your booked trainers and session details.</p>
+    </header>
+
+    <main id="content">
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+        <div id="empty" class="hidden text-center py-12">
+            <div class="w-24 h-24 bg-primary-container/30 rounded-full mx-auto flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-primary text-4xl">fitness_center</span>
+            </div>
+            <h3 class="text-xl font-bold">No trainers yet</h3>
+            <p class="text-on-surface-variant mt-2">Book a trainer to see them here.</p>
+            <a href="/client/find-trainers" class="mt-4 inline-flex px-6 py-3 bg-primary text-on-primary rounded-full font-bold">Find Trainers</a>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="auth.js?v=20260428"></script>
+<script>
+    function formatDateIso(d) {
+        try {
+            const date = new Date(d);
+            return date.toLocaleDateString();
+        } catch (e) { return d; }
+    }
+
+    function mapStatusLabel(status) {
+        if (!status) return 'Pending Confirmation';
+        const s = String(status).toLowerCase();
+        if (s === 'pending' || s === 'pending_confirmation') return 'Pending Confirmation';
+        if (s === 'confirmed' || s === 'active') return 'Active';
+        if (s === 'completed') return 'Completed';
+        if (s === 'cancelled' || s === 'canceled') return 'Cancelled';
+        return status;
+    }
+
+    function renderAvatarInner(trainer) {
+        const url = trainer?.avatar_url || '';
+        if (url && url.startsWith('http')) return `<img src="${url}" alt="${(trainer.name||'')}" class="w-full h-full object-cover" />`;
+        const initial = (trainer?.name || 'T').charAt(0).toUpperCase();
+        return `<div class="text-2xl font-black text-primary">${initial}</div>`;
+    }
+
+    async function init() {
+        const user = await requireAuth('client', window.location.href);
+        if (!user) return;
+
+        // Gather bookings for this client
+        let bookings = [];
+        try {
+            bookings = await getBookingsForUser(user.id);
+        } catch (e) { bookings = []; }
+
+        const listEl = document.getElementById('list');
+        const emptyEl = document.getElementById('empty');
+
+        if (!bookings || bookings.length === 0) {
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+
+        // For each booking render card
+        const cards = await Promise.all(bookings.map(async b => {
+            const trainer = await getTrainerById(b.trainer_id);
+            const phone = (trainer?.whatsapp_number || trainer?.phone || '').replace(/\D/g, '');
+            const waHref = phone ? `https://wa.me/${phone}` : '#';
+            const statusLabel = mapStatusLabel(b.status);
+            const plan = b.plan_label || b.plan_type || 'Plan';
+
+            return `
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-outline-variant/20">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-xl bg-surface-container flex items-center justify-center overflow-hidden">
+                            ${renderAvatarInner(trainer || {})}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-headline text-base font-bold text-on-surface truncate">${trainer?.name || 'Trainer'}</h3>
+                            <p class="text-xs text-on-surface-variant mt-1">${plan}</p>
+                            <div class="mt-2 text-xs text-on-surface-variant flex items-center gap-3">
+                                <span class="flex items-center gap-1"><span class="material-symbols-outlined">calendar_today</span>${formatDateIso(b.date)}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-3">
+                            <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant">${statusLabel}</span>
+                            <div class="flex gap-2">
+                                <a ${phone ? `href="${waHref}" target="_blank"` : 'href="#"'} class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-xs font-bold hover:bg-surface-container transition-all">WhatsApp</a>
+                                <a href="trainer-profile.html?id=${b.trainer_id}" class="px-3 py-2 bg-primary text-on-primary rounded-lg text-xs font-bold hover:opacity-90 transition-all">View Profile</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }));
+
+        listEl.innerHTML = cards.join('\n');
+    }
+
+    init();
+</script>
+<script src="footer-component.js"></script>
+</body>
+</html>

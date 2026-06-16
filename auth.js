@@ -29,6 +29,24 @@ function normalizeUserRole(value, defaultRole = 'client') {
         : defaultRole;
 }
 
+// Feature flag to globally toggle platform messaging (default: false)
+try {
+    if (typeof window !== 'undefined') {
+        // Preserve any externally set value (e.g., staging overrides). Coerce to boolean.
+        window.ENABLE_PLATFORM_MESSAGING = window.ENABLE_PLATFORM_MESSAGING === true;
+    }
+} catch (e) {
+    // ignore
+}
+
+function isMessagingEnabled() {
+    try {
+        return !!(typeof window !== 'undefined' && window.ENABLE_PLATFORM_MESSAGING === true);
+    } catch (e) {
+        return false;
+    }
+}
+
 function getStoredUserRole(defaultRole = 'client') {
     return normalizeUserRole(localStorage.getItem(ONLIFIT_ROLE_STORAGE), defaultRole);
 }
@@ -278,8 +296,9 @@ function getDashboardPathForRole(role) {
 
 function getMessagesPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
-    if (normalized === 'trainer') return resolveAppPath('/trainer/bookings#messages', 'bookings.html#messages');
-    if (normalized === 'client') return resolveAppPath('/client-dashboard#messages', 'client-dashboard.html#messages');
+    // Messaging UI is being removed from the platform; return dashboard paths instead
+    if (normalized === 'trainer') return resolveAppPath('/trainer/bookings', 'bookings.html');
+    if (normalized === 'client') return resolveAppPath('/client-dashboard', 'client-dashboard.html');
     return 'messages.html';
 }
 
@@ -1493,6 +1512,11 @@ async function markNotificationAsRead(id) {
  * Real-time Subscription Helper
  */
 function subscribeToTable(table, filter, callback) {
+    if (!isMessagingEnabled()) {
+        console.info('Messaging disabled: subscribeToTable no-op', table, filter);
+        return { unsubscribe: () => {} };
+    }
+
     return supabaseClient
         .channel(`public:${table}`)
         .on('postgres_changes', { 
@@ -1516,6 +1540,11 @@ async function getMessages(u1, u2) {
 }
 
 async function sendMessage(senderId, receiverId, text) {
+    if (!isMessagingEnabled()) {
+        console.info('Messaging disabled: sendMessage suppressed', { senderId, receiverId });
+        return null;
+    }
+
     try {
         const readColumn = await resolveMessageReadColumn();
         const messagePayload = { 
@@ -1554,6 +1583,10 @@ async function sendMessage(senderId, receiverId, text) {
  */
 async function updateMessageStatus(messageIds, status, read) {
     try {
+        if (!isMessagingEnabled()) {
+            console.info('Messaging disabled: updateMessageStatus no-op');
+            return true;
+        }
         const updates = {};
         if (read !== undefined) {
             const readColumn = await resolveMessageReadColumn();
@@ -1580,6 +1613,9 @@ async function updateMessageStatus(messageIds, status, read) {
  */
 async function markMessagesAsRead(senderId, receiverId) {
     try {
+        if (!isMessagingEnabled()) {
+            return true;
+        }
         const readColumn = await resolveMessageReadColumn();
         if (!readColumn) return true;
         const { error } = await supabaseClient
@@ -1602,6 +1638,7 @@ async function markMessagesAsRead(senderId, receiverId) {
  */
 async function getUnreadCount(userId) {
     try {
+        if (!isMessagingEnabled()) return 0;
         const readColumn = await resolveMessageReadColumn();
         if (!readColumn) return 0;
         const { count, error } = await supabaseClient
@@ -1744,6 +1781,10 @@ async function deleteCertification(certId, trainerId) {
  */
 async function setTypingStatus(userId, chatWithId, isTyping) {
     try {
+        if (!isMessagingEnabled()) {
+            // Pretend success when messaging is disabled
+            return true;
+        }
         const { error } = await supabaseClient
             .from('typing_status')
             .upsert({
@@ -1769,6 +1810,11 @@ async function setTypingStatus(userId, chatWithId, isTyping) {
 function subscribeToTyping(userId, contactId, callback) {
     // Supabase Realtime `filter` supports a single condition (e.g. "col=eq.value").
     // We filter by the contact (user_id) and then narrow down to the active chat in code.
+    if (!isMessagingEnabled()) {
+        console.info('Messaging disabled: subscribeToTyping no-op', contactId);
+        return { unsubscribe: () => {} };
+    }
+
     return supabaseClient
         .channel(`typing:${contactId}`)
         .on('postgres_changes', {
@@ -1790,6 +1836,7 @@ function subscribeToTyping(userId, contactId, callback) {
  */
 async function getLastMessagesForContacts(userId, contactIds) {
     try {
+        if (!isMessagingEnabled()) return {};
         const lastMessages = {};
         
         for (const contactId of contactIds) {
@@ -2138,10 +2185,11 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
     function getDefaultMessageHref(id, options) {
         const tid = encodeURIComponent(String(id || ''));
         if (options?.messageHref) return String(options.messageHref);
+        // Platform messaging removed — link to trainer profile so users can book/contact via WhatsApp
         if (options?.context === 'dashboard') {
-            return `client-dashboard.html#messages?id=${tid}`;
+            return `trainer-profile.html?id=${tid}`;
         }
-        const redirect = `client-dashboard.html#messages?id=${tid}`;
+        const redirect = `trainer-profile.html?id=${tid}`;
         return `login.html?redirect=${encodeURIComponent(redirect)}`;
     }
 
@@ -2372,8 +2420,8 @@ async function renderAuthNav() {
                     ${unreadCount > 0 ? `<span class="absolute -top-1 -right-0 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white">${unreadCount}</span>` : ''}
                 </a>
 
-                <!-- Messages -->
-                <a href="${messagesHref}" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full">
+                <!-- Messages (hidden; platform chat deprecated) -->
+                <a href="${messagesHref}" class="relative text-on-surface-variant hover:text-primary transition-all hidden items-center justify-center h-9 w-9 rounded-full">
                     <span class="material-symbols-outlined text-[20px] leading-none">chat_bubble</span>
                 </a>
 

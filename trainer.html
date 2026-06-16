@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-      <base href="/">
+    <script>document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');</script>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Trainer Allocated | Onlifit</title>
@@ -96,7 +96,7 @@
 
   <!-- Interaction Section -->
   <div class="mt-8 pt-8 border-t border-outline-variant w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-    <a id="chat-platform-link" href="client-dashboard.html#messages" class="flex items-center justify-center gap-2 py-3 px-6 bg-primary text-on-primary font-headline font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">
+    <a id="chat-platform-link" href="#" class="flex items-center justify-center gap-2 py-3 px-6 bg-primary text-on-primary font-headline font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">
       <span class="material-symbols-outlined">chat_bubble</span>
       Chat on Platform
     </a>
@@ -273,7 +273,18 @@
       certList.innerHTML = '';
     }
 
-    document.getElementById('chat-platform-link').href = 'client-dashboard.html#messages?id=' + encodeURIComponent(trainer.id);
+    // Platform chat deprecated — hide platform chat and show WhatsApp if available
+    const chatPlatformEl = document.getElementById('chat-platform-link');
+    const chatWhatsappEl = document.getElementById('chat-whatsapp-link');
+    try {
+      if (chatPlatformEl) chatPlatformEl.classList.add('hidden');
+      const phone = (trainer?.whatsapp_number || trainer?.phone || '').replace(/\s|\+/g, '');
+      if (phone && chatWhatsappEl) {
+        const text = encodeURIComponent(`Hi ${trainer?.name || ''}, I found you on Onlifit.`);
+        chatWhatsappEl.href = 'https://wa.me/' + phone + '?text=' + text;
+        chatWhatsappEl.classList.remove('hidden');
+      }
+    } catch (e) {}
 
     const wa = document.getElementById('chat-whatsapp-link');
     const phone = (trainer.phone || '').replace(/\D/g, '');

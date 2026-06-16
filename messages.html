@@ -205,6 +205,18 @@
         if (user) {
             await renderAuthNav();
             await loadContacts();
+            // Feature flag: disable platform messaging UI and realtime when disabled
+            if (!window.ENABLE_PLATFORM_MESSAGING) {
+                const contacts = document.getElementById('contacts-list');
+                const sidebar = document.getElementById('contacts-sidebar');
+                const chatView = document.getElementById('chat-view');
+                const inputArea = document.getElementById('message-input-area');
+                if (contacts) contacts.innerHTML = `<div class="p-6">Platform messaging is currently disabled.</div>`;
+                if (sidebar) sidebar.classList.add('bg-surface-container-low');
+                if (chatView) chatView.classList.add('hidden');
+                if (inputArea) inputArea.classList.add('hidden');
+                return;
+            }
             
             // Handle auto-selection of chat via URL
             const params = new URLSearchParams(window.location.search);

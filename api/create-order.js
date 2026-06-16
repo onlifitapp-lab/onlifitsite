@@ -83,24 +83,50 @@ export default async function handler(req, res) {
 
         // Create the pending booking row securely in the database
         const platformCommission = truePriceINR * 0.15;
-        const { data: pendingBooking, error: insertError } = await supabase
+        const dateVal = details?.date || new Date().toISOString().split('T')[0];
+        const timeVal = details?.time || '10:00 AM';
+
+        // Idempotency: prevent duplicate pending bookings for same client/trainer/plan/date/time
+        const { data: existingArr, error: existingErr } = await supabase
             .from('bookings')
-            .insert([{
+            .select('*')
+            .match({
                 client_id: clientId,
                 trainer_id: trainerId,
                 plan_type: planType,
-                plan_label: planLabel,
-                price: truePriceINR,
-                commission: platformCommission,
-                date: details?.date || new Date().toISOString().split('T')[0],
-                time: details?.time || '10:00 AM',
+                date: dateVal,
+                time: timeVal,
                 status: 'pending_payment'
-            }])
-            .select()
-            .single();
+            })
+            .limit(1);
 
-        if (insertError) {
-            throw insertError;
+        if (existingErr) {
+            throw existingErr;
+        }
+
+        let pendingBooking = Array.isArray(existingArr) && existingArr.length > 0 ? existingArr[0] : null;
+
+        if (!pendingBooking) {
+            const { data: inserted, error: insertError } = await supabase
+                .from('bookings')
+                .insert([{
+                    client_id: clientId,
+                    trainer_id: trainerId,
+                    plan_type: planType,
+                    plan_label: planLabel,
+                    price: truePriceINR,
+                    commission: platformCommission,
+                    date: dateVal,
+                    time: timeVal,
+                    status: 'pending_payment'
+                }])
+                .select();
+
+            if (insertError) {
+                throw insertError;
+            }
+
+            pendingBooking = Array.isArray(inserted) && inserted.length > 0 ? inserted[0] : inserted;
         }
 
         // Create the active Razorpay Order
@@ -116,6 +142,16 @@ export default async function handler(req, res) {
         };
 
         const razorpayOrder = await razorpay.orders.create(options);
+
+        // Persist razorpay order id back to the booking for reconciliation
+        try {
+            await supabase
+                .from('bookings')
+                .update({ razorpay_order_id: razorpayOrder.id, order_receipt: options.receipt })
+                .eq('id', pendingBooking.id);
+        } catch (e) {
+            console.warn('Failed to persist razorpay_order_id on booking:', e?.message || e);
+        }
 
         // Return the required Razorpay checkout details back to the client
         return res.status(200).json({

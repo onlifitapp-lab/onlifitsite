@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-      <base href="/">
+    <base href="./">
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Personalize Your Journey | Onlifit</title>
@@ -21,10 +21,437 @@
     <style>
         /* Font Size Reset - Standard 16px base */
         html { font-size: 16px; }
-        body { font-size: 1rem; line-height: 1.5; }
+        body { 
+            font-size: 1rem; 
+            line-height: 1.5; 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        
+        /* Hide app shell elements during onboarding */
+        .app-nav, .app-sidebar-panel, footer, .footer-component, .app-sidebar-overlay, #page-loader {
+            display: none !important;
+        }
+        
+        .app-main {
+            flex: 1;
+            background: #fafafa;
+        }
         
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .step-transition { transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out; }
+        
+        /* Onboarding Layout */
+        .onboarding-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            background: transparent;
+            min-height: 100vh;
+        }
+        
+        .onboarding-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            padding: 1rem;
+            margin: 0 auto;
+            box-sizing: border-box;
+            background: transparent;
+        }
+        
+        /* Step Indicator */
+        .step-indicator {
+            text-center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #666;
+        }
+        
+        .step-indicator .step-number {
+            color: #000;
+            font-weight: 700;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #000;
+            border-radius: 999px;
+            transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Content Header */
+        .onboarding-header {
+            text-align: center;
+        }
+        
+        .onboarding-title {
+            font-family: Poppins, sans-serif;
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+            line-height: 1.15;
+        }
+        
+        .onboarding-subtitle {
+            font-size: 1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        /* Goal Cards Grid */
+        .goal-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+            align-items: stretch;
+        }
+        
+        .goal-card {
+            position: relative;
+            padding: 1.25rem 1rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            min-height: 160px;
+            height: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        
+        .goal-card:hover {
+            border-color: #000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            transform: translateY(-3px);
+        }
+        
+        .goal-card.selected {
+            background: rgba(0,0,0,0.04);
+            border-color: #000;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+        }
+        
+        .goal-card::before {
+            content: '';
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            transition: all 0.28s;
+            opacity: 0;
+            box-sizing: border-box;
+        }
+        
+        .goal-card.selected::before {
+            background: #000;
+            border-color: #000;
+            opacity: 1;
+        }
+        
+        .goal-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 1.1rem;
+            right: 1.1rem;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            opacity: 1;
+        }
+        
+        .goal-icon {
+            font-size: 2rem;
+            opacity: 0.95;
+        }
+        
+        .goal-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-top: 0.5rem;
+        }
+        
+        .goal-description {
+            font-size: 0.875rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Form Fields */
+        .form-group {
+            text-align: left;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #000;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+        }
+        
+        .form-input::placeholder {
+            color: #999;
+        }
+        
+        .gender-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .gender-btn {
+            padding: 1rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .gender-btn:hover {
+            border-color: #000;
+            background: rgba(0,0,0,0.04);
+        }
+        
+        .gender-btn.selected {
+            background: #000;
+            border-color: #000;
+            color: white;
+        }
+        
+        /* Action Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+        
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .btn-back:hover {
+            background: #f5f5f5;
+            border-color: #000;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1a1a1a;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            padding: 1rem;
+            background: transparent;
+            color: #666;
+            border: 2px solid #e0e0e0;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: white;
+            border-color: #000;
+            color: #000;
+        }
+        
+        /* Skip Link */
+        .skip-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .skip-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .skip-link a:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .onboarding-wrapper {
+                padding: 1.5rem 1rem;
+            }
+            
+            .onboarding-title {
+                font-size: 1.875rem;
+            }
+            
+            .onboarding-subtitle {
+                font-size: 0.95rem;
+            }
+            
+            .goal-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .goal-card {
+                padding: 1.5rem 1rem;
+                min-height: 220px;
+            }
+            
+            .goal-icon {
+                font-size: 2rem;
+            }
+            
+            .goal-title {
+                font-size: 1rem;
+            }
+            
+            .goal-description {
+                font-size: 0.8rem;
+            }
+            
+            .button-group {
+                gap: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .onboarding-wrapper {
+                padding: 1rem;
+            }
+            
+            .onboarding-container {
+                gap: 2rem;
+            }
+            
+            .onboarding-title {
+                font-size: 1.5rem;
+            }
+            
+            .onboarding-subtitle {
+                font-size: 0.875rem;
+            }
+            
+            .goal-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .goal-card {
+                padding: 1.25rem 0.75rem;
+                min-height: 200px;
+                gap: 0.75rem;
+            }
+            
+            .goal-icon {
+                font-size: 1.75rem;
+            }
+            
+            .goal-title {
+                font-size: 0.95rem;
+            }
+            
+            .goal-description {
+                font-size: 0.75rem;
+                line-height: 1.4;
+            }
+            
+            .btn-primary {
+                font-size: 0.95rem;
+            }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -36,76 +463,97 @@
   gtag('config', 'G-4W2306MJ1Y');
 </script>
 </head>
-<body class="bg-surface font-body text-on-surface min-h-screen flex items-center justify-center p-6">
+<body class="font-body text-on-surface">
 
-    <div class="max-w-xl w-full">
-        <!-- Progress Bar -->
-        <div class="mb-12 flex items-center justify-center gap-2">
-            <div id="step-dot-1" class="w-10 h-2 bg-primary rounded-full transition-all"></div>
-            <div id="step-dot-2" class="w-2 h-2 bg-outline-variant rounded-full transition-all"></div>
-            <div id="step-dot-3" class="w-2 h-2 bg-outline-variant rounded-full transition-all"></div>
-        </div>
-
-        <div id="onboarding-container" class="bg-surface-container-low rounded-3xl p-8 lg:p-12 shadow-xl border border-outline-variant/30 text-center">
-            
-            <!-- Step 1: Goal -->
-            <div id="step-1" class="step-content">
-                <h1 class="font-headline text-3xl font-black mb-4">What's your primary goal?</h1>
-                <p class="text-on-surface-variant text-sm mb-10 font-medium">We'll use this to match you with the best specialized trainers.</p>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button onclick="selectGoal('Weight Loss', 'weight')" class="goal-btn p-6 bg-white rounded-2xl border-2 border-outline-variant/30 hover:border-primary transition-all flex flex-col items-center gap-3">
-                        <span class="material-symbols-outlined text-4xl text-primary">fitness_center</span>
-                        <span class="font-bold">Weight Loss</span>
-                    </button>
-                    <button onclick="selectGoal('Build Muscle', 'muscle')" class="goal-btn p-6 bg-white rounded-2xl border-2 border-outline-variant/30 hover:border-primary transition-all flex flex-col items-center gap-3">
-                        <span class="material-symbols-outlined text-4xl text-secondary">exercise</span>
-                        <span class="font-bold">Build Muscle</span>
-                    </button>
-                    <button onclick="selectGoal('Flexibility', 'flex')" class="goal-btn p-6 bg-white rounded-2xl border-2 border-outline-variant/30 hover:border-primary transition-all flex flex-col items-center gap-3">
-                        <span class="material-symbols-outlined text-4xl text-tertiary">self_improvement</span>
-                        <span class="font-bold">Flexibility</span>
-                    </button>
-                    <button onclick="selectGoal('General Fitness', 'general')" class="goal-btn p-6 bg-white rounded-2xl border-2 border-outline-variant/30 hover:border-primary transition-all flex flex-col items-center gap-3">
-                        <span class="material-symbols-outlined text-4xl text-primary">health_metrics</span>
-                        <span class="font-bold">General Fitness</span>
-                    </button>
+    <div class="onboarding-wrapper">
+        <div class="onboarding-container">
+            <!-- Step Indicator -->
+            <div class="step-indicator" id="step-indicator">
+                Step <span class="step-number" id="step-current">1</span> of 3
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 33.33%"></div>
                 </div>
             </div>
-
-            <!-- Step 2: Basic Info -->
-            <div id="step-2" class="step-content hidden">
-                <h1 class="font-headline text-3xl font-black mb-4">Tell us about yourself</h1>
-                <p class="text-on-surface-variant text-sm mb-10 font-medium">This helps trainers personalize your program intensity.</p>
+            
+            <!-- Step 1: Goal Selection -->
+            <div id="step-1" class="step-content step-transition">
+                <div class="onboarding-header">
+                    <h1 class="onboarding-title">What's your primary fitness goal?</h1>
+                    <p class="onboarding-subtitle">We'll match you with trainers who specialize in your goal.</p>
+                </div>
                 
-                <div class="space-y-8 text-left max-w-sm mx-auto">
-                    <div>
-                        <label class="block text-sm font-bold mb-3 ml-1">Your Age</label>
-                        <input id="age" type="number" placeholder="25" class="w-full px-5 py-4 rounded-xl bg-white border border-outline-variant/30 focus:border-primary focus:ring-4 focus:ring-primary/10 text-lg font-bold"/>
+                <div class="goal-cards-grid" role="listbox" aria-label="Fitness goals">
+                    <button type="button" role="option" aria-selected="false" onclick="selectGoal('Weight Loss', 'weight')" class="goal-card" id="goal-weight">
+                        <span class="material-symbols-outlined goal-icon" style="color: #FF6B6B;">scale</span>
+                        <div class="goal-title">Weight Loss</div>
+                        <div class="goal-description">Burn fat and improve conditioning.</div>
+                    </button>
+                    
+                    <button type="button" role="option" aria-selected="false" onclick="selectGoal('Build Muscle', 'muscle')" class="goal-card" id="goal-muscle">
+                        <span class="material-symbols-outlined goal-icon" style="color: #1E88E5;">fitness_center</span>
+                        <div class="goal-title">Build Muscle</div>
+                        <div class="goal-description">Gain strength and lean muscle mass.</div>
+                    </button>
+                    
+                    <button type="button" role="option" aria-selected="false" onclick="selectGoal('Flexibility', 'flex')" class="goal-card" id="goal-flex">
+                        <span class="material-symbols-outlined goal-icon" style="color: #6C63FF;">self_improvement</span>
+                        <div class="goal-title">Flexibility</div>
+                        <div class="goal-description">Improve mobility and movement quality.</div>
+                    </button>
+                    
+                    <button type="button" role="option" aria-selected="false" onclick="selectGoal('General Fitness', 'general')" class="goal-card" id="goal-general">
+                        <span class="material-symbols-outlined goal-icon" style="color: #00BCD4;">health_metrics</span>
+                        <div class="goal-title">General Fitness</div>
+                        <div class="goal-description">Build healthier long-term habits.</div>
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button onclick="nextStep(2)" id="goal-continue-btn" class="btn-primary" disabled aria-disabled="true">
+                        Continue
+                    </button>
+                </div>
+                
+                <div class="skip-link">
+                    <a href="#" onclick="skipOnboarding(); return false;">Skip for now</a>
+                </div>
+            </div>
+            
+            <!-- Step 2: Basic Info -->
+            <div id="step-2" class="step-content step-transition hidden">
+                <div class="onboarding-header">
+                    <h1 class="onboarding-title">Tell us about yourself</h1>
+                    <p class="onboarding-subtitle">This helps trainers personalize your program intensity.</p>
+                </div>
+                
+                <div style="max-width: 500px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 2rem;">
+                    <div class="form-group">
+                        <label class="form-label">Your Age</label>
+                        <input id="age" type="number" placeholder="25" class="form-input" min="13" max="120"/>
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-3 ml-1">Your Gender</label>
-                        <div class="flex gap-4">
-                            <button onclick="selectGender('Male')" id="gender-male" class="gender-btn flex-1 py-4 bg-white border-2 border-outline-variant/30 rounded-xl font-bold transition-all">Male</button>
-                            <button onclick="selectGender('Female')" id="gender-female" class="gender-btn flex-1 py-4 bg-white border-2 border-outline-variant/30 rounded-xl font-bold transition-all">Female</button>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Your Gender</label>
+                        <div class="gender-group">
+                            <button type="button" onclick="selectGender('Male')" id="gender-male" class="gender-btn">Male</button>
+                            <button type="button" onclick="selectGender('Female')" id="gender-female" class="gender-btn">Female</button>
                         </div>
                     </div>
                 </div>
-
-                <div class="mt-12 flex gap-4">
-                    <button onclick="prevStep(1)" class="w-20 py-4 border-2 border-outline-variant/30 rounded-xl font-bold hover:bg-surface-container transition-all">
+                
+                <div class="button-group" style="max-width: 500px; margin: 2.5rem auto 0;">
+                    <button onclick="prevStep(1)" class="btn-back">
                         <span class="material-symbols-outlined">arrow_back</span>
                     </button>
-                    <button onclick="finishOnboarding()" id="finish-btn" class="flex-1 py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all text-white">
+                    <button onclick="finishOnboarding()" id="finish-btn" class="btn-primary">
                         Complete Profile
                     </button>
                 </div>
+                
+                <div class="skip-link">
+                    <a href="#" onclick="skipOnboarding(); return false;">Skip for now</a>
+                </div>
             </div>
-            
-        </div>
-
-        <div class="mt-8 text-center">
-            <button onclick="skipOnboarding()" class="text-on-surface-variant hover:text-primary font-bold text-sm transition-colors">Skip for now, I'll do this later</button>
         </div>
     </div>
 
@@ -119,45 +567,86 @@
             age: null,
             gender: null
         };
+        
+        let currentStep = 1;
 
-        async function selectGoal(goal, id) {
+        function selectGoal(goal, id) {
             userData.goal = goal;
-            nextStep(2);
+            
+            // Update UI
+            document.querySelectorAll('.goal-card').forEach(card => {
+                card.classList.remove('selected');
+                card.setAttribute('aria-selected', 'false');
+            });
+
+            const picked = document.getElementById('goal-' + id);
+            picked.classList.add('selected');
+            picked.setAttribute('aria-selected', 'true');
+            picked.focus();
+
+            // Enable continue button (update both properties)
+            const cont = document.getElementById('goal-continue-btn');
+            cont.disabled = false;
+            cont.setAttribute('aria-disabled', 'false');
         }
 
         function selectGender(gender) {
             userData.gender = gender;
             document.querySelectorAll('.gender-btn').forEach(b => {
-                b.classList.remove('border-primary', 'bg-primary-container/20');
-                b.classList.add('border-outline-variant/30');
+                b.classList.remove('selected');
             });
             const active = document.getElementById('gender-' + gender.toLowerCase());
-            active.classList.remove('border-outline-variant/30');
-            active.classList.add('border-primary', 'bg-primary-container/20');
+            active.classList.add('selected');
         }
 
         function nextStep(step) {
-            document.querySelectorAll('.step-content').forEach(s => s.classList.add('hidden'));
+            if (step === 2 && !userData.goal) {
+                return;
+            }
+            
+            currentStep = step;
+            document.querySelectorAll('.step-content').forEach(s => {
+                s.classList.add('hidden');
+            });
             document.getElementById('step-' + step).classList.remove('hidden');
             
-            // Update dots
-            document.querySelectorAll('[id^="step-dot-"]').forEach((dot, i) => {
-                if (i + 1 <= step) {
-                    dot.className = "w-10 h-2 bg-primary rounded-full transition-all";
-                } else {
-                    dot.className = "w-2 h-2 bg-outline-variant rounded-full transition-all";
-                }
-            });
+            // Update progress
+            updateProgress();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function prevStep(step) {
-            nextStep(step);
+            currentStep = step;
+            document.querySelectorAll('.step-content').forEach(s => {
+                s.classList.add('hidden');
+            });
+            document.getElementById('step-' + step).classList.remove('hidden');
+            
+            // Update progress
+            updateProgress();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateProgress() {
+            const progressPercentage = (currentStep / 3) * 100;
+            document.getElementById('step-current').textContent = currentStep;
+            document.getElementById('progress-fill').style.width = progressPercentage + '%';
         }
 
         async function finishOnboarding() {
             const ageInput = document.getElementById('age');
             const age = ageInput ? ageInput.value : null;
-            userData.age = age ? parseInt(age) : null;
+            
+            if (!age || !userData.gender) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            userData.age = parseInt(age);
 
             const user = await getCurrentUser();
             if (!user) {
@@ -168,7 +657,7 @@
             const finishBtn = document.getElementById('finish-btn');
             const originalBtnContent = finishBtn.innerHTML;
             finishBtn.disabled = true;
-            finishBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Saving...';
+            finishBtn.innerHTML = '<span class="material-symbols-outlined" style="display: inline-block; animation: spin 1s linear infinite;">autorenew</span>';
 
             try {
                 await updateUserProfile(user.id, userData);
@@ -181,9 +670,21 @@
         }
 
         function skipOnboarding() {
-            window.location.href = 'client-dashboard.html';
+            if (confirm('Skip onboarding? You can update this later in settings.')) {
+                window.location.href = 'client-dashboard.html';
+            }
         }
+        
+        // Add spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
-<script src="footer-component.js"></script></body>
+</body>
 </html>
 

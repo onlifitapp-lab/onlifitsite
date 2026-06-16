@@ -36,6 +36,14 @@
         .shadow-ambient {
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
         }
+        /* Modal spacing & CTA polish (spacing only - preserves theme) */
+        .onlifit-modal-content p { margin-bottom: 14px; }
+        .onlifit-modal-content .modal-cta { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1rem; height: 48px; }
+        .onlifit-modal-content .modal-cta + .modal-cta { margin-top: 14px; }
+        @media (min-width: 640px) {
+            .onlifit-modal-content .modal-cta-group-horizontal { display: flex; gap: 12px; }
+            .onlifit-modal-content .modal-cta-group-horizontal .modal-cta { height: 48px; }
+        }
     </style>
 </head>
 <body class="bg-surface-container-low font-body text-on-surface">
@@ -101,8 +109,8 @@
     <!-- Booking Modal -->
     <div id="booking-modal" class="fixed inset-0 z-[100] hidden">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto onlifit-modal-content">
                 <button onclick="closeBookingModal()"
                     class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface">
                     <span class="material-symbols-outlined">close</span>
@@ -140,7 +148,7 @@
                             <span id="modal-price" class="text-2xl font-black text-primary font-headline"></span>
                         </div>
                         <button type="submit"
-                            class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                            class="modal-cta w-full bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-[18px]">payment</span> Pay with Razorpay
                         </button>
                         <p class="text-[10px] text-on-surface-variant text-center mt-2">Secured by Razorpay. You won't
@@ -155,17 +163,17 @@
     <div id="success-modal" class="fixed inset-0 z-[110] hidden">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-surface rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div class="bg-surface rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center onlifit-modal-content">
                 <div class="w-20 h-20 bg-tertiary-container rounded-full flex items-center justify-center mx-auto mb-6">
                     <span class="material-symbols-outlined text-tertiary text-4xl"
                         style="font-variation-settings: 'FILL' 1;">check_circle</span>
                 </div>
                 <h3 class="font-headline text-2xl font-bold mb-2">Booking Confirmed!</h3>
-                <p class="text-on-surface-variant text-sm mb-6">Your session has been booked successfully. The trainer
-                    will confirm within 12 hours.</p>
-                <a href="/client/bookings"
-                    class="block w-full py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View
-                    My Bookings</a>
+                <p class="text-on-surface-variant text-sm">Your session has been booked successfully. The trainer will confirm within 12 hours.</p>
+                <div class="modal-cta-group-horizontal">
+                    <a href="/client/bookings" class="modal-cta bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View My Bookings</a>
+                    <a id="success-whatsapp" href="#" target="_blank" class="modal-cta hidden bg-white border border-outline-variant text-sm font-bold text-on-surface rounded-xl hover:bg-surface-container transition-all">Contact Trainer on WhatsApp</a>
+                </div>
             </div>
         </div>
     </div>
@@ -321,9 +329,9 @@
                     </div>
                     
                     <div class="flex flex-wrap items-center mt-4 gap-3 text-center sm:text-left justify-center sm:justify-start">
-                        <a href="client-dashboard.html#messages?id=${trainer.id}" class="px-6 py-2 bg-white border border-outline-variant text-sm font-bold text-on-surface hover:border-primary hover:text-primary rounded-xl transition-all flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Message
-                        </a>
+                        <button type="button" onclick="openBookingModal()" class="px-6 py-2 bg-white border border-outline-variant text-sm font-bold text-on-surface hover:border-primary hover:text-primary rounded-xl transition-all flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">chat_bubble</span> Contact / Book
+                        </button>
                     </div>
                 </div>
             </div>
@@ -579,6 +587,16 @@
                             const verifyData = await verifyRes.json();
                             if (verifyRes.ok && verifyData.success) {
                                 document.getElementById('booking-modal').classList.add('hidden');
+                                // Configure WhatsApp button if trainer contact exists
+                                try {
+                                    const waBtn = document.getElementById('success-whatsapp');
+                                    const phone = (trainer?.whatsapp_number || trainer?.phone || '').replace(/\s|\+/g, '');
+                                    if (waBtn && phone) {
+                                        const msg = encodeURIComponent(`Hi ${trainer?.name || ''}, I booked your plan on Onlifit.`);
+                                        waBtn.href = 'https://wa.me/' + phone + '?text=' + msg;
+                                        waBtn.classList.remove('hidden');
+                                    }
+                                } catch (e) {}
                                 document.getElementById('success-modal').classList.remove('hidden');
                             } else {
                                 alert('Payment verification failed. If money was deducted, contact support.');

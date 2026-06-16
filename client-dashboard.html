@@ -140,6 +140,14 @@
                 overflow-x: hidden;
             }
         }
+        /* Modal spacing & CTA polish (spacing only - preserves theme) */
+        .onlifit-modal-content p { margin-bottom: 14px; }
+        .onlifit-modal-content .modal-cta { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1rem; height: 48px; }
+        .onlifit-modal-content .modal-cta + .modal-cta { margin-top: 14px; }
+        @media (min-width: 640px) {
+            .onlifit-modal-content .modal-cta-group-horizontal { display: flex; gap: 12px; }
+            .onlifit-modal-content .modal-cta-group-horizontal .modal-cta { height: 48px; }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -187,29 +195,23 @@
     </div>
 
     <nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0 flex-1">
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant hover:translate-x-1 hover:text-primary" href="/client/overview" data-route="overview">
-            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-            <span>Dashboard</span>
-        </a>
+        <!-- Dashboard link removed: Client sidebar simplified -->
         <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/bookings" data-route="bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Trainers</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="client-dashboard.html#messages" data-route="messages">
-            <span class="material-symbols-outlined text-[20px]">chat</span>
-            <span>Messages</span>
+        <!-- Find Trainers removed from sidebar -->
+        <!-- Saved Trainers removed -->
+        <!-- Settings removed from sidebar -->
+        <!-- New: Billing -->
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/billing" data-route="billing">
+            <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+            <span>Billing</span>
         </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/find-trainers" data-route="find-trainers">
-            <span class="material-symbols-outlined text-[20px]">search</span>
-            <span>Find Trainers</span>
-        </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/saved-trainers" data-route="saved-trainers">
-            <span class="material-symbols-outlined text-[20px]">favorite</span>
-            <span>Saved Trainers</span>
-        </a>
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/settings" data-route="settings">
-            <span class="material-symbols-outlined text-[20px]">settings</span>
-            <span>Settings</span>
+        <!-- New: Support -->
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/support" data-route="support">
+            <span class="material-symbols-outlined text-[20px]">support_agent</span>
+            <span>Support</span>
         </a>
     </nav>
 
@@ -227,7 +229,7 @@
         <span class="material-symbols-outlined animate-spin text-primary text-4xl">autorenew</span>
     </div>
     <div class="w-full max-w-screen-2xl mx-auto">
-    <section id="view-overview" class="route-view active-view anim-slide-up">
+    <section id="view-overview" class="route-view hidden anim-slide-up">
     
 
 
@@ -305,7 +307,7 @@
     </div>
 
     <!-- â”€â”€ Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-    </section><section id="view-bookings" class="route-view hidden anim-slide-up">
+    </section><section id="view-bookings" class="route-view active-view anim-slide-up">
     <header class="dash-header mb-6 mt-2">
         <h2 class="text-3xl font-black font-headline text-on-surface">My Trainers</h2>
         <p class="text-on-surface-variant text-sm mt-1">Manage your upcoming and past sessions.</p>
@@ -325,134 +327,7 @@
             </div>
 
             <!-- Bookings List Container -->
-            <div id="bookings-list" class="space-y-4">
-                <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 skeleton-card skeleton" aria-hidden="true">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="skeleton-line skeleton" style="width: 40%;"></div>
-                        <div class="skeleton-line skeleton" style="width: 20%;"></div>
-                    </div>
-                    <div class="space-y-2">
-                        <div class="skeleton-line skeleton"></div>
-                        <div class="skeleton-line skeleton" style="width: 70%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty State -->
-            <div id="empty-state" class="hidden">
-                <div class="dash-bookings-empty bg-white rounded-2xl p-12 border border-dashed border-surface-container-high flex flex-col items-center justify-center text-center">
-                    <div class="w-28 h-28 bg-primary-container/40 rounded-full flex items-center justify-center mb-6">
-                        <span class="material-symbols-outlined text-primary/60 text-6xl">fitness_center</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-on-surface mb-2 font-headline">No bookings yet</h3>
-                    <p class="text-on-surface-variant max-w-sm mb-6">Your fitness journey starts with one step. Find a trainer who matches your goals and book your first session today!</p>
-                    <a href="/client/find-trainers" class="px-6 py-3 bg-primary text-on-primary rounded-full font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">search</span>
-                        Find a Trainer
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column -->
-        <div class="col-span-12 lg:col-span-4 space-y-6">
-
-            <!-- Next Session Card -->
-            <div id="next-session-card" class="hidden">
-                <div class="bg-gradient-to-br from-secondary to-secondary/90 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/5 rounded-full"></div>
-                    <div class="absolute -top-4 -left-4 w-16 h-16 bg-primary/20 rounded-full blur-xl"></div>
-                    <div class="relative">
-                        <p class="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-3">Next Session</p>
-                        <h3 id="next-trainer-name" class="font-headline text-xl font-bold mb-1"></h3>
-                        <p id="next-specialty" class="text-white/70 text-sm mb-4"></p>
-                        <div class="flex items-center gap-4 text-sm mb-4">
-                            <span class="flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-primary text-[16px]">calendar_today</span>
-                                <span id="next-date" class="font-medium"></span>
-                            </span>
-                            <span class="flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-primary text-[16px]">schedule</span>
-                                <span id="next-time" class="font-medium"></span>
-                            </span>
-                        </div>
-                        <div class="flex gap-2">
-                            <a id="next-profile-link" href="#" class="flex-1 py-2.5 bg-white/10 backdrop-blur border border-white/10 rounded-xl text-sm font-bold text-center hover:bg-white/20 transition-all">View Profile</a>
-                            <a id="next-chat-link" href="#" class="flex-1 py-2.5 bg-primary rounded-xl text-sm font-bold text-center hover:opacity-90 transition-all flex items-center justify-center gap-1">
-                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span> Chat
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats Ring -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-high">
-                <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Session Progress</h3>
-                <div class="flex items-center gap-6">
-                    <div class="relative w-20 h-20 flex-shrink-0">
-                        <svg class="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
-                            <circle cx="40" cy="40" r="36" fill="none" stroke="#EBEBEB" stroke-width="6"></circle>
-                            <circle id="progress-ring" cx="40" cy="40" r="36" fill="none" stroke="#1E88E5" stroke-width="6" stroke-linecap="round" stroke-dasharray="226" stroke-dashoffset="226" class="ring-animate"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <span id="progress-pct" class="text-lg font-black font-headline text-on-surface">0%</span>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-on-surface mb-1">This Month</p>
-                        <p class="text-xs text-on-surface-variant"><span id="completed-this-month">0</span> of <span id="goal-this-month">0</span> sessions</p>
-                        <p class="text-[10px] text-tertiary font-bold mt-1 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[12px]">trending_up</span>
-                            Keep it up!
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- My Trainers -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-surface-container-high">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-headline text-sm font-bold text-on-surface">My Trainers</h3>
-                    <a href="/client/find-trainers" class="text-xs text-primary font-bold hover:underline">+ Add</a>
-                </div>
-                <div id="trainers-list" class="space-y-3">
-                    <div class="flex items-center gap-3" aria-hidden="true">
-                        <div class="w-10 h-10 rounded-full skeleton"></div>
-                        <div class="flex-1 space-y-2">
-                            <div class="skeleton-line skeleton" style="width: 60%;"></div>
-                            <div class="skeleton-line skeleton" style="width: 40%;"></div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3" aria-hidden="true">
-                        <div class="w-10 h-10 rounded-full skeleton"></div>
-                        <div class="flex-1 space-y-2">
-                            <div class="skeleton-line skeleton" style="width: 55%;"></div>
-                            <div class="skeleton-line skeleton" style="width: 35%;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="no-trainers" class="hidden text-center py-4">
-                    <p class="text-xs text-on-surface-variant">No trainers yet. Book your first session!</p>
-                </div>
-            </div>
-
-            <!-- Motivation Quote -->
-            <div class="bg-primary-container/30 rounded-2xl p-6 border border-primary/10">
-                <span class="material-symbols-outlined text-primary text-2xl mb-3 block" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
-                <p id="motivation-quote" class="text-sm text-on-surface font-medium italic leading-relaxed">"The only bad workout is the one that didn't happen."</p>
-                <p id="motivation-author" class="text-xs text-on-surface-variant mt-2 font-bold">- Unknown</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- â”€â”€ Past Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-    <div class="mt-10" id="past-section">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="font-headline text-xl font-bold text-on-surface">Past Sessions</h2>
-            <button id="toggle-past" onclick="togglePast()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
-                <span class="material-symbols-outlined text-[14px]">expand_more</span> Show all
-            </button>
+            <!-- Removed Find Trainers / Saved Trainers / Settings views to simplify client dashboard -->
         </div>
         <div id="past-bookings-list" class="space-y-3">
             <!-- Populated by JS -->
@@ -465,235 +340,7 @@
     </div>
     </div>
 
-</section>
-    <section id="view-messages" class="route-view hidden anim-slide-up">
-        <header class="dash-header mb-6 mt-2">
-            <h2 class="text-3xl font-black font-headline text-on-surface">Messages</h2>
-            <p class="text-on-surface-variant text-sm mt-1">Chat with your trainers without leaving your dashboard.</p>
-        </header>
-        <div class="space-y-6">
-        <div class="messages-shell dash-messages-shell min-h-[70vh] flex flex-col md:flex-row overflow-hidden bg-white border border-outline-variant/30 rounded-2xl shadow-sm">
-            <!-- Sidebar (Contacts) -->
-            <aside id="contacts-sidebar" class="dash-contacts-sidebar w-full md:w-[360px] border-r border-outline-variant flex flex-col bg-surface-container-low flex-shrink-0">
-                <div class="contacts-search-wrap p-6 border-b border-outline-variant/50">
-                    <div class="relative">
-                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
-                        <input id="contacts-search" type="text" placeholder="Search contacts..." class="dash-contacts-search w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-                </div>
-
-                <div id="contacts-list" class="flex-1 overflow-y-auto hide-scrollbar divide-y divide-outline-variant/30">
-                    <div class="p-4 flex items-center gap-3" aria-hidden="true">
-                        <div class="w-12 h-12 rounded-full skeleton"></div>
-                        <div class="flex-1 space-y-2">
-                            <div class="skeleton-line skeleton" style="width: 55%;"></div>
-                            <div class="skeleton-line skeleton" style="width: 70%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Message View -->
-            <section id="chat-view" class="hidden md:flex flex-1 flex-col relative bg-white w-full">
-                <div id="chat-header" class="dash-chat-header px-4 md:px-8 py-4 border-b border-outline-variant/50 flex items-center justify-between glass-effect sticky top-0 z-10 hidden">
-                    <div class="flex items-center gap-3">
-                        <button type="button" onclick="closeChat()" class="md:hidden flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors">
-                            <span class="material-symbols-outlined text-on-surface">arrow_back</span>
-                        </button>
-                        <div id="active-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-sm overflow-hidden">
-                            <img id="active-avatar-img" alt="" class="hidden w-full h-full object-cover object-center" />
-                            <span id="active-avatar-fallback">U</span>
-                        </div>
-                        <div>
-                            <h3 id="active-name" class="font-bold text-on-surface leading-none mb-1">Name</h3>
-                            <p id="active-status" class="text-[10px] uppercase tracking-widest font-black text-tertiary">Online</p>
-                            <div id="typing-indicator" class="hidden flex gap-1 mt-1">
-                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
-                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
-                                <span class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></span>
-                                <span class="text-[9px] text-primary font-bold ml-1">typing</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button type="button" class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">call</span></button>
-                        <button type="button" class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-all"><span class="material-symbols-outlined">videocam</span></button>
-                    </div>
-                </div>
-
-                <!-- Chat History -->
-                <div id="chat-history" class="dash-chat-history flex-1 overflow-y-auto p-6 md:p-8 space-y-6 flex flex-col">
-                    <div class="flex-1 flex flex-col items-center justify-center text-center opacity-40 py-20" id="no-chat-state">
-                        <span class="material-symbols-outlined text-7xl mb-6">chat_bubble</span>
-                        <h3 class="font-headline text-xl font-bold mb-2">Select a Conversation</h3>
-                        <p class="text-sm">Choose someone from the list to start chatting.</p>
-                    </div>
-                    <!-- Messages will be injected here -->
-                </div>
-
-                <!-- Message Input -->
-                <div id="message-input-area" class="dash-chat-input p-6 border-t border-outline-variant/50 bg-white hidden">
-                    <div class="flex gap-3 items-end">
-                        <button type="button" class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all flex-shrink-0"><span class="material-symbols-outlined">add</span></button>
-                        <div class="flex-1 relative">
-                            <textarea id="msg-input" placeholder="Type your message..." rows="1" class="w-full pl-4 pr-12 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-1 focus:ring-primary transition-all resize-none"></textarea>
-                            <button type="button" onclick="handleSend()" class="absolute right-3 bottom-2 text-primary hover:scale-110 transition-transform"><span class="material-symbols-outlined text-2xl">send</span></button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-        </div>
-    </section>
-
-    <section id="view-find-trainers" class="route-view hidden anim-slide-up">
-        <header class="dash-header mb-6 mt-2">
-            <h2 class="text-3xl font-black font-headline text-on-surface">Find Trainers</h2>
-            <p class="text-on-surface-variant text-sm mt-2">Discover experts tailored to your goals.</p>
-        </header>
-        <div class="space-y-6">
-        <div class="find-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-            <div class="find-trainers-controls grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 items-end mb-6">
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Search</label>
-                    <input id="trainer-search-input" type="text" placeholder="Name, specialty, goals..." class="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                </div>
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Location</label>
-                    <input id="trainer-location-input" type="text" placeholder="City or Online" class="w-full h-12 px-4 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">OnliFit Black</label>
-                    <label class="w-full h-12 px-4 rounded-xl border border-outline-variant/40 bg-surface-container-low flex items-center justify-between cursor-pointer select-none transition-colors focus-within:ring-1 focus-within:ring-primary">
-                        <span class="text-xs font-black uppercase tracking-widest text-on-surface-variant">Show only</span>
-                        <span class="relative inline-flex items-center">
-                            <input id="trainer-black-only" type="checkbox" class="sr-only peer" />
-                            <span class="w-11 h-6 rounded-full bg-outline-variant/40 peer-checked:bg-primary/80 transition-colors"></span>
-                            <span class="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></span>
-                        </span>
-                    </label>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2 opacity-0 select-none">Search</label>
-                    <button id="trainer-search-btn" type="button" class="w-full h-12 inline-flex items-center justify-center px-6 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
-                        Search
-                    </button>
-                </div>
-            </div>
-
-            <div id="find-trainers-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-                <!-- Populated by JS -->
-            </div>
-
-            <div id="find-trainers-empty" class="hidden py-16 text-center text-on-surface-variant">
-                No trainers found. Try a different search.
-            </div>
-        </div>
-        </div>
-    </section>
-
-    <section id="view-saved-trainers" class="route-view hidden anim-slide-up">
-        <header class="dash-header mb-6 mt-2">
-            <h2 class="text-3xl font-black font-headline text-on-surface">Saved Trainers</h2>
-            <p class="text-on-surface-variant text-sm mt-1">Your shortlisted trainers, all in one place.</p>
-        </header>
-        <div class="space-y-6">
-        <div class="saved-trainers-panel bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-            <div id="saved-trainers-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-                <!-- Populated by JS -->
-            </div>
-
-            <div id="saved-trainers-empty" class="hidden py-16 text-center">
-                <p class="text-on-surface-variant">No saved trainers yet.</p>
-                <a href="/client/find-trainers" class="inline-flex mt-4 px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
-                    Find Trainers
-                </a>
-            </div>
-        </div>
-        </div>
-    </section>
-
-    <section id="view-settings" class="route-view hidden anim-slide-up">
-        <header class="dash-header mb-6 mt-2">
-            <button type="button" onclick="router.navigate('overview')" class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors mb-4 cursor-pointer bg-transparent border-none">
-                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-                Back to Dashboard
-            </button>
-            <h2 class="text-3xl font-black font-headline text-on-surface">Settings</h2>
-            <p class="text-on-surface-variant text-sm mt-1">Update your profile details.</p>
-        </header>
-        <div class="space-y-6">
-        <div class="max-w-3xl dash-settings-shell space-y-6">
-            <!-- Profile -->
-            <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-headline text-sm font-black uppercase tracking-widest text-on-surface-variant">Profile</h3>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Full name</label>
-                        <input id="client-setting-name" type="text" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Email</label>
-                        <input id="client-setting-email" type="email" disabled class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm opacity-70"/>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Phone</label>
-                        <input id="client-setting-phone" type="tel" placeholder="+91..." class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Location</label>
-                        <input id="client-setting-location" type="text" placeholder="City or Online" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex flex-wrap items-center gap-3">
-                    <button id="client-settings-save" type="button" onclick="saveClientSettings()" class="px-6 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
-                        Save Changes
-                    </button>
-                    <span id="client-settings-status" class="text-xs font-bold text-on-surface-variant"></span>
-                </div>
-            </div>
-
-            <!-- Security -->
-            <div class="bg-white border border-outline-variant/20 rounded-2xl p-5 md:p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-headline text-sm font-black uppercase tracking-widest text-on-surface-variant">Security</h3>
-                </div>
-
-                <p id="client-password-note" class="text-xs text-on-surface-variant mb-4"></p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">New password</label>
-                        <input id="client-setting-new-password" type="password" minlength="6" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-2">Confirm password</label>
-                        <input id="client-setting-confirm-password" type="password" minlength="6" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"/>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex flex-wrap items-center gap-3">
-                    <button id="client-password-save" type="button" onclick="changeClientPassword()" class="px-6 py-3 bg-secondary text-on-secondary rounded-xl text-sm font-bold hover:opacity-90 transition-all">
-                        Update Password
-                    </button>
-                    <span id="client-password-status" class="text-xs font-bold text-on-surface-variant"></span>
-                </div>
-            </div>
-        </div>
-        </div>
-    </section>
-    </div>
-</main>
+    <!-- Removed messages, find/saved trainers and settings views to restrict client dashboard to bookings/billing/support -->
 
 <!-- â”€â”€ Review Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div id="review-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden">
@@ -701,7 +348,7 @@
     <div class="absolute inset-0 bg-surface/80 backdrop-blur-sm" onclick="closeReviewModal()"></div>
     
     <!-- Modal Content -->
-    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl border border-outline-variant/30 p-6 md:p-8 anim-slide-up mx-4">
+    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl border border-outline-variant/30 p-6 md:p-8 anim-slide-up mx-4 onlifit-modal-content">
         <button onclick="closeReviewModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors">
             <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
@@ -743,7 +390,7 @@
         </div>
 
         <!-- Submit -->
-        <button id="submit-review-btn" onclick="handleReviewSubmit()" class="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+        <button id="submit-review-btn" onclick="handleReviewSubmit()" class="modal-cta w-full bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
             Submit Review
         </button>
     </div>
@@ -940,92 +587,126 @@
         document.getElementById('next-date').textContent = formatDate(next.date);
         document.getElementById('next-time').textContent = (next.time ? next.time : 'TBD');
         document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
-        document.getElementById('next-chat-link').href = 'client-dashboard.html#messages?id=' + next.trainer_id;
+        // Platform messages removed; link to trainer profile instead
+        document.getElementById('next-chat-link').href = 'trainer-profile.html?id=' + next.trainer_id;
     }
 
     // â”€â”€ Render Bookings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function renderBookings() {
-        let upcoming = cachedBookings.filter(isUpcoming);
-
-        if (currentFilter !== 'all') {
-            upcoming = upcoming.filter(b => b.status === currentFilter);
-        }
-
-        upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
-
         const container = document.getElementById('bookings-list');
+        const loadingEl = document.getElementById('bookings-loading');
+        const errorEl = document.getElementById('bookings-error');
         const emptyState = document.getElementById('empty-state');
 
-        if (upcoming.length === 0 && cachedBookings.length === 0) {
-            container.innerHTML = '';
-            emptyState.classList.remove('hidden');
-            return;
-        }
-
+        container.innerHTML = '';
+        errorEl.classList.add('hidden');
         emptyState.classList.add('hidden');
+        loadingEl.classList.remove('hidden');
 
-        if (upcoming.length === 0) {
-            container.innerHTML = `
-                <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
-                    <p class="text-sm text-on-surface-variant">No upcoming sessions${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="/client/find-trainers" class="text-primary font-bold hover:underline">Book one now!</a></p>
-                </div>`;
-            return;
-        }
+        try {
+            await refreshData(); // ensure real booking data
+            let upcoming = cachedBookings.filter(isUpcoming);
 
-        const bookingsHTML = await Promise.all(upcoming.map(async (b, i) => {
-            const trainer = await getTrainerById(b.trainer_id);
-            const statusClass = 'status-' + (b.status || 'confirmed');
-            const delayClass = `anim-delay-${Math.min(i + 1, 4)}`;
+            if (currentFilter !== 'all') upcoming = upcoming.filter(b => String(b.status || '').toLowerCase() === String(currentFilter || '').toLowerCase());
 
-            return `
-            <div class="booking-card bg-white rounded-2xl p-5 shadow-sm border border-outline-variant/20 anim-slide-up ${delayClass}">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <!-- Trainer Avatar -->
-                    <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center overflow-hidden text-2xl shadow-sm">
-                        ${renderAvatarInner(trainer || {})}
-                    </div>
-                    <!-- Info -->
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between gap-2 mb-1">
-                            <div>
-                                <h4 class="font-headline font-bold text-on-surface text-base">${escapeHtml(trainer?.name || 'Trainer')}</h4>
-                                <p class="text-xs text-on-surface-variant">${escapeHtml(trainer?.specialty || getTrainerMeta(trainer || {}) || '-')}</p>
+            upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            loadingEl.classList.add('hidden');
+
+            if ((!upcoming || upcoming.length === 0) && (!cachedBookings || cachedBookings.length === 0)) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (!upcoming || upcoming.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
+                        <p class="text-sm text-on-surface-variant">No active trainers${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="/client/find-trainers" class="text-primary font-bold hover:underline">Book one now!</a></p>
+                    </div>`;
+                return;
+            }
+
+            const bookingsHTML = await Promise.all(upcoming.map(async (b, i) => {
+                const trainer = await getTrainerById(b.trainer_id);
+                const statusRaw = String(b.status || 'pending').toLowerCase();
+                const statusLabel = (statusRaw === 'pending' || statusRaw === 'pending_confirmation') ? 'Pending Confirmation' :
+                                    (statusRaw === 'confirmed' || statusRaw === 'active') ? 'Active' :
+                                    (statusRaw === 'completed') ? 'Completed' :
+                                    (statusRaw === 'cancelled' || statusRaw === 'canceled' || statusRaw === 'rejected') ? 'Cancelled' :
+                                    (b.status || 'Pending Confirmation');
+
+                const statusClass = 'status-' + statusRaw.replace(/\s+/g, '-');
+                const delayClass = `anim-delay-${Math.min(i + 1, 4)}`;
+
+                // Renewal date: prefer explicit field, else try to infer from subscription end_date if available
+                let renewal = b.renewal_date || b.next_renewal || null;
+                if (!renewal && b.subscription_id) {
+                    try {
+                        const { data: subs } = await supabaseClient.from('subscriptions').select('end_date').eq('id', b.subscription_id).single();
+                        renewal = subs?.end_date || null;
+                    } catch (e) {
+                        // ignore — we'll show '-' below
+                    }
+                }
+
+                const trainerPhone = (trainer?.whatsapp_number || trainer?.phone || '').replace(/\D/g, '');
+                const waHref = trainerPhone ? `https://wa.me/${trainerPhone}` : '#';
+
+                return `
+                <div class="booking-card bg-white rounded-2xl p-5 shadow-sm border border-outline-variant/20 anim-slide-up ${delayClass}">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <!-- Trainer Avatar -->
+                        <div class="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-primary-container/30 flex items-center justify-center overflow-hidden text-2xl shadow-sm">
+                            ${renderAvatarInner(trainer || {})}
+                        </div>
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-2 mb-1">
+                                <div>
+                                    <h4 class="font-headline font-bold text-on-surface text-base">${escapeHtml(trainer?.name || 'Trainer')}</h4>
+                                    <p class="text-xs text-on-surface-variant">${escapeHtml(b.plan_label || b.plan_type || '-')}</p>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${statusClass}">
+                                    ${escapeHtml(statusLabel)}
+                                </span>
                             </div>
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex-shrink-0 ${statusClass}">
-                                ${escapeHtml(b.status || 'confirmed')}
-                            </span>
+                            <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-on-surface-variant">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                    ${formatDate(b.date)}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">event_repeat</span>
+                                    ${renewal ? formatDate(renewal) : '-'}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">sell</span>
+                                    ${b.plan_label ? escapeHtml(b.plan_label) : '-'}
+                                </span>
+                                <span class="font-bold text-primary">
+                                    ${b.price ? formatPrice(b.price) : '-'}
+                                </span>
+                            </div>
                         </div>
-                        <div class="flex flex-wrap items-center gap-3 mt-2 text-xs text-on-surface-variant">
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">calendar_today</span>
-                                ${formatDate(b.date)}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                ${b.time ? escapeHtml(b.time) : 'TBD'}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">sell</span>
-                                ${b.plan_label ? escapeHtml(b.plan_label) : '-'}
-                            </span>
-                            <span class="font-bold text-primary">
-                                ${b.price ? formatPrice(b.price) : '-'}
-                            </span>
+                        <!-- Actions -->
+                        <div class="flex sm:flex-col gap-2 flex-shrink-0">
+                            <a ${trainerPhone ? `href="${waHref}" target="_blank"` : 'href="#"'} class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container transition-all text-center">
+                                WhatsApp
+                            </a>
+                            <a href="trainer-profile.html?id=${b.trainer_id}" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-xs font-bold hover:opacity-90 transition-all">View Profile</a>
                         </div>
                     </div>
-                    <!-- Actions -->
-                    <div class="flex sm:flex-col gap-2 flex-shrink-0">
-                        <a href="trainer-profile.html?id=${b.trainer_id}" class="px-4 py-2 bg-surface-container-low rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all text-center">
-                            Profile
-                        </a>
-                        <button onclick="cancelBooking('${b.id}')" class="px-4 py-2 bg-surface-container-low rounded-lg text-xs font-bold text-on-surface-variant hover:bg-error-container hover:text-error transition-all">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </div>`;
-        }));
-        container.innerHTML = bookingsHTML.join('');
+                </div>`;
+            }));
+
+            container.innerHTML = bookingsHTML.join('');
+
+        } catch (err) {
+            console.error('renderBookings error:', err);
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            document.getElementById('bookings-error-text').textContent = 'Unable to load bookings. ' + (err?.message || 'Please try again later.');
+        }
     }
 
     // â”€â”€ Render Past Bookings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1388,211 +1069,7 @@ function trainerCardHTML(tRaw) {
     return '';
 }
 
-let savedTrainerChangeListenerAttached = false;
-function ensureSavedTrainerChangeListener() {
-    if (savedTrainerChangeListenerAttached) return;
-    window.addEventListener('onlifit:saved-trainers-changed', () => {
-        if (window.location.pathname.startsWith('/client/saved-trainers')) {
-            onSavedTrainersRouteActivated();
-        }
-        if (window.location.pathname.startsWith('/client/find-trainers')) {
-            renderFindTrainers();
-        }
-    });
-    savedTrainerChangeListenerAttached = true;
-}
-
-let findTrainersInitialized = false;
-async function renderFindTrainers() {
-    const resultsEl = document.getElementById('find-trainers-results');
-    const emptyEl = document.getElementById('find-trainers-empty');
-    if (!resultsEl || !emptyEl) return;
-
-    const q = (document.getElementById('trainer-search-input')?.value || '').trim();
-    const loc = (document.getElementById('trainer-location-input')?.value || '').trim();
-
-    resultsEl.innerHTML = '';
-    emptyEl.classList.add('hidden');
-
-    let trainers = await searchTrainers(q, loc);
-
-    const blackOnly = !!document.getElementById('trainer-black-only')?.checked;
-    if (blackOnly) {
-        trainers = (trainers || []).filter(t => {
-            const normalized = (typeof window.normalizeTrainerBadges === 'function') ? window.normalizeTrainerBadges(t) : t;
-            return !!normalized?.hasBlackStatus;
-        });
-    }
-
-    if (!trainers || trainers.length === 0) {
-        emptyEl.classList.remove('hidden');
-        return;
-    }
-
-    resultsEl.innerHTML = trainers.slice(0, 30).map(trainerCardHTML).join('');
-}
-
-async function onFindTrainersRouteActivated() {
-    if (!findTrainersInitialized) {
-        const btn = document.getElementById('trainer-search-btn');
-        const q = document.getElementById('trainer-search-input');
-        const loc = document.getElementById('trainer-location-input');
-        const black = document.getElementById('trainer-black-only');
-
-        if (btn) btn.addEventListener('click', () => renderFindTrainers());
-        if (q) q.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFindTrainers(); });
-        if (loc) loc.addEventListener('keydown', (e) => { if (e.key === 'Enter') renderFindTrainers(); });
-        if (black) black.addEventListener('change', () => renderFindTrainers());
-
-        ensureSavedTrainerChangeListener();
-        findTrainersInitialized = true;
-    }
-    await renderFindTrainers();
-}
-
-async function onSavedTrainersRouteActivated() {
-    const container = document.getElementById('saved-trainers-results');
-    const empty = document.getElementById('saved-trainers-empty');
-    if (!container || !empty) return;
-
-    const ids = getSavedTrainerIds();
-    if (!ids.length) {
-        container.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-    }
-    empty.classList.add('hidden');
-
-    const trainers = await getTrainers();
-    const map = new Map((trainers || []).map(t => [t.id, t]));
-    const saved = ids.map(id => map.get(id)).filter(Boolean);
-
-    container.innerHTML = saved.length ? saved.map(trainerCardHTML).join('') : '';
-    if (!saved.length) empty.classList.remove('hidden');
-}
-
-// Settings view
-function fillSettingsFields() {
-    if (!user) return;
-    const nameEl = document.getElementById('client-setting-name');
-    const emailEl = document.getElementById('client-setting-email');
-    const phoneEl = document.getElementById('client-setting-phone');
-    const locEl = document.getElementById('client-setting-location');
-
-    if (nameEl) nameEl.value = user.name || user.user_metadata?.name || '';
-    if (emailEl) emailEl.value = user.email || '';
-    if (phoneEl) phoneEl.value = user.phone || '';
-    if (locEl) locEl.value = user.location || '';
-}
-
-async function saveClientSettings() {
-    if (!user) return;
-
-    const statusEl = document.getElementById('client-settings-status');
-    const btn = document.getElementById('client-settings-save');
-
-    const name = (document.getElementById('client-setting-name')?.value || '').trim();
-    const phone = (document.getElementById('client-setting-phone')?.value || '').trim();
-    const location = (document.getElementById('client-setting-location')?.value || '').trim();
-
-    if (btn) btn.disabled = true;
-    if (statusEl) statusEl.textContent = 'Saving...';
-
-    const result = await updateUserProfile(user.id, { name, phone, location });
-    if (result?.success) {
-        user.name = name;
-        user.phone = phone;
-        user.location = location;
-        if (statusEl) statusEl.textContent = 'Saved!';
-        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
-        if (name) document.getElementById('sidebar-name').textContent = name;
-    } else {
-        if (statusEl) statusEl.textContent = 'Save failed';
-        alert('Failed to save settings: ' + (result?.error || 'Unknown error'));
-    }
-
-    if (btn) btn.disabled = false;
-}
-
-async function changeClientPassword() {
-    const statusEl = document.getElementById('client-password-status');
-    const noteEl = document.getElementById('client-password-note');
-    const btn = document.getElementById('client-password-save');
-
-    const bypass = (typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS);
-    if (bypass) {
-        if (noteEl) noteEl.textContent = 'Password updates are disabled while AUTH_BYPASS is enabled (preview mode).';
-        if (statusEl) statusEl.textContent = '';
-        return;
-    }
-
-    const newPw = (document.getElementById('client-setting-new-password')?.value || '').trim();
-    const confirmPw = (document.getElementById('client-setting-confirm-password')?.value || '').trim();
-
-    if (!newPw || newPw.length < 6) {
-        if (statusEl) statusEl.textContent = 'Password must be at least 6 characters.';
-        return;
-    }
-    if (newPw !== confirmPw) {
-        if (statusEl) statusEl.textContent = 'Passwords do not match.';
-        return;
-    }
-
-    if (btn) btn.disabled = true;
-    if (statusEl) statusEl.textContent = 'Updating...';
-
-    try {
-        const { error } = await supabaseClient.auth.updateUser({ password: newPw });
-        if (error) throw error;
-
-        const newPwEl = document.getElementById('client-setting-new-password');
-        const confirmEl = document.getElementById('client-setting-confirm-password');
-        if (newPwEl) newPwEl.value = '';
-        if (confirmEl) confirmEl.value = '';
-
-        if (statusEl) statusEl.textContent = 'Password updated.';
-        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2500);
-    } catch (e) {
-        console.error('Password update error:', e);
-        if (statusEl) statusEl.textContent = 'Update failed.';
-        alert('Failed to update password: ' + (e?.message || 'Unknown error'));
-    }
-
-    if (btn) btn.disabled = false;
-}
-
-async function onSettingsRouteActivated() {
-    if (!user) user = await getCurrentUser();
-    fillSettingsFields();
-
-    const bypass = (typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS);
-    const noteEl = document.getElementById('client-password-note');
-    const btn = document.getElementById('client-password-save');
-    const pw1 = document.getElementById('client-setting-new-password');
-    const pw2 = document.getElementById('client-setting-confirm-password');
-
-    if (bypass) {
-        if (noteEl) noteEl.textContent = 'Password updates are disabled while AUTH_BYPASS is enabled (preview mode).';
-        if (btn) btn.disabled = true;
-        if (pw1) pw1.disabled = true;
-        if (pw2) pw2.disabled = true;
-    } else {
-        if (noteEl) noteEl.textContent = 'Update your dashboard password (min 6 characters).';
-        if (btn) btn.disabled = false;
-        if (pw1) pw1.disabled = false;
-        if (pw2) pw2.disabled = false;
-
-        // Enter-to-submit
-        [pw1, pw2].filter(Boolean).forEach(el => {
-            el.onkeydown = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    changeClientPassword();
-                }
-            };
-        });
-    }
-}
+        // Removed saved-trainers/find-trainers/settings route handlers — not used in simplified client dashboard
 
 // Messages view (in-dashboard)
 let currentContactId = null;
@@ -1855,6 +1332,17 @@ async function ensureMessagesInitialized() {
 
     if (!user) user = await getCurrentUser();
 
+    // Feature flag: short-circuit messaging initialization when disabled
+    if (!window.ENABLE_PLATFORM_MESSAGING) {
+        messagesInitialized = true;
+        try {
+            document.getElementById('chat-view')?.classList.add('hidden');
+            document.getElementById('chat-history')?.innerHTML = '<div class="p-6 text-center opacity-60">Platform messaging is disabled.</div>';
+            document.getElementById('message-input-area')?.classList.add('hidden');
+        } catch (e) {}
+        return;
+    }
+
     const msgInput = document.getElementById('msg-input');
     if (msgInput) {
         msgInput.onkeydown = (e) => {
@@ -1970,7 +1458,7 @@ class DashboardRouter {
     async handleRoute() {
         const isFile = window.location.protocol === 'file:';
 
-        let route = 'overview';
+        let route = 'bookings';
         if (isFile) {
             route = (window.location.hash || '#overview').replace('#', '') || 'overview';
         } else {
@@ -1982,8 +1470,8 @@ class DashboardRouter {
             }
         }
 
-        const allowed = new Set(['overview', 'bookings', 'messages', 'find-trainers', 'saved-trainers', 'settings']);
-        if (!allowed.has(route)) route = 'overview';
+        const allowed = new Set(['bookings', 'billing', 'support']);
+        if (!allowed.has(route)) route = 'bookings';
 
         const targetView = document.getElementById('view-' + route);
         if (!targetView) return;
@@ -2015,12 +1503,9 @@ class DashboardRouter {
 
         if (typeof closeSidebar === 'function') closeSidebar();
 
-        // Route hooks (lazy init)
+        // Route hooks (lazy init) — only bookings, billing, support are active
         try {
-            if (route === 'messages') await onMessagesRouteActivated();
-            if (route === 'find-trainers') await onFindTrainersRouteActivated();
-            if (route === 'saved-trainers') await onSavedTrainersRouteActivated();
-            if (route === 'settings') await onSettingsRouteActivated();
+            // No-op: bookings/billing/support initialize inline where needed
         } catch (e) {
             console.error('Route hook error:', e);
         }
@@ -2029,17 +1514,25 @@ class DashboardRouter {
     navigate(route, search = '') {
         const isFile = window.location.protocol === 'file:';
         const clean = (route || 'overview').replace(/^\//, '');
-
         if (isFile) {
+            if (clean === 'billing') { window.location.href = 'billing.html'; return; }
+            if (clean === 'support') { window.location.href = 'support.html'; return; }
             window.location.hash = clean;
             return;
         }
 
-        if (clean === 'messages') {
-            history.pushState(null, '', '/client-dashboard#messages' + (search || ''));
-        } else {
-            history.pushState(null, '', '/client/' + clean + (search || ''));
+        // For billing/support, navigate to dedicated pages instead of in-page views
+        if (clean === 'billing') {
+            window.location.href = '/billing.html';
+            return;
         }
+        if (clean === 'support') {
+            window.location.href = '/support.html';
+            return;
+        }
+
+        // Default SPA navigation
+        history.pushState(null, '', '/client/' + clean + (search || ''));
         this.handleRoute();
     }
 }
