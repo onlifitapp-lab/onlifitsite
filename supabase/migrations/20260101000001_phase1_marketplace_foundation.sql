@@ -65,10 +65,14 @@ CREATE INDEX IF NOT EXISTS idx_client_enquiries_trainer_created
 
 
 -- ----------------------------------------------------------------------------
--- 3. profiles — profile_completion_score, last_active_at
+-- 3. profiles — profile_completion_score, last_active_at, whatsapp_number
+--    whatsapp_number did not exist in production despite being referenced by
+--    application code (api/create-lead.js) and required by the
+--    profile-completion trigger below — adding it here.
 -- ----------------------------------------------------------------------------
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS profile_completion_score INTEGER DEFAULT 0;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS whatsapp_number TEXT;
 
 UPDATE profiles SET last_active_at = created_at WHERE last_active_at IS NULL;
 
@@ -121,7 +125,16 @@ ALTER TABLE profiles ADD CONSTRAINT profiles_account_status_check
 --    Column name unchanged; only allowed values change. Legacy 'verified'
 --    maps to 'approved'; any other unexpected value is coerced to 'pending'
 --    as a safe fallback so the constraint below cannot fail on stray data.
+--
+--    Ordering matters here: the OLD constraint (from setup-trainer-storage.sql,
+--    an unnamed inline column constraint that Postgres auto-names
+--    "profiles_verification_status_check" by default — the same name this
+--    migration uses) only allows 'pending'/'verified'/'rejected'. It must be
+--    dropped BEFORE normalizing data to 'approved', otherwise the UPDATE
+--    below is rejected by the very constraint being replaced.
 -- ----------------------------------------------------------------------------
+ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_verification_status_check;
+
 UPDATE profiles SET verification_status = 'approved' WHERE verification_status = 'verified';
 
 UPDATE profiles
@@ -129,13 +142,6 @@ SET verification_status = 'pending'
 WHERE verification_status IS NULL
    OR verification_status NOT IN ('pending', 'approved', 'rejected');
 
--- The original constraint (from setup-trainer-storage.sql) was created as an
--- unnamed inline column constraint, which Postgres auto-names
--- "profiles_verification_status_check" by default — the same name this
--- migration uses. DROP IF EXISTS + ADD covers both a legacy unnamed
--- constraint carrying that auto-generated name and a previous run of this
--- exact migration.
-ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_verification_status_check;
 ALTER TABLE profiles ADD CONSTRAINT profiles_verification_status_check
     CHECK (verification_status IN ('pending', 'approved', 'rejected'));
 

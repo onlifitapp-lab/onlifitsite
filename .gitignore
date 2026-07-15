@@ -30,3 +30,6 @@ yarn-error.log*
 
 # gemini/antigravity
 .gemini/
+
+# supabase CLI local cache/link metadata (no secrets, but machine-local)
+supabase/.temp/
