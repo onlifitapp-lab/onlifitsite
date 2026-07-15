@@ -297,10 +297,12 @@ function listenForTrainerUpdates() {
 
 
         function applyTrainerData(trainers) {
+            // Default order now comes from the shared ranking comparator
+            // inside getTrainers()/normalizeTrainerList() (auth.js) — no
+            // need to re-sort here. The explicit "Sort by" dropdown below
+            // (sortAndRender/currentSort) still applies on top when the
+            // user picks a specific sort option.
             allTrainers = Array.isArray(trainers) ? [...trainers] : [];
-            if (allTrainers.length > 0) {
-                allTrainers.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
-            }
 
             trainersVersion += 1;
 

@@ -50,10 +50,10 @@
         -webkit-touch-callout: none;
     }
 
-    /* 4. LINKS - Ensure they're easy to tap */
-    a {
+    /* 4. LINKS - Only interactive/nav links need touch targets */
+    a.btn, a[class*="button"], a[class*="cta"],
+    nav a, .sidebar-link, a[role="button"] {
         min-height: 44px;
-        min-width: 44px;
         display: inline-flex;
         align-items: center;
     }

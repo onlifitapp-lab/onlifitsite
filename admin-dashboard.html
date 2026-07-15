@@ -1300,8 +1300,8 @@
 
         function getTrainerVerificationStatus(trainer) {
             const direct = String(trainer?.verification_status || '').trim().toLowerCase();
-            if (direct === 'verified' || direct === 'rejected') return direct;
-            if (trainer?.kyc_verified && trainer?.certificates_verified) return 'verified';
+            if (direct === 'approved' || direct === 'rejected') return direct;
+            if (trainer?.kyc_verified && trainer?.certificates_verified) return 'approved';
             if (trainer?.kyc_verified) return 'kyc_verified';
             if (trainer?.certificates_verified) return 'certificates_verified';
             return 'pending';
@@ -2249,8 +2249,8 @@
                 if (trainer.kyc_verified && trainer.certificates_verified) {
                     await supabase
                         .from('profiles')
-                        .update({ 
-                            verification_status: 'verified',
+                        .update({
+                            verification_status: 'approved',
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', trainerId);

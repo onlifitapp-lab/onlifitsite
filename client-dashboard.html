@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
+<!DOCTYPE html><html class="scroll-smooth" lang="en"><head>
     <script>
         document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');
     </script>
@@ -291,19 +291,6 @@
             </div>
         </div>
 
-        <!-- Total Spent -->
-        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-4 booking-card">
-            <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse" style="animation-delay: 3s;"></div>
-            <div class="relative">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary-container/60 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">payments</span>
-                    </div>
-                </div>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-1">Total Invested</p>
-                <h3 id="stat-spent" class="text-2xl font-black text-on-surface font-headline">Rs 0</h3>
-            </div>
-        </div>
     </div>
 
     <!-- â”€â”€ Content Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
@@ -425,21 +412,7 @@
         
         console.log('=== STARTING DASHBOARD INIT ===');
         
-        try {
-            await renderAuthNav();
-            user = await getCurrentUser();
-            
-            if (!user) {
-                console.error('Failed to load a viewer profile.');
-                return;
-            }
-
-            console.log('Got viewer profile:', user);
-
-            // IMPORTANT: Only redirect to bookings.html if explicitly a trainer
-            // Default behavior: allow client dashboard access
-            console.log('User role:', user.role);
-            
+        // removed stray template return that caused parsing errors
             if (user.role === 'trainer') {
                 console.log('User is trainer, redirecting to trainer dashboard');
                 window.location.href = 'bookings.html';
@@ -531,64 +504,51 @@
         const trainerIds = [...new Set(cachedBookings.map(b => b.trainer_id))];
         const totalSpent = cachedBookings.reduce((sum, b) => sum + (b.price || 0), 0);
 
-        document.getElementById('stat-upcoming').textContent = upcoming.length;
-        document.getElementById('stat-completed').textContent = completed.length;
-        document.getElementById('stat-trainers').textContent = trainerIds.length;
-        document.getElementById('stat-spent').textContent = formatPrice(totalSpent);
+        const elUpcoming = document.getElementById('stat-upcoming');
+        if (elUpcoming) { elUpcoming.textContent = upcoming.length; }
+        const elCompleted = document.getElementById('stat-completed');
+        if (elCompleted) { elCompleted.textContent = completed.length; }
+        const elTrainers = document.getElementById('stat-trainers');
+        if (elTrainers) { elTrainers.textContent = trainerIds.length; }
 
         // Check if next session is today
         if (upcoming.length > 0) {
             const sorted = upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
             const next = sorted[0];
             const nextDate = new Date(next.date);
-            if (nextDate.toDateString() === today.toDateString()) {
-                document.getElementById('stat-upcoming-badge').classList.remove('hidden');
-            }
+                if (nextDate.toDateString() === today.toDateString()) {
+                    const badgeEl = document.getElementById('stat-upcoming-badge');
+                    if (badgeEl) badgeEl.classList.remove('hidden');
+                }
         }
 
-        // Progress ring
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
-
-        const thisMonth = cachedBookings.filter(b => {
-            const d = new Date(b.date);
-            return d >= monthStart && d <= monthEnd;
-        });
-
-        const completedThisMonth = thisMonth.filter(b => (b.status || '').toLowerCase() === 'completed').length;
-        const totalThisMonth = thisMonth.length;
-        const pct = totalThisMonth ? Math.round((completedThisMonth / totalThisMonth) * 100) : 0;
-        const offset = 226 - (226 * pct / 100);
-
-        document.getElementById('completed-this-month').textContent = completedThisMonth;
-        document.getElementById('goal-this-month').textContent = totalThisMonth;
-        document.getElementById('progress-pct').textContent = pct + '%';
-        document.getElementById('progress-ring').style.strokeDashoffset = offset;
+        // Progress ring removed: simplified dashboard keeps only visible stats above.
     }
 
     // â”€â”€ Render Next Session Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function renderNextSession() {
         const upcoming = cachedBookings.filter(isUpcoming).sort((a,b) => new Date(a.date) - new Date(b.date));
         const card = document.getElementById('next-session-card');
+        if (!card) return;
 
         if (upcoming.length === 0) {
-            card.classList.add('hidden');
+            if (card.classList && card.classList.add) card.classList.add('hidden');
             return;
         }
 
         const next = upcoming[0];
         const trainer = await getTrainerById(next.trainer_id);
-        card.classList.remove('hidden');
+        if (card.classList && card.classList.remove) card.classList.remove('hidden');
 
         const meta = trainer ? getTrainerMeta(trainer) : '';
 
-        document.getElementById('next-trainer-name').textContent = (trainer?.name || 'Trainer');
-        document.getElementById('next-specialty').textContent = (trainer?.specialty || meta || '-');
-        document.getElementById('next-date').textContent = formatDate(next.date);
-        document.getElementById('next-time').textContent = (next.time ? next.time : 'TBD');
-        document.getElementById('next-profile-link').href = 'trainer-profile.html?id=' + next.trainer_id;
+        const nameEl = document.getElementById('next-trainer-name'); if (nameEl) nameEl.textContent = (trainer?.name || 'Trainer');
+        const specEl = document.getElementById('next-specialty'); if (specEl) specEl.textContent = (trainer?.specialty || meta || '-');
+        const dateEl = document.getElementById('next-date'); if (dateEl) dateEl.textContent = formatDate(next.date);
+        const timeEl = document.getElementById('next-time'); if (timeEl) timeEl.textContent = (next.time ? next.time : 'TBD');
+        const profileLink = document.getElementById('next-profile-link'); if (profileLink) profileLink.href = 'trainer-profile.html?id=' + next.trainer_id;
         // Platform messages removed; link to trainer profile instead
-        document.getElementById('next-chat-link').href = 'trainer-profile.html?id=' + next.trainer_id;
+        const chatLink = document.getElementById('next-chat-link'); if (chatLink) chatLink.href = 'trainer-profile.html?id=' + next.trainer_id;
     }
 
     // â”€â”€ Render Bookings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -598,10 +558,12 @@
         const errorEl = document.getElementById('bookings-error');
         const emptyState = document.getElementById('empty-state');
 
+        if (!container || !loadingEl || !errorEl || !emptyState) return;
+
         container.innerHTML = '';
-        errorEl.classList.add('hidden');
-        emptyState.classList.add('hidden');
-        loadingEl.classList.remove('hidden');
+        if (errorEl.classList) errorEl.classList.add('hidden');
+        if (emptyState.classList) emptyState.classList.add('hidden');
+        if (loadingEl.classList) loadingEl.classList.remove('hidden');
 
         try {
             await refreshData(); // ensure real booking data
@@ -611,10 +573,10 @@
 
             upcoming.sort((a,b) => new Date(a.date) - new Date(b.date));
 
-            loadingEl.classList.add('hidden');
+            if (loadingEl.classList) loadingEl.classList.add('hidden');
 
             if ((!upcoming || upcoming.length === 0) && (!cachedBookings || cachedBookings.length === 0)) {
-                emptyState.classList.remove('hidden');
+                if (emptyState.classList) emptyState.classList.remove('hidden');
                 return;
             }
 
@@ -703,9 +665,9 @@
 
         } catch (err) {
             console.error('renderBookings error:', err);
-            loadingEl.classList.add('hidden');
-            errorEl.classList.remove('hidden');
-            document.getElementById('bookings-error-text').textContent = 'Unable to load bookings. ' + (err?.message || 'Please try again later.');
+            if (loadingEl.classList) loadingEl.classList.add('hidden');
+            if (errorEl.classList) errorEl.classList.remove('hidden');
+            const errText = document.getElementById('bookings-error-text'); if (errText) errText.textContent = 'Unable to load bookings. ' + (err?.message || 'Please try again later.');
         }
     }
 
@@ -716,16 +678,19 @@
 
         const container = document.getElementById('past-bookings-list');
         const noPast = document.getElementById('no-past');
+        const pastSection = document.getElementById('past-section');
+
+        if (!container || !noPast) return;
 
         if (past.length === 0) {
             container.innerHTML = '';
-            noPast.classList.remove('hidden');
-            document.getElementById('past-section').style.display = 'none';
+            if (noPast.classList) noPast.classList.remove('hidden');
+            if (pastSection && pastSection.style) pastSection.style.display = 'none';
             return;
         }
 
-        noPast.classList.add('hidden');
-        document.getElementById('past-section').style.display = 'block';
+        if (noPast.classList) noPast.classList.add('hidden');
+        if (pastSection && pastSection.style) pastSection.style.display = 'block';
 
         const display = showAllPast ? past : past.slice(0, 3);
 
@@ -754,7 +719,8 @@
         container.innerHTML = pastHTML.join('');
 
         // Toggle button text
-        document.getElementById('toggle-past').innerHTML = showAllPast 
+        const toggleBtn = document.getElementById('toggle-past');
+        if (toggleBtn) toggleBtn.innerHTML = showAllPast 
             ? '<span class="material-symbols-outlined text-[14px]">expand_less</span> Show less'
             : `<span class="material-symbols-outlined text-[14px]">expand_more</span> Show all (${past.length})`;
     }
@@ -765,13 +731,15 @@
         const container = document.getElementById('trainers-list');
         const noTrainers = document.getElementById('no-trainers');
 
+        if (!container || !noTrainers) return;
+
         if (trainerIds.length === 0) {
             container.innerHTML = '';
-            noTrainers.classList.remove('hidden');
+            if (noTrainers.classList) noTrainers.classList.remove('hidden');
             return;
         }
 
-        noTrainers.classList.add('hidden');
+        if (noTrainers.classList) noTrainers.classList.add('hidden');
 
         const trainersHTML = await Promise.all(trainerIds.slice(0, 4).map(async tid => {
             const trainer = await getTrainerById(tid);
@@ -1143,7 +1111,6 @@ async function loadContacts() {
 
     list.innerHTML = filtered.map(c => {
         const lastMsg = lastMessages[c.id];
-        const unreadCount = lastMsg?.unreadCount || 0;
         const lastMsgText = lastMsg?.text || 'No messages yet';
         const lastMsgTime = lastMsg?.timestamp ? formatTimestamp(lastMsg.timestamp) : '';
 

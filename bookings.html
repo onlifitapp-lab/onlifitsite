@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html class="light" lang="en"><head>
+<!DOCTYPE html><html class="light" lang="en"><head>
 <script>
     document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');
 </script>
@@ -158,8 +158,8 @@
 <span>Dashboard</span>
 </a>
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/bookings">
-<span class="material-symbols-outlined text-[20px] leading-none shrink-0">calendar_today</span>
-<span>Bookings</span>
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">group</span>
+<span>Leads</span>
 </a>
     <!-- Messages removed from sidebar -->
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
@@ -195,12 +195,12 @@
         <div class="space-y-8">
         <div class="trainer-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-0">
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-upcoming">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Upcoming Sessions</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none capitalize" id="stat-subscription">Free</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Subscription</p>
             </div>
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
-                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-completed">0</h3>
-                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Sessions Delivered (7d)</p>
+                <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-lead-count">0</h3>
+                <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Leads (30d)</p>
             </div>
             <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
                 <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-unread-messages">0</h3>
@@ -1119,21 +1119,17 @@
 
     function computeDashboardCounts(bookings) {
         const now = new Date();
-        const upcoming = (bookings || []).filter(b => {
-            if (isCancelled(b)) return false;
-            const dt = parseBookingDateTime(b);
-            return dt && dt >= now;
+        
+        // In the lead model, we just count recent leads.
+        const totalLeads30d = (bookings || []).filter(b => {
+            const dt = b?.created_at ? new Date(b.created_at) : null;
+            return dt && withinDays(dt, 30);
         }).length;
+        
+        // Pending leads
+        const pending = (bookings || []).filter(b => String(b?.status || '').toLowerCase() === 'pending' || String(b?.status || '').toLowerCase() === 'lead').length;
 
-        const delivered7d = (bookings || []).filter(b => {
-            if (isCancelled(b)) return false;
-            const dt = parseBookingDateTime(b);
-            return dt && dt < now && withinDays(dt, 7);
-        }).length;
-
-        const pending = (bookings || []).filter(b => String(b?.status || '').toLowerCase() === 'pending').length;
-
-        return { upcoming, delivered7d, pending };
+        return { totalLeads30d, pending };
     }
 
     async function renderNextSessions(bookings) {
@@ -1790,19 +1786,19 @@
     }
 
     async function renderDashboardView(bookings) {
-        const { upcoming, delivered7d, pending } = computeDashboardCounts(bookings);
+        const { totalLeads30d, pending } = computeDashboardCounts(bookings);
 
-        const upcomingEl = document.getElementById('stat-upcoming');
-        const completedEl = document.getElementById('stat-completed');
-        if (upcomingEl) upcomingEl.textContent = String(upcoming);
-        if (completedEl) completedEl.textContent = String(delivered7d);
+        const subEl = document.getElementById('stat-subscription');
+        const leadEl = document.getElementById('stat-lead-count');
+        if (subEl) subEl.textContent = trainerUser?.subscription_plan || 'Free';
+        if (leadEl) leadEl.textContent = String(totalLeads30d || 0);
 
         const welcome = document.getElementById('welcome-message');
         if (welcome && trainerUser?.name) {
             const first = trainerUser.name.split(' ')[0];
             welcome.textContent = pending > 0
-                ? `Welcome back, ${first}! You have ${pending} pending booking ${pending === 1 ? 'request' : 'requests'}.`
-                : `Welcome back, ${first}! Manage your sessions.`;
+                ? `Welcome back, ${first}! You have ${pending} new leads.`
+                : `Welcome back, ${first}! Manage your leads.`;
         }
 
         await updateUnreadMessagesCount();

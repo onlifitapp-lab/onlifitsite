@@ -883,30 +883,18 @@ async function handleOAuthCallback(options = {}) {
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
     if (!shouldRedirectNow) return;
 
-    // Normalize legacy verification status values (backwards compatibility)
-    function normalizeVerificationStatus(status) {
-        const s = String(status || '').toLowerCase();
-        if (s === 'approved') return 'verified';
-        return s;
-    }
-
     console.log('Redirecting after OAuth. Final Role:', finalRoleBackup);
     if (finalRoleBackup === 'admin') {
         window.location.replace('admin-dashboard.html');
     } else if (finalRoleBackup === 'trainer') {
-        const verificationStatus = normalizeVerificationStatus(profile?.verification_status);
-        const trainerApproved = verificationStatus === 'verified';
-
         const onboardingUrl = (joinUsTrainerIntent || shouldKeepTrainerIntent)
             ? 'trainer-onboarding.html?role=trainer&source=join-us'
             : 'trainer-onboarding.html';
 
         if (!profile?.onboarding_completed) {
             window.location.replace(onboardingUrl);
-        } else if (!trainerApproved) {
-            window.location.replace(onboardingUrl);
         } else {
-            // Trainer is fully approved; clear any leftover oauth intent.
+            // Trainer has completed onboarding; clear any leftover oauth intent.
             localStorage.removeItem('oauth_role');
             localStorage.removeItem('oauth_is_signup');
             localStorage.removeItem(ONLIFIT_OAUTH_SIGNUP_SOURCE);
@@ -1122,9 +1110,16 @@ function isLikelySupabaseUuid(id) {
 
 function normalizeTrainerList(list) {
     if (!Array.isArray(list)) return [];
-    return list
+    const normalized = list
         .filter(t => isLikelySupabaseUuid(t?.id))
         .map(t => (typeof window.normalizeTrainerBadges === 'function' ? window.normalizeTrainerBadges(t) : t));
+
+    // Single shared ranking point: every trainer list (search results, full
+    // directory listings, cached or fresh) passes through here, so ranking
+    // order is defined in exactly one place (compareTrainersForRanking).
+    return typeof compareTrainersForRanking === 'function'
+        ? normalized.sort(compareTrainersForRanking)
+        : normalized;
 }
 
 let _cachedTrainers = null;
@@ -1170,8 +1165,8 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience';
-    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, kyc_verified, certificates_verified, verification_status, experience';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience, training_mode, profile_completion_score, last_active_at';
+    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, kyc_verified, certificates_verified, verification_status, experience, training_mode';
     const selectWithBadgeFull = selectBaseFull + ', has_black_status';
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
@@ -1200,6 +1195,8 @@ async function getTrainers(options = {}) {
                 const err = res.error;
                 if (isMissingColumnError(err, 'has_black_status')) continue;
                 if (isMissingColumnError(err, 'latitude') || isMissingColumnError(err, 'longitude')) continue;
+                if (isMissingColumnError(err, 'profile_completion_score') || isMissingColumnError(err, 'last_active_at')) continue;
+                if (isMissingColumnError(err, 'training_mode')) continue;
 
                 return res;
             }
@@ -1345,21 +1342,60 @@ async function submitReview(trainerId, rating, text) {
     }
 }
 
-async function searchTrainers(query, location) {
+// ─── SHARED SEARCH & RANKING (single source of truth — used by every page) ───
+
+// Mode handling: an empty/unspecified search mode matches every trainer
+// (including trainers with no training_mode set). A specific mode ('online'
+// or 'offline') matches trainers offering that mode directly, or trainers
+// set to 'both'. A trainer with no training_mode set does not match a
+// specific mode filter, since we can't confirm they offer it.
+function matchesTrainingModeFilter(trainerMode, searchMode) {
+    const wanted = String(searchMode || '').trim().toLowerCase();
+    if (!wanted) return true; // Mode empty -> no filtering, everyone matches.
+
+    const has = String(trainerMode || '').trim().toLowerCase();
+    if (!has) return false; // Trainer hasn't set a mode -> can't confirm a match.
+
+    return has === wanted || has === 'both';
+}
+
+// Ranking comparator (Phase 3A): only fields with real production data today.
+// Tiers, in order: Rating desc, Review Count desc, Profile Completion desc,
+// Last Active desc. Subscription-plan tiers and Active Boost are deferred to
+// Phase 3B (subscriptions/boosts don't exist yet). Distance is intentionally
+// omitted entirely — no trainer has real coordinate data, so no distance
+// tier is implemented (not even as a text-based proxy).
+function compareTrainersForRanking(a, b) {
+    const rating = (Number(b?.rating) || 0) - (Number(a?.rating) || 0);
+    if (rating !== 0) return rating;
+
+    const reviews = (Number(b?.review_count) || 0) - (Number(a?.review_count) || 0);
+    if (reviews !== 0) return reviews;
+
+    const completion = (Number(b?.profile_completion_score) || 0) - (Number(a?.profile_completion_score) || 0);
+    if (completion !== 0) return completion;
+
+    const aActive = a?.last_active_at ? new Date(a.last_active_at).getTime() : 0;
+    const bActive = b?.last_active_at ? new Date(b.last_active_at).getTime() : 0;
+    return bActive - aActive;
+}
+
+async function searchTrainers(query, location, mode) {
     const rawQuery = (query || '').toString().trim();
     // Supabase .or() filters treat commas as condition separators, so a user typing commas can break the query.
     const safeQuery = rawQuery.replace(/,/g, ' ').trim();
 
     const rawLocation = (location || '').toString().trim();
+    const rawMode = (mode || '').toString().trim().toLowerCase();
 
     // If we have cached trainers, pre-filter them locally for instant rendering
     if (_cachedTrainers && (Date.now() - _cachedTrainersTime < 300000)) {
         let filtered = _cachedTrainers;
         if (safeQuery) {
             const lowQ = safeQuery.toLowerCase();
-            filtered = filtered.filter(t => 
-                (t.name && t.name.toLowerCase().includes(lowQ)) || 
-                (t.specialty && t.specialty.toLowerCase().includes(lowQ)) || 
+            filtered = filtered.filter(t =>
+                (t.name && t.name.toLowerCase().includes(lowQ)) ||
+                (t.specialty && t.specialty.toLowerCase().includes(lowQ)) ||
                 (t.bio && t.bio.toLowerCase().includes(lowQ)) ||
                 (Array.isArray(t.tags) && t.tags.join(' ').toLowerCase().includes(lowQ))
             );
@@ -1368,11 +1404,16 @@ async function searchTrainers(query, location) {
             const lowLoc = rawLocation.toLowerCase();
             filtered = filtered.filter(t => (t.location || '').toLowerCase().includes(lowLoc));
         }
+        if (rawMode) {
+            filtered = filtered.filter(t => matchesTrainingModeFilter(t.training_mode, rawMode));
+        }
+        // Already ranked: _cachedTrainers comes from normalizeTrainerList(),
+        // and filtering preserves relative order.
         return filtered;
     }
 
-    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude';
-    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, training_mode, profile_completion_score, last_active_at';
+    const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, training_mode';
     const selectWithBadgeFull = selectBaseFull + ', has_black_status';
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
@@ -1408,6 +1449,8 @@ async function searchTrainers(query, location) {
 
         if (isMissingColumnError(error, 'has_black_status')) continue;
         if (isMissingColumnError(error, 'latitude') || isMissingColumnError(error, 'longitude')) continue;
+        if (isMissingColumnError(error, 'profile_completion_score') || isMissingColumnError(error, 'last_active_at')) continue;
+        if (isMissingColumnError(error, 'training_mode')) continue;
 
         break;
     }
@@ -1417,7 +1460,17 @@ async function searchTrainers(query, location) {
         return [];
     }
 
-    return normalizeTrainerList(data || []);
+    let results = normalizeTrainerList(data || []);
+
+    // Goal (query) and Location are applied server-side above (WHERE clause).
+    // Mode is applied here since it needs the shared matching helper and the
+    // fallback selects above may or may not include training_mode.
+    // normalizeTrainerList() already ranked `results`; filtering preserves order.
+    if (rawMode) {
+        results = results.filter(t => matchesTrainingModeFilter(t.training_mode, rawMode));
+    }
+
+    return results;
 }
 
 async function getReviews(trainerId) {
@@ -1453,41 +1506,6 @@ async function getBookingsForUser(userId) {
         .or(`client_id.eq.${userId},trainer_id.eq.${userId}`)
         .order('created_at', { ascending: false });
     return data || [];
-}
-
-async function createBooking(clientId, trainerId, planType, details) {
-    try {
-        const authHeader = await getApiAuthHeader();
-        if (!authHeader) {
-            throw new Error('You must be signed in to create a booking');
-        }
-        
-        // Let's call our newly created secure API endpoint on Vercel
-        const response = await fetch('/api/create-booking', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': authHeader
-            },
-            body: JSON.stringify({
-                trainerId: trainerId,
-                planType: planType,
-                details: details,
-                authHeader: authHeader // Backward compatibility while APIs migrate
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Failed to create secure booking');
-        }
-
-        return result.data;
-    } catch (error) {
-        console.error("Create booking error:", error.message);
-        throw error;
-    }
 }
 
 // ─── NOTIFICATIONS & MESSAGES ─────────────────────────────────────────────────
@@ -1938,8 +1956,8 @@ function normalizeTrainerBadges(record) {
         record.is_black
     );
 
-    const verificationStatus = normalizeVerificationStatus(record.verification_status);
-    const isFullyVerified = verificationStatus === 'verified' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
+    const verificationStatus = String(record.verification_status || '').toLowerCase();
+    const isFullyVerified = verificationStatus === 'approved' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
 
     return { ...record, hasBlackStatus, isFullyVerified };
 }
@@ -2117,6 +2135,8 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const name = (t?.name || 'Trainer').trim();
         const initial = (name.charAt(0) || 'T').toUpperCase();
         const hasUrl = url && /^https?:\/\//i.test(url);
+        const imageWidth = Number(options?.imageWidth) > 0 ? Number(options.imageWidth) : 640;
+        const imageHeight = Number(options?.imageHeight) > 0 ? Number(options.imageHeight) : 360;
 
         const cornerBadges = (typeof window.renderTrainerBadgesHtml === 'function')
             ? window.renderTrainerBadgesHtml(t, { variant: 'corner', size: 'sm' })
@@ -2127,9 +2147,9 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const favFill = saved ? 1 : 0;
 
         return `
-                <div class="relative h-36 w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden border-b border-outline-variant/20">
+                <div class="relative w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden border-b border-outline-variant/20" style="aspect-ratio: ${imageWidth} / ${imageHeight};">
                 ${hasUrl
-                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" style="object-position: 50% 18%;" loading="lazy" decoding="async" />`
+                    ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" style="object-position: 50% 18%;" width="${imageWidth}" height="${imageHeight}" loading="lazy" decoding="async" />`
                     : `<div class="w-full h-full flex items-center justify-center">
                             <span class="text-5xl font-black text-primary">${escapeHtml(initial)}</span>
                        </div>`
@@ -2216,10 +2236,11 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const profileHref = options?.profileHref || (`trainer-profile.html?id=${encodeURIComponent(id)}`);
         const messageHref = getDefaultMessageHref(id, options);
         const saved = typeof options?.saved === 'boolean' ? options.saved : isTrainerSaved(id);
+        const cardImageDimensions = { width: 640, height: 360 };
 
         return `
             <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
-                ${renderTrainerImageArea({ ...t, id }, { saved })}
+                ${renderTrainerImageArea({ ...t, id }, { saved, imageWidth: cardImageDimensions.width, imageHeight: cardImageDimensions.height })}
                 <div class="p-3 flex flex-col flex-grow">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">

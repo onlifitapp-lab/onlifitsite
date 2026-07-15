@@ -131,13 +131,6 @@
         return 'client-dashboard.html';
     }
 
-    // Normalize legacy verification status values (approved -> verified)
-    function normalizeVerificationStatus(status) {
-        const s = String(status || '').toLowerCase();
-        if (s === 'approved') return 'verified';
-        return s;
-    }
-
     async function handleEmailAuth(event) {
         event.preventDefault();
         if (state.isBusy) return;
@@ -206,11 +199,9 @@
                                     }
                                 }
 
-                                const verificationStatusStrict = normalizeVerificationStatus(loginResult?.user?.verification_status);
-                                const approvedStrict = verificationStatusStrict === 'verified';
                                 const onboardingDoneStrict = !!loginResult?.user?.onboarding_completed;
 
-                                if (!onboardingDoneStrict || !approvedStrict) {
+                                if (!onboardingDoneStrict) {
                                     window.location.href = 'trainer-onboarding.html?role=trainer&source=join-us';
                                     return;
                                 }
@@ -219,8 +210,7 @@
                                 return;
                             }
 
-                                const verificationStatus = normalizeVerificationStatus(loginResult?.user?.verification_status);
-                                if (userRole === 'trainer' && verificationStatus && verificationStatus !== 'verified') {
+                            if (userRole === 'trainer' && !loginResult?.user?.onboarding_completed) {
                                 window.location.href = 'trainer-onboarding.html';
                                 return;
                             }
@@ -346,11 +336,9 @@
                     }
                 }
 
-                const verificationStatusStrict = normalizeVerificationStatus(result?.user?.verification_status);
-                const approvedStrict = verificationStatusStrict === 'verified';
                 const onboardingDoneStrict = !!result?.user?.onboarding_completed;
 
-                if (!onboardingDoneStrict || !approvedStrict) {
+                if (!onboardingDoneStrict) {
                     window.location.href = 'trainer-onboarding.html?role=trainer&source=join-us';
                     return;
                 }
@@ -359,8 +347,7 @@
                 return;
             }
 
-            const verificationStatus = normalizeVerificationStatus(result?.user?.verification_status);
-            if (userRole === 'trainer' && verificationStatus && verificationStatus !== 'verified') {
+            if (userRole === 'trainer' && !result?.user?.onboarding_completed) {
                 window.location.href = 'trainer-onboarding.html';
                 return;
             }

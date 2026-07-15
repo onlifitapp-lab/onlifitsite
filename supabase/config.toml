@@ -1,0 +1,21 @@
+# Supabase CLI project configuration.
+# This file was hand-created (no Supabase CLI is installed in this environment)
+# so the migrations folder has a proper project structure. Run `supabase link
+# --project-ref <your-project-ref>` to connect this repo to your actual
+# Supabase project before running `supabase db push` / `supabase migration up`.
+
+project_id = "lnbsgnfrhewdqhuqqotx"
+
+[db]
+port = 54322
+major_version = 15
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[studio]
+enabled = true
+port = 54323

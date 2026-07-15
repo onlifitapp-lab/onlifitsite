@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 
 <head>
@@ -149,10 +149,9 @@
                         </div>
                         <button type="submit"
                             class="modal-cta w-full bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">payment</span> Pay with Razorpay
+                            <span class="material-symbols-outlined text-[18px]">chat</span> Contact on WhatsApp
                         </button>
-                        <p class="text-[10px] text-on-surface-variant text-center mt-2">Secured by Razorpay. You won't
-                            be charged until the session is confirmed.</p>
+                        <p class="text-[10px] text-on-surface-variant text-center mt-2">You'll be connected with the trainer on WhatsApp to discuss details and payment directly.</p>
                     </div>
                 </form>
             </div>
@@ -185,23 +184,6 @@
     <script>
         let trainer = null;
         let selectedPlan = null;
-        let razorpayScriptPromise = null;
-
-        function loadRazorpayScript() {
-            if (window.Razorpay) return Promise.resolve();
-            if (razorpayScriptPromise) return razorpayScriptPromise;
-
-            razorpayScriptPromise = new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-                script.async = true;
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error('Failed to load payment SDK.'));
-                document.head.appendChild(script);
-            });
-
-            return razorpayScriptPromise;
-        }
 
         // Show loading skeleton
         function showLoadingSkeleton() {
@@ -518,31 +500,37 @@
 
         async function handleBooking(e) {
             e.preventDefault();
-            const user = await getCurrentUser();
-            if (!user) return;
 
-            const date = document.getElementById('booking-date').value;
-            const time = document.getElementById('booking-time').value;
-
+            // Disable immediately (before any await) so a rapid double-click
+            // cannot fire this handler twice for the same submission.
             const bookingBtn = e.target.querySelector('button[type="submit"]');
+            if (bookingBtn.disabled) return;
             const originalBtnContent = bookingBtn.innerHTML;
-            
             bookingBtn.disabled = true;
-            bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Processing...';
+            bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Creating enquiry...';
+
+            // One idempotency key per submit attempt, so a network retry of
+            // this exact request cannot create a duplicate enquiry.
+            const idempotencyKey = (window.crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+            let keepDisabled = false;
 
             try {
-                await loadRazorpayScript();
+                const user = await getCurrentUser();
+                if (!user) { keepDisabled = false; return; }
 
                 const authHeader = typeof getApiAuthHeader === 'function'
                     ? await getApiAuthHeader()
                     : null;
 
                 if (!authHeader) {
-                    throw new Error('Please sign in before booking a trainer');
+                    throw new Error('Please log in to continue.');
                 }
 
-                // 1. Create Order via Vercel Backend
-                const response = await fetch('/api/create-order', {
+                // Create enquiry via API
+                const response = await fetch('/api/create-lead', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -551,89 +539,45 @@
                     body: JSON.stringify({
                         trainerId: trainer.id,
                         planType: selectedPlan,
-                        details: { date, time },
-                        authHeader
+                        idempotencyKey
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok) {
-                    throw new Error(data.error || 'Failed to initialize payment');
+                    if (data.code === 'ENQUIRY_LIMIT_REACHED') {
+                        bookingBtn.innerHTML = 'Monthly enquiry limit reached. Upgrade to Elite for unlimited enquiries.';
+                        keepDisabled = true;
+                        return;
+                    }
+                    throw new Error(data.error || 'Failed to create enquiry');
                 }
 
-                // 2. Open Razorpay Checkout
-                const options = {
-                    key: data.keyId,
-                    amount: data.amount,
-                    currency: data.currency,
-                    name: 'Onlifit',
-                    description: `Booking for ${trainer.name}`,
-                    order_id: data.orderId,
-                    handler: async function (rpResponse) {
-                        try {
-                            // 3. Verify Payment on Backend
-                            const verifyRes = await fetch('/api/verify-payment', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    razorpay_order_id: rpResponse.razorpay_order_id,
-                                    razorpay_payment_id: rpResponse.razorpay_payment_id,
-                                    razorpay_signature: rpResponse.razorpay_signature,
-                                    booking_id: data.bookingId
-                                })
-                            });
-                            
-                            const verifyData = await verifyRes.json();
-                            if (verifyRes.ok && verifyData.success) {
-                                document.getElementById('booking-modal').classList.add('hidden');
-                                // Configure WhatsApp button if trainer contact exists
-                                try {
-                                    const waBtn = document.getElementById('success-whatsapp');
-                                    const phone = (trainer?.whatsapp_number || trainer?.phone || '').replace(/\s|\+/g, '');
-                                    if (waBtn && phone) {
-                                        const msg = encodeURIComponent(`Hi ${trainer?.name || ''}, I booked your plan on Onlifit.`);
-                                        waBtn.href = 'https://wa.me/' + phone + '?text=' + msg;
-                                        waBtn.classList.remove('hidden');
-                                    }
-                                } catch (e) {}
-                                document.getElementById('success-modal').classList.remove('hidden');
-                            } else {
-                                alert('Payment verification failed. If money was deducted, contact support.');
-                            }
-                        } catch (err) {
-                            alert('An error occurred during payment verification.');
-                        }
-                        
-                        bookingBtn.disabled = false;
-                        bookingBtn.innerHTML = originalBtnContent;
-                    },
-                    prefill: {
-                        name: user.name,
-                        email: user.email,
-                        contact: user.phone || ''
-                    },
-                    theme: {
-                        color: '#000000'
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            bookingBtn.disabled = false;
-                            bookingBtn.innerHTML = originalBtnContent;
-                        }
-                    }
-                };
+                // Hide booking modal
+                document.getElementById('booking-modal').classList.add('hidden');
 
-                const rzp = new Razorpay(options);
-                rzp.on('payment.failed', function (response){
-                    alert('Payment failed. Reason: ' + response.error.description);
-                });
-                rzp.open();
-                
+                // Configure WhatsApp button on success modal
+                const waBtn = document.getElementById('success-whatsapp');
+                if (waBtn && data.whatsappUrl) {
+                    waBtn.href = data.whatsappUrl;
+                    waBtn.classList.remove('hidden');
+                } else if (waBtn && data.trainerPhone) {
+                    const msg = encodeURIComponent(`Hi ${data.trainerName || 'Trainer'}, I'm interested in your plan on Onlifit.`);
+                    waBtn.href = 'https://wa.me/' + data.trainerPhone + '?text=' + msg;
+                    waBtn.classList.remove('hidden');
+                }
+
+                // Show success modal
+                document.getElementById('success-modal').classList.remove('hidden');
+
             } catch (error) {
-                alert('Booking failed: ' + error.message);
-                bookingBtn.disabled = false;
-                bookingBtn.innerHTML = originalBtnContent;
+                alert('Could not create enquiry: ' + error.message);
+            } finally {
+                if (!keepDisabled) {
+                    bookingBtn.disabled = false;
+                    bookingBtn.innerHTML = originalBtnContent;
+                }
             }
         }
 

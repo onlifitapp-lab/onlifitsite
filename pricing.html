@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 <head>
         <script>document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');</script>
@@ -53,7 +53,7 @@
 <main class="pt-28 pb-20 px-6">
     <!-- Header -->
     <div class="max-w-4xl mx-auto text-center mb-16">
-        <span class="inline-block px-4 py-2 bg-primary/10 rounded-full text-sm font-bold text-primary mb-6">💰 Simple, Transparent Pricing</span>
+        <span class="inline-block px-4 py-2 bg-primary/10 rounded-full text-sm font-bold text-primary mb-6">ðŸ’° Simple, Transparent Pricing</span>
         <h1 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-6">Plans for Everyone</h1>
         <p class="text-on-surface-variant text-lg max-w-2xl mx-auto">Clients browse and book for free. Trainers choose the plan that fits their goals.</p>
     </div>
@@ -67,7 +67,7 @@
                     <p class="text-white/80 text-lg">Browsing, booking, and messaging trainers is completely free. Forever.</p>
                 </div>
                 <div class="text-center md:text-right">
-                    <p class="font-headline text-5xl font-black">₹0</p>
+                    <p class="font-headline text-5xl font-black">â‚¹0</p>
                     <p class="text-white/60 text-sm">Always free</p>
                 </div>
             </div>
@@ -91,7 +91,7 @@
     <!-- Trainer Plans Header -->
     <div class="max-w-4xl mx-auto text-center mb-10">
         <h2 class="font-headline text-2xl lg:text-3xl font-black text-on-surface mb-4">For Trainers</h2>
-        <p class="text-on-surface-variant font-bold text-lg">Upgrade to reduce commission and earn more!</p>
+        <p class="text-on-surface-variant font-bold text-lg">Choose the plan that fits your goals.</p>
         <p class="text-on-surface-variant text-sm mt-2">You can upgrade or downgrade your plan anytime.</p>
         
         <!-- Toggle -->
@@ -107,74 +107,40 @@
     </div>
 
     <!-- Trainer Pricing Cards -->
-    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <!-- Starter (Free) -->
-        <div class="pricing-card bg-white p-8 rounded-2xl border border-outline-variant/50 flex flex-col">
-            <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Free Plan</h3>
-            <p class="text-sm text-on-surface-variant mb-6">Perfect for getting started</p>
-            <div class="mb-6">
-                <span class="text-4xl font-black font-headline">₹0</span>
-            </div>
-            <div class="mb-6 bg-surface-container-high/50 p-3 rounded-xl border border-outline-variant/30 text-center">
-                <span class="font-bold text-on-surface">25-30%</span> <span class="text-sm text-on-surface-variant">commission per client</span>
-            </div>
-            <ul class="space-y-3 mb-8 flex-1">
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span>Limited leads (max 5-10/month)</span>
-                </li>
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span>Low search ranking</span>
-                </li>
-                <li class="flex items-start gap-3 text-sm text-on-surface-variant/50">
-                    <span class="material-symbols-outlined text-lg flex-shrink-0">close</span>
-                    <span>No Verified Badge</span>
-                </li>
-                <li class="flex items-start gap-3 text-sm text-on-surface-variant/50">
-                    <span class="material-symbols-outlined text-lg flex-shrink-0">close</span>
-                    <span>No Analytics</span>
-                </li>
-            </ul>
-            <a href="join-us.html" class="w-full py-3 bg-surface-container text-on-surface font-bold rounded-xl text-center hover:bg-surface-container-high transition-colors">Start for Free</a>
-        </div>
-
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
         <!-- Pro - Featured -->
         <div class="pricing-card bg-primary text-white p-8 rounded-2xl relative flex flex-col shadow-2xl scale-[1.02]">
             <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-primary text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">Most Popular</span>
             <h3 class="font-headline text-xl font-bold mb-2">Pro Plan</h3>
             <p class="text-sm text-white/70 mb-6">For growing trainers</p>
             <div class="mb-6">
-                <span class="text-sm font-bold text-white/70">₹</span>
+                <span class="text-sm font-bold text-white/70">â‚¹</span>
                 <span id="pro-price" class="text-4xl font-black font-headline">999</span>
                 <span id="pro-period" class="text-sm font-bold text-white/70">/month</span>
-            </div>
-            <div class="mb-6 bg-white/10 p-3 rounded-xl text-center">
-                <span class="font-bold text-white">15%</span> <span class="text-sm text-white/80">commission per client</span>
             </div>
             <ul class="space-y-3 mb-8 flex-1">
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
-                    <span>Increased leads (20-40/month)</span>
+                    <span><strong>Verified Profile</strong> badge</span>
+                </li>
+                <li class="flex items-start gap-3 text-sm">
+                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
+                    <span>Up to <strong>30 leads/month</strong></span>
+                </li>
+                <li class="flex items-start gap-3 text-sm">
+                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
+                    <span>WhatsApp lead notifications</span>
+                </li>
+                <li class="flex items-start gap-3 text-sm">
+                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
+                    <span>Dashboard access with analytics</span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
                     <span>Higher search ranking</span>
                 </li>
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
-                    <span><strong>"Verified Trainer" Badge</strong></span>
-                </li>
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
-                    <span>Faster matching with clients</span>
-                </li>
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-lg flex-shrink-0" style="color: #4ade80;">check_circle</span>
-                    <span>Basic analytics (views, leads)</span>
-                </li>
             </ul>
-            <a href="join-us.html" class="w-full py-3 bg-white text-primary font-bold rounded-xl text-center hover:bg-surface transition-colors">Upgrade to Pro</a>
+            <a href="join-us.html" class="w-full py-3 bg-white text-primary font-bold rounded-xl text-center hover:bg-surface transition-colors">Get Pro</a>
         </div>
 
         <!-- Elite -->
@@ -183,29 +149,30 @@
             <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Elite Plan</h3>
             <p class="text-sm text-on-surface-variant mb-6">For fitness business owners</p>
             <div class="mb-6">
-                <span class="text-sm font-bold text-on-surface-variant">₹</span>
-                <span id="elite-price" class="text-4xl font-black font-headline">2,999</span>
+                <span class="text-sm font-bold text-on-surface-variant">â‚¹</span>
+                <span id="elite-price" class="text-4xl font-black font-headline">2,499</span>
                 <span id="elite-period" class="text-sm font-bold text-on-surface-variant">/month</span>
             </div>
-            <div class="mb-6 bg-green-50 p-3 rounded-xl border border-green-200 text-center">
-                <span class="font-bold text-green-700">0%</span> <span class="text-sm text-green-700">commission per client</span>
-            </div>
             <ul class="space-y-3 mb-8 flex-1">
+                <li class="flex items-start gap-3 text-sm">
+                    <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
+                    <span>Everything in Pro</span>
+                </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
                     <span><strong>Unlimited leads</strong></span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span>Top priority ranking (Above Pro/Free)</span>
+                    <span>Priority ranking (above Pro)</span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span><strong>"Top Trainer" Badge</strong></span>
+                    <span>Homepage featured placement</span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span>Featured placement in listings</span>
+                    <span><strong>Onlifit Black</strong> eligibility</span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
@@ -216,6 +183,8 @@
         </div>
     </div>
 
+
+
     <!-- Boost System Section -->
     <div class="max-w-6xl mx-auto mb-24">
         <div class="bg-gradient-to-br from-surface-container-low to-surface-container border border-outline-variant/50 p-8 md:p-12 rounded-3xl shadow-sm relative overflow-hidden">
@@ -223,7 +192,7 @@
             
             <div class="flex flex-col lg:flex-row gap-12 items-center relative z-10">
                 <div class="lg:w-1/2">
-                    <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">🚀 Stand Out Instantly</span>
+                    <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold mb-4 uppercase tracking-wider">ðŸš€ Stand Out Instantly</span>
                     <h3 class="font-headline text-3xl md:text-4xl font-black mb-4 leading-tight">Boost Your Profile Visibility</h3>
                     <p class="text-on-surface-variant text-lg mb-6">Need clients urgently? Pay a one-time fee to appear at the very top of search results in your local area and category.</p>
                     
@@ -264,7 +233,7 @@
                             <p class="text-sm text-on-surface-variant">Perfect for the weekend rush</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-black font-headline">₹499</div>
+                            <div class="text-2xl font-black font-headline">â‚¹499</div>
                             <button class="mt-2 px-6 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold hover:bg-surface transition-colors">Buy Boost</button>
                         </div>
                     </div>
@@ -276,66 +245,64 @@
                             <p class="text-sm text-on-surface-variant">Consistent high-volume traffic</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-black font-headline">₹999</div>
+                            <div class="text-2xl font-black font-headline">â‚¹999</div>
                             <button class="mt-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Buy Boost</button>
                         </div>
                     </div>
                     
-                    <p class="text-center text-sm font-medium mt-2 text-on-surface-variant">✨ <span class="text-primary font-bold">New Trainers:</span> Get 1 free day of Boost when you sign up!</p>
+                    <p class="text-center text-sm font-medium mt-2 text-on-surface-variant">âœ¨ <span class="text-primary font-bold">New Trainers:</span> Get 1 free day of Boost when you sign up!</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Comparison Table -->
-    <div class="max-w-5xl mx-auto mb-20">
+    <div class="max-w-4xl mx-auto mb-20">
         <h2 class="font-headline text-2xl font-black text-center mb-8">Compare Plans</h2>
         <div class="overflow-x-auto">
             <table class="w-full bg-white rounded-2xl overflow-hidden border border-outline-variant/50">
                 <thead>
                     <tr class="bg-surface-container">
                         <th class="text-left p-4 font-bold">Feature</th>
-                        <th class="text-center p-4 font-bold">Free Plan</th>
                         <th class="text-center p-4 font-bold bg-primary/5">Pro Plan <br><span class="text-[10px] font-normal text-primary">Most Popular</span></th>
-                        <th class="text-center p-4 font-bold">Elite Plan <br><span class="text-[10px] font-normal text-on-surface-variant">0% Commission</span></th>
+                        <th class="text-center p-4 font-bold">Elite Plan <br><span class="text-[10px] font-normal text-on-surface-variant">Best Value</span></th>
                     </tr>
                 </thead>
                 <tbody class="text-sm">
                     <tr class="border-t border-outline-variant/30">
-                        <td class="p-4 font-medium">Platform Commission</td>
-                        <td class="text-center p-4 text-on-surface-variant">25-30%</td>
-                        <td class="text-center p-4 bg-primary/5 font-bold text-primary">15%</td>
-                        <td class="text-center p-4 font-black text-green-600">0%</td>
-                    </tr>
-                    <tr class="border-t border-outline-variant/30">
                         <td class="p-4 font-medium">Monthly Leads</td>
-                        <td class="text-center p-4 text-on-surface-variant">5-10</td>
-                        <td class="text-center p-4 bg-primary/5 font-bold">20-40</td>
+                        <td class="text-center p-4 bg-primary/5 font-bold">Up to 30</td>
                         <td class="text-center p-4 font-bold text-on-surface">Unlimited</td>
                     </tr>
                     <tr class="border-t border-outline-variant/30">
-                        <td class="p-4 font-medium">Profile Ranking setup</td>
-                        <td class="text-center p-4 text-on-surface-variant text-xs">Tier 4 (Low)</td>
-                        <td class="text-center p-4 bg-primary/5 text-xs font-bold">Tier 3 (High)</td>
-                        <td class="text-center p-4 font-bold text-xs">Tier 2 (Top Priority)</td>
+                        <td class="p-4 font-medium">Verified Badge</td>
+                        <td class="text-center p-4 bg-primary/5 font-bold text-green-600">âœ“</td>
+                        <td class="text-center p-4 font-bold text-green-600">âœ“</td>
                     </tr>
                     <tr class="border-t border-outline-variant/30">
-                        <td class="p-4 font-medium">Profile Badge</td>
-                        <td class="text-center p-4 text-on-surface-variant/50">-</td>
-                        <td class="text-center p-4 bg-primary/5 font-bold text-blue-600">Verified Trainer</td>
-                        <td class="text-center p-4 font-bold text-yellow-600">Top Trainer</td>
+                        <td class="p-4 font-medium">Profile Ranking</td>
+                        <td class="text-center p-4 bg-primary/5 text-xs font-bold">High</td>
+                        <td class="text-center p-4 font-bold text-xs">Top Priority</td>
+                    </tr>
+                    <tr class="border-t border-outline-variant/30">
+                        <td class="p-4 font-medium">Homepage Featured</td>
+                        <td class="text-center p-4 bg-primary/5 text-on-surface-variant/50">â€”</td>
+                        <td class="text-center p-4 font-bold text-green-600">âœ“</td>
+                    </tr>
+                    <tr class="border-t border-outline-variant/30">
+                        <td class="p-4 font-medium">Onlifit Black Eligibility</td>
+                        <td class="text-center p-4 bg-primary/5 text-on-surface-variant/50">â€”</td>
+                        <td class="text-center p-4 font-bold text-green-600">âœ“</td>
                     </tr>
                     <tr class="border-t border-outline-variant/30">
                         <td class="p-4 font-medium">Analytics</td>
-                        <td class="text-center p-4 text-on-surface-variant/50">-</td>
                         <td class="text-center p-4 bg-primary/5 text-xs">Basic (Views/Leads)</td>
-                        <td class="text-center p-4 text-xs font-bold">Full Analytics suite</td>
+                        <td class="text-center p-4 text-xs font-bold">Full Analytics Suite</td>
                     </tr>
                     <tr class="border-t border-outline-variant/30">
-                        <td class="p-4 font-medium">Matching Speed</td>
-                        <td class="text-center p-4 text-on-surface-variant">Standard</td>
-                        <td class="text-center p-4 bg-primary/5 font-bold">Fast</td>
-                        <td class="text-center p-4 font-bold">Immediate</td>
+                        <td class="p-4 font-medium">Support</td>
+                        <td class="text-center p-4 bg-primary/5 font-bold">Standard</td>
+                        <td class="text-center p-4 font-bold">Priority</td>
                     </tr>
                 </tbody>
             </table>
@@ -361,7 +328,7 @@
                     <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
                 </button>
                 <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
-                    Clients pay through our secure platform. After a completed session, funds are transferred to your bank account within 24-48 hours. We take a small platform fee (varies by plan).
+                    Clients connect with you directly via WhatsApp and pay you for your services. Onlifit provides the leads â€” you handle the relationship and payments with your clients directly.
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
@@ -409,7 +376,7 @@
             </div>
         </div>
         <div class="border-t border-white/10 pt-8 text-center text-xs text-white/40">
-            Â© 2024 Onlifit. All rights reserved.
+            Ã‚Â© 2024 Onlifit. All rights reserved.
         </div>
     </div>
 </footer>

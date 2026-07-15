@@ -9,6 +9,20 @@ test-*.html
 create-dummy-trainers.html
 check-parents.cjs
 enhance-settings.cjs
+fix-trainer-account.html
+lead-limit-popup-preview.html
 
 # Backups
 trainer-profile-old-backup.html
+
+# Archived code (legacy payment system)
+_archive/
+api/_archive/
+
+# Database schemas (not needed in deploy)
+*.sql
+
+# Environment
+.env
+.env.local
+.env.example
