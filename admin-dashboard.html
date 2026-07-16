@@ -1603,11 +1603,11 @@
                     const badgeClass = badgeClassForVerification(status);
                     html += `
                         <tr>
-                            <td><strong>${trainer.name || 'N/A'}</strong></td>
-                            <td>${trainer.email || ''}</td>
-                            <td>${trainer.phone || 'N/A'}</td>
-                            <td>${getTrainerSpecialty(trainer) || 'N/A'}</td>
-                            <td><span class="badge ${badgeClass}">${status}</span></td>
+                            <td><strong>${escapeHtml(trainer.name) || 'N/A'}</strong></td>
+                            <td>${escapeHtml(trainer.email)}</td>
+                            <td>${escapeHtml(trainer.phone) || 'N/A'}</td>
+                            <td>${escapeHtml(getTrainerSpecialty(trainer)) || 'N/A'}</td>
+                            <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
                             <td>
                                 <button class="btn btn-primary" style="padding: 8px 15px; font-size: 12px;" onclick="openTrainerModal('${trainer.id}')">
                                     View Details
@@ -1640,23 +1640,27 @@
                     `)
                     .order('created_at', { ascending: false });
 
-                if (error && error.code !== 'PGRST116') { // PGRST116 = table doesn't exist
+                if (error) {
                     console.error('Error loading revenue:', error);
                 }
 
                 allRevenue = bookings || [];
                 renderRevenueTable(allRevenue);
 
-                // Setup search
-                document.getElementById('revenue-search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filtered = allRevenue.filter(r => 
-                        r.client?.name?.toLowerCase().includes(searchTerm) ||
-                        r.trainer?.name?.toLowerCase().includes(searchTerm) ||
-                        r.plan_label?.toLowerCase().includes(searchTerm)
-                    );
-                    renderRevenueTable(filtered);
-                });
+                // Setup search (avoid re-binding on every load)
+                const revenueSearchEl = document.getElementById('revenue-search');
+                if (revenueSearchEl && !revenueSearchEl.dataset.bound) {
+                    revenueSearchEl.dataset.bound = '1';
+                    revenueSearchEl.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const filtered = allRevenue.filter(r =>
+                            r.client?.name?.toLowerCase().includes(searchTerm) ||
+                            r.trainer?.name?.toLowerCase().includes(searchTerm) ||
+                            r.plan_label?.toLowerCase().includes(searchTerm)
+                        );
+                        renderRevenueTable(filtered);
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading revenue:', error);
@@ -1711,12 +1715,12 @@
                 html += `
                     <tr>
                         <td>${date}</td>
-                        <td>${transaction.client?.name || 'N/A'}</td>
-                        <td>${transaction.trainer?.name || 'N/A'}</td>
-                        <td>${transaction.plan_label || 'N/A'}</td>
+                        <td>${escapeHtml(transaction.client?.name) || 'N/A'}</td>
+                        <td>${escapeHtml(transaction.trainer?.name) || 'N/A'}</td>
+                        <td>${escapeHtml(transaction.plan_label) || 'N/A'}</td>
                         <td><strong>${formatINR(getBookingAmount(transaction))}</strong></td>
                         <td style="color: green; font-weight: bold;">${commissionVal}</td>
-                        <td><span class="badge ${badgeClass}">${transaction.status}</span></td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(transaction.status)}</span></td>
                     </tr>
                 `;
             });
@@ -1739,23 +1743,27 @@
                     `)
                     .order('created_at', { ascending: false });
 
-                if (error && error.code !== 'PGRST116') {
+                if (error) {
                     console.error('Error loading bookings:', error);
                 }
 
                 allBookings = bookings || [];
                 renderBookingsTable(allBookings);
 
-                // Setup search
-                document.getElementById('bookings-search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filtered = allBookings.filter(b => 
-                        b.client?.name?.toLowerCase().includes(searchTerm) ||
-                        b.trainer?.name?.toLowerCase().includes(searchTerm) ||
-                        b.id?.toLowerCase().includes(searchTerm)
-                    );
-                    renderBookingsTable(filtered);
-                });
+                // Setup search (avoid re-binding on every load)
+                const bookingsSearchEl = document.getElementById('bookings-search');
+                if (bookingsSearchEl && !bookingsSearchEl.dataset.bound) {
+                    bookingsSearchEl.dataset.bound = '1';
+                    bookingsSearchEl.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const filtered = allBookings.filter(b =>
+                            b.client?.name?.toLowerCase().includes(searchTerm) ||
+                            b.trainer?.name?.toLowerCase().includes(searchTerm) ||
+                            b.id?.toLowerCase().includes(searchTerm)
+                        );
+                        renderBookingsTable(filtered);
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading bookings:', error);
@@ -1804,11 +1812,11 @@
                 
                 html += `
                     <tr>
-                        <td><code>${booking.id.substring(0, 8)}...</code></td>
+                        <td><code>${booking.id ? booking.id.substring(0, 8) : 'N/A'}...</code></td>
                         <td>${dateVal} ${timeVal}</td>
-                        <td>${booking.client?.name || 'N/A'}</td>
-                        <td>${booking.trainer?.name || 'N/A'}</td>
-                        <td><span class="badge ${badgeClass}">${booking.status}</span></td>
+                        <td>${escapeHtml(booking.client?.name) || 'N/A'}</td>
+                        <td>${escapeHtml(booking.trainer?.name) || 'N/A'}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(booking.status)}</span></td>
                         <td><strong>₹${(booking.price || 0).toLocaleString('en-IN')}</strong></td>
                         <td style="color: green; font-weight: bold;">${commissionVal}</td>
                     </tr>
@@ -1839,10 +1847,10 @@
                     trainer.certificate_urls.forEach((cert, index) => {
                         certificatesHTML += `
                             <div class="document-preview">
-                                <a href="${cert.url}">
-                                    <img src="${cert.url}" alt="${cert.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
+                                <a href="${escapeHtml(cert.url)}">
+                                    <img src="${escapeHtml(cert.url)}" alt="${escapeHtml(cert.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
                                 </a>
-                                <p><strong>${cert.name}</strong></p>
+                                <p><strong>${escapeHtml(cert.name)}</strong></p>
                                 <p style="font-size: 11px; color: ${cert.verified ? '#000000' : '#666666'}; font-weight: 600;">
                                     ${cert.verified ? 'VERIFIED' : 'PENDING'}
                                 </p>
@@ -1860,19 +1868,19 @@
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                             <div>
                                 <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Name</label>
-                                <p style="font-size: 14px;"><strong>${trainer.name || 'N/A'}</strong></p>
+                                <p style="font-size: 14px;"><strong>${escapeHtml(trainer.name) || 'N/A'}</strong></p>
                             </div>
                             <div>
                                 <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Email</label>
-                                <p style="font-size: 14px;">${trainer.email}</p>
+                                <p style="font-size: 14px;">${escapeHtml(trainer.email)}</p>
                             </div>
                             <div>
                                 <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Phone</label>
-                                <p style="font-size: 14px;">${trainer.phone || 'N/A'}</p>
+                                <p style="font-size: 14px;">${escapeHtml(trainer.phone) || 'N/A'}</p>
                             </div>
                             <div>
                                 <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Specialty</label>
-                                <p style="font-size: 14px;">${getTrainerSpecialty(trainer) || 'N/A'}</p>
+                                <p style="font-size: 14px;">${escapeHtml(getTrainerSpecialty(trainer)) || 'N/A'}</p>
                             </div>
                         </div>
                     </div>
@@ -1883,16 +1891,16 @@
                             <div class="document-grid">
                                 ${trainer.kyc_front_url ? `
                                     <div class="document-preview">
-                                        <a href="${trainer.kyc_front_url}">
-                                            <img src="${trainer.kyc_front_url}" alt="KYC Front">
+                                        <a href="${escapeHtml(trainer.kyc_front_url)}">
+                                            <img src="${escapeHtml(trainer.kyc_front_url)}" alt="KYC Front">
                                         </a>
                                         <p><strong>ID Front</strong></p>
                                     </div>
                                 ` : ''}
                                 ${trainer.kyc_back_url ? `
                                     <div class="document-preview">
-                                        <a href="${trainer.kyc_back_url}">
-                                            <img src="${trainer.kyc_back_url}" alt="KYC Back">
+                                        <a href="${escapeHtml(trainer.kyc_back_url)}">
+                                            <img src="${escapeHtml(trainer.kyc_back_url)}" alt="KYC Back">
                                         </a>
                                         <p><strong>ID Back</strong></p>
                                     </div>
@@ -2280,18 +2288,26 @@
                 renderClientsTable(allClients);
                 updateClientStats(allClients);
 
-                // Setup search
-                document.getElementById('client-search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const statusFilter = document.getElementById('client-status-filter').value;
-                    filterAndRenderClients(searchTerm, statusFilter);
-                });
+                // Setup search (avoid re-binding on every load)
+                const clientSearchEl = document.getElementById('client-search');
+                if (clientSearchEl && !clientSearchEl.dataset.bound) {
+                    clientSearchEl.dataset.bound = '1';
+                    clientSearchEl.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const statusFilter = document.getElementById('client-status-filter').value;
+                        filterAndRenderClients(searchTerm, statusFilter);
+                    });
+                }
 
-                // Setup status filter
-                document.getElementById('client-status-filter').addEventListener('change', function(e) {
-                    const searchTerm = document.getElementById('client-search').value.toLowerCase();
-                    filterAndRenderClients(searchTerm, e.target.value);
-                });
+                // Setup status filter (avoid re-binding on every load)
+                const clientStatusFilterEl = document.getElementById('client-status-filter');
+                if (clientStatusFilterEl && !clientStatusFilterEl.dataset.bound) {
+                    clientStatusFilterEl.dataset.bound = '1';
+                    clientStatusFilterEl.addEventListener('change', function(e) {
+                        const searchTerm = document.getElementById('client-search').value.toLowerCase();
+                        filterAndRenderClients(searchTerm, e.target.value);
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading clients:', error);
@@ -2360,9 +2376,9 @@
 
                     html += `
                         <tr>
-                            <td><strong>${client.name || 'N/A'}</strong></td>
-                            <td>${client.email}</td>
-                            <td>${client.phone || 'N/A'}</td>
+                            <td><strong>${escapeHtml(client.name) || 'N/A'}</strong></td>
+                            <td>${escapeHtml(client.email)}</td>
+                            <td>${escapeHtml(client.phone) || 'N/A'}</td>
                             <td>₹${totalSpent.toLocaleString()}</td>
                             <td><span class="badge ${statusClass}">${client.account_status || 'active'}</span></td>
                             <td>${joinDate}</td>
@@ -2399,22 +2415,22 @@
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 700px;">
                         <div class="modal-header">
-                            <h3>${client.name || 'Client Details'}</h3>
+                            <h3>${escapeHtml(client.name) || 'Client Details'}</h3>
                             <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
                         </div>
                         <div class="modal-body">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
                                 <div>
                                     <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Full Name</label>
-                                    <input type="text" id="edit-client-name" value="${client.name || ''}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
+                                    <input type="text" id="edit-client-name" value="${escapeHtml(client.name)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Email</label>
-                                    <input type="email" id="edit-client-email" value="${client.email || ''}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
+                                    <input type="email" id="edit-client-email" value="${escapeHtml(client.email)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Phone</label>
-                                    <input type="text" id="edit-client-phone" value="${client.phone || ''}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
+                                    <input type="text" id="edit-client-phone" value="${escapeHtml(client.phone)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; font-size: 14px;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Account Status</label>
@@ -2451,7 +2467,7 @@
                             ${client.account_status === 'suspended' ? `
                                 <div style="background: #FFF5F5; border: 1px solid #FED7D7; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
                                     <p style="font-size: 13px; color: #C53030; margin: 0;">
-                                        <strong>Suspended:</strong> ${client.suspended_reason || 'No reason provided'}
+                                        <strong>Suspended:</strong> ${escapeHtml(client.suspended_reason) || 'No reason provided'}
                                     </p>
                                 </div>
                             ` : ''}
@@ -2830,8 +2846,10 @@
             await Promise.all([loadPlans(), loadSubscriptions(), loadPromoCodes()]);
             updatePlansStats();
 
-            // Setup subtab switching
+            // Setup subtab switching (avoid re-binding on every load)
             document.querySelectorAll('.plans-subtab').forEach(btn => {
+                if (btn.dataset.bound) return;
+                btn.dataset.bound = '1';
                 btn.addEventListener('click', function() {
                     // Remove active class from all subtabs
                     document.querySelectorAll('.plans-subtab').forEach(b => {
@@ -2930,16 +2948,20 @@
                 allSubscriptions = subscriptions || [];
                 renderSubscriptionsTable(allSubscriptions);
 
-                // Setup search
-                document.getElementById('subscription-search').addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filtered = allSubscriptions.filter(s => 
-                        s.user?.name?.toLowerCase().includes(searchTerm) ||
-                        s.user?.email?.toLowerCase().includes(searchTerm) ||
-                        s.plan?.name?.toLowerCase().includes(searchTerm)
-                    );
-                    renderSubscriptionsTable(filtered);
-                });
+                // Setup search (avoid re-binding on every load)
+                const subscriptionSearchEl = document.getElementById('subscription-search');
+                if (subscriptionSearchEl && !subscriptionSearchEl.dataset.bound) {
+                    subscriptionSearchEl.dataset.bound = '1';
+                    subscriptionSearchEl.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const filtered = allSubscriptions.filter(s =>
+                            s.user?.name?.toLowerCase().includes(searchTerm) ||
+                            s.user?.email?.toLowerCase().includes(searchTerm) ||
+                            s.plan?.name?.toLowerCase().includes(searchTerm)
+                        );
+                        renderSubscriptionsTable(filtered);
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading subscriptions:', error);
@@ -2977,11 +2999,11 @@
 
                     html += `
                         <tr>
-                            <td><strong>${sub.user?.name || 'N/A'}</strong><br><small>${sub.user?.email || ''}</small></td>
-                            <td>${sub.plan?.name || 'N/A'}</td>
+                            <td><strong>${escapeHtml(sub.user?.name) || 'N/A'}</strong><br><small>${escapeHtml(sub.user?.email)}</small></td>
+                            <td>${escapeHtml(sub.plan?.name) || 'N/A'}</td>
                             <td>${startDate}</td>
                             <td>${endDate}</td>
-                            <td><span class="badge ${statusClass}">${sub.status}</span></td>
+                            <td><span class="badge ${statusClass}">${escapeHtml(sub.status)}</span></td>
                             <td>${sub.auto_renew ? 'Yes' : 'No'}</td>
                             <td>
                                 <div style="display: flex; gap: 8px;">
@@ -2999,6 +3021,109 @@
 
             html += '</tbody></table>';
             document.getElementById('subscriptions-table').innerHTML = html;
+        }
+
+        function openExtendModal(subscriptionId) {
+            const sub = (allSubscriptions || []).find(s => s.id === subscriptionId);
+            if (!sub) {
+                alert('Subscription not found. Please refresh and try again.');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 420px;">
+                    <div class="modal-header">
+                        <h3>Extend Subscription</h3>
+                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Current end date: <strong>${new Date(sub.end_date).toLocaleDateString('en-IN')}</strong></p>
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Extend by (days)</label>
+                        <input type="number" id="extend-days" value="30" min="1" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button class="btn btn-primary" onclick="extendSubscription('${sub.id}')">Extend</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function extendSubscription(subscriptionId) {
+            if (!ensureAdminAction()) return;
+            try {
+                const sub = (allSubscriptions || []).find(s => s.id === subscriptionId);
+                if (!sub) throw new Error('Subscription not found');
+
+                const days = parseInt(document.getElementById('extend-days').value);
+                if (!days || days < 1) {
+                    alert('Please enter a valid number of days');
+                    return;
+                }
+
+                const newEndDate = new Date(sub.end_date);
+                newEndDate.setDate(newEndDate.getDate() + days);
+
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({ end_date: newEndDate.toISOString().split('T')[0], status: 'active' })
+                    .eq('id', subscriptionId);
+
+                if (error) throw error;
+
+                alert('Subscription extended successfully!');
+                document.querySelector('.modal-overlay').remove();
+                loadSubscriptions();
+
+            } catch (error) {
+                console.error('Error extending subscription:', error);
+                alert('Error extending subscription: ' + error.message);
+            }
+        }
+
+        async function openCancelModal(subscriptionId) {
+            if (!ensureAdminAction()) return;
+            if (!confirm('Cancel this subscription? The user will lose access at the end of the current period.')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({ status: 'cancelled', auto_renew: false })
+                    .eq('id', subscriptionId);
+
+                if (error) throw error;
+
+                alert('Subscription cancelled.');
+                loadSubscriptions();
+
+            } catch (error) {
+                console.error('Error cancelling subscription:', error);
+                alert('Error cancelling subscription: ' + error.message);
+            }
+        }
+
+        async function openRefundModal(subscriptionId) {
+            if (!ensureAdminAction()) return;
+            if (!confirm('This marks the subscription as cancelled. Refunds are not processed automatically — you will still need to issue the refund from the Razorpay dashboard. Continue?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('subscriptions')
+                    .update({ status: 'cancelled', auto_renew: false })
+                    .eq('id', subscriptionId);
+
+                if (error) throw error;
+
+                alert('Subscription marked as cancelled. Remember to process the refund in Razorpay.');
+                loadSubscriptions();
+
+            } catch (error) {
+                console.error('Error processing refund:', error);
+                alert('Error updating subscription: ' + error.message);
+            }
         }
 
         async function loadPromoCodes() {
@@ -3176,6 +3301,90 @@
             }
         }
 
+        // Edit Plan Modal
+        function editPlan(planId) {
+            const plan = (allPlans || []).find(p => p.id === planId);
+            if (!plan) {
+                alert('Plan not found. Please refresh and try again.');
+                return;
+            }
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>Edit Plan</h3>
+                        <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: grid; gap: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Plan Name</label>
+                                <input type="text" id="edit-plan-name" value="${escapeHtml(plan.name)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Description</label>
+                                <textarea id="edit-plan-description" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; min-height: 60px;">${escapeHtml(plan.description)}</textarea>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Price (₹)</label>
+                                    <input type="number" id="edit-plan-price" value="${toNumber(plan.price)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Duration (months)</label>
+                                    <input type="number" id="edit-plan-duration" value="${toNumber(plan.duration_months)}" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Features (one per line)</label>
+                                <textarea id="edit-plan-features" style="width: 100%; padding: 10px; border: 1px solid #E8E8E8; border-radius: 8px; min-height: 100px;">${escapeHtml((plan.features || []).join('\n'))}</textarea>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button class="btn btn-primary" onclick="updatePlan('${plan.id}')">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        async function updatePlan(planId) {
+            if (!ensureAdminAction()) return;
+            try {
+                const name = document.getElementById('edit-plan-name').value;
+                const description = document.getElementById('edit-plan-description').value;
+                const price = parseFloat(document.getElementById('edit-plan-price').value);
+                const duration = parseInt(document.getElementById('edit-plan-duration').value);
+                const featuresText = document.getElementById('edit-plan-features').value;
+
+                if (!name || !price || !duration) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                const features = featuresText.split('\n').filter(f => f.trim());
+
+                const { error } = await supabase
+                    .from('subscription_plans')
+                    .update({ name, description, price, duration_months: duration, features })
+                    .eq('id', planId);
+
+                if (error) throw error;
+
+                alert('Plan updated successfully!');
+                document.querySelector('.modal-overlay').remove();
+                loadPlansData();
+
+            } catch (error) {
+                console.error('Error updating plan:', error);
+                alert('Error updating plan: ' + error.message);
+            }
+        }
+
         // Create Promo Code Modal
         function openCreatePromoModal() {
             const modal = document.createElement('div');
@@ -3320,8 +3529,10 @@
                 renderTicketsTable(allTickets);
                 updateSupportStats(allTickets);
 
-                // Setup filter buttons
+                // Setup filter buttons (avoid re-binding on every load)
                 document.querySelectorAll('.ticket-filter').forEach(btn => {
+                    if (btn.dataset.bound) return;
+                    btn.dataset.bound = '1';
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.ticket-filter').forEach(b => {
                             b.classList.remove('active');
@@ -3331,16 +3542,20 @@
                         this.classList.add('active');
                         this.style.background = '#000';
                         this.style.color = '#fff';
-                        
+
                         currentTicketFilter = this.getAttribute('data-filter');
                         filterTickets();
                     });
                 });
 
-                // Setup search
-                document.getElementById('ticket-search').addEventListener('input', function(e) {
-                    filterTickets();
-                });
+                // Setup search (avoid re-binding on every load)
+                const ticketSearchEl = document.getElementById('ticket-search');
+                if (ticketSearchEl && !ticketSearchEl.dataset.bound) {
+                    ticketSearchEl.dataset.bound = '1';
+                    ticketSearchEl.addEventListener('input', function(e) {
+                        filterTickets();
+                    });
+                }
 
             } catch (error) {
                 console.error('Error loading tickets:', error);
@@ -3422,12 +3637,12 @@
 
                     html += `
                         <tr>
-                            <td><strong>#${ticket.ticket_number || ticket.id.substring(0, 8)}</strong></td>
-                            <td>${ticket.subject}</td>
-                            <td>${ticket.user?.name || 'N/A'}<br><small>${ticket.user?.email || ''}</small></td>
-                            <td>${ticket.category || 'other'}</td>
-                            <td><span class="badge ${priorityClass}">${ticket.priority}</span></td>
-                            <td><span class="badge ${statusClass}">${ticket.status}</span></td>
+                            <td><strong>#${ticket.ticket_number || (ticket.id ? ticket.id.substring(0, 8) : 'N/A')}</strong></td>
+                            <td>${escapeHtml(ticket.subject)}</td>
+                            <td>${escapeHtml(ticket.user?.name) || 'N/A'}<br><small>${escapeHtml(ticket.user?.email)}</small></td>
+                            <td>${escapeHtml(ticket.category) || 'other'}</td>
+                            <td><span class="badge ${priorityClass}">${escapeHtml(ticket.priority)}</span></td>
+                            <td><span class="badge ${statusClass}">${escapeHtml(ticket.status)}</span></td>
                             <td>${created}</td>
                             <td>
                                 <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="openTicketModal('${ticket.id}')">
@@ -3472,10 +3687,10 @@
                     messages.map(m => `
                         <div style="background: ${m.is_internal ? '#FFF9E6' : '#F5F5F5'}; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <strong style="font-size: 13px;">${m.sender?.name || 'Unknown'} ${m.is_internal ? '(Internal Note)' : ''}</strong>
+                                <strong style="font-size: 13px;">${escapeHtml(m.sender?.name) || 'Unknown'} ${m.is_internal ? '(Internal Note)' : ''}</strong>
                                 <span style="font-size: 11px; color: #666;">${new Date(m.created_at).toLocaleString('en-IN')}</span>
                             </div>
-                            <p style="font-size: 13px; color: #333; margin: 0; white-space: pre-wrap;">${m.message}</p>
+                            <p style="font-size: 13px; color: #333; margin: 0; white-space: pre-wrap;">${escapeHtml(m.message)}</p>
                         </div>
                     `).join('') : 
                     '<p style="color: #999; font-size: 13px;">No messages yet</p>';
@@ -3485,7 +3700,7 @@
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 800px;">
                         <div class="modal-header">
-                            <h3>Ticket #${ticket.ticket_number || ticket.id.substring(0, 8)} - ${ticket.subject}</h3>
+                            <h3>Ticket #${ticket.ticket_number || (ticket.id ? ticket.id.substring(0, 8) : 'N/A')} - ${escapeHtml(ticket.subject)}</h3>
                             <button class="close-modal" onclick="this.closest('.modal-overlay').remove()">×</button>
                         </div>
                         <div class="modal-body">
@@ -3508,11 +3723,11 @@
                                 <div>
                                     <h4 style="font-size: 14px; margin-bottom: 12px;">Ticket Details</h4>
                                     <div style="background: #F5F5F5; padding: 16px; border-radius: 8px; font-size: 13px;">
-                                        <p><strong>User:</strong> ${ticket.user?.name || 'N/A'}</p>
-                                        <p><strong>Email:</strong> ${ticket.user?.email || 'N/A'}</p>
-                                        <p><strong>Category:</strong> ${ticket.category}</p>
-                                        <p><strong>Priority:</strong> ${ticket.priority}</p>
-                                        <p><strong>Status:</strong> ${ticket.status}</p>
+                                        <p><strong>User:</strong> ${escapeHtml(ticket.user?.name) || 'N/A'}</p>
+                                        <p><strong>Email:</strong> ${escapeHtml(ticket.user?.email) || 'N/A'}</p>
+                                        <p><strong>Category:</strong> ${escapeHtml(ticket.category)}</p>
+                                        <p><strong>Priority:</strong> ${escapeHtml(ticket.priority)}</p>
+                                        <p><strong>Status:</strong> ${escapeHtml(ticket.status)}</p>
                                         <p><strong>Created:</strong> ${new Date(ticket.created_at).toLocaleString('en-IN')}</p>
                                     </div>
                                     
@@ -3626,10 +3841,13 @@
             const rangeSelect = document.getElementById('analytics-date-range');
             currentAnalyticsPeriod = parseInt(rangeSelect.value);
 
-            // Setup change listener
-            rangeSelect.addEventListener('change', function() {
-                loadAnalytics();
-            });
+            // Setup change listener (avoid re-binding on every load)
+            if (!rangeSelect.dataset.bound) {
+                rangeSelect.dataset.bound = '1';
+                rangeSelect.addEventListener('change', function() {
+                    loadAnalytics();
+                });
+            }
 
             const startDate = new Date();
             startDate.setDate(startDate.getDate() - currentAnalyticsPeriod);
@@ -4029,7 +4247,7 @@
 
             // Calculate stats
             const totalTrainers = trainers.length;
-            const verifiedTrainers = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'verified').length;
+            const verifiedTrainers = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'approved').length;
             const verificationRate = totalTrainers > 0 ?
                 ((verifiedTrainers / totalTrainers) * 100).toFixed(1) : 0;
 
