@@ -140,7 +140,8 @@
                     <span>Higher search ranking</span>
                 </li>
             </ul>
-            <a href="join-us.html" class="w-full py-3 bg-white text-primary font-bold rounded-xl text-center hover:bg-surface transition-colors">Get Pro</a>
+            <button onclick="handlePlanClick('pro', this)" id="btn-pro" class="w-full py-3 bg-white text-primary font-bold rounded-xl text-center hover:bg-surface transition-colors">Get Pro</button>
+            <p id="pro-status" class="text-xs text-white/80 text-center mt-2 hidden"></p>
         </div>
 
         <!-- Elite -->
@@ -179,7 +180,8 @@
                     <span>Priority support</span>
                 </li>
             </ul>
-            <a href="join-us.html" class="w-full py-3 bg-secondary text-white font-bold rounded-xl text-center hover:bg-primary transition-colors">Go Elite</a>
+            <button onclick="handlePlanClick('elite', this)" id="btn-elite" class="w-full py-3 bg-secondary text-white font-bold rounded-xl text-center hover:bg-primary transition-colors">Go Elite</button>
+            <p id="elite-status" class="text-xs text-on-surface-variant text-center mt-2 hidden"></p>
         </div>
     </div>
 
@@ -382,8 +384,42 @@
 </footer>
 
 <script src="auth.js"></script>
+<script src="subscription-payments.js"></script>
 <script>
     renderAuthNav();
+
+    async function handlePlanClick(plan, btn) {
+        const user = await getCurrentUser();
+        if (!user || user.role !== 'trainer') {
+            window.location.href = 'join-us.html';
+            return;
+        }
+
+        const statusEl = document.getElementById(plan + '-status');
+        const originalText = btn.textContent;
+
+        purchaseSubscription(plan, (status, message) => {
+            if (status === 'loading') {
+                btn.disabled = true;
+                btn.textContent = message;
+            } else if (status === 'error') {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                if (message) {
+                    statusEl.textContent = message;
+                    statusEl.classList.remove('hidden');
+                }
+            } else if (status === 'done') {
+                btn.disabled = false;
+                btn.textContent = 'Active ✓';
+                statusEl.textContent = message;
+                statusEl.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+    }
 
     let isAnnual = false;
     function togglePricing() {

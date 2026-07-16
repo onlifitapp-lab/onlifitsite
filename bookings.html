@@ -212,6 +212,25 @@
             </div>
         </div>
 
+        <div id="subscription-grace-banner" class="hidden bg-yellow-50 border border-yellow-300 text-yellow-900 rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-sm font-bold" id="subscription-grace-text"></p>
+            <button onclick="handleSubscriptionAction('renew')" id="btn-grace-renew" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors whitespace-nowrap">Renew Now</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
+                <div>
+                    <h3 class="font-headline text-lg font-black">Subscription</h3>
+                    <p class="text-xs text-on-surface-variant mt-1" id="subscription-expiry-text">—</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="handleSubscriptionAction('upgrade')" id="btn-subscription-upgrade" class="hidden px-4 py-2 bg-secondary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Upgrade to Elite</button>
+                    <button onclick="handleSubscriptionAction('renew')" id="btn-subscription-renew" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Renew Plan</button>
+                </div>
+            </div>
+            <p id="subscription-status-msg" class="hidden px-6 py-3 text-xs font-bold text-on-surface-variant"></p>
+        </div>
+
         <div class="trainer-dashboard-panels dash-panel-grid grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
                 <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
@@ -813,6 +832,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-client.js"></script>
 <script src="auth.js?v=20260428"></script>
+<script src="subscription-payments.js?v=20260428"></script>
 
 <script>
 
@@ -1793,6 +1813,8 @@
         if (subEl) subEl.textContent = trainerUser?.subscription_plan || 'Free';
         if (leadEl) leadEl.textContent = String(totalLeads30d || 0);
 
+        renderSubscriptionCard(trainerUser);
+
         const welcome = document.getElementById('welcome-message');
         if (welcome && trainerUser?.name) {
             const first = trainerUser.name.split(' ')[0];
@@ -1806,6 +1828,71 @@
         await updatePerformanceStats(bookings);
         await renderNextSessions(bookings);
         await maybeShowLeadLimitPopup();
+    }
+
+    function formatExpiryDate(iso) {
+        if (!iso) return null;
+        try {
+            return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch { return null; }
+    }
+
+    function renderSubscriptionCard(user) {
+        const plan = (user?.subscription_plan || 'free').toLowerCase();
+        const status = (user?.subscription_status || 'none').toLowerCase();
+        const expiryText = formatExpiryDate(user?.subscription_expires_at);
+
+        const expiryEl = document.getElementById('subscription-expiry-text');
+        const upgradeBtn = document.getElementById('btn-subscription-upgrade');
+        const renewBtn = document.getElementById('btn-subscription-renew');
+        const statusMsg = document.getElementById('subscription-status-msg');
+        const graceBanner = document.getElementById('subscription-grace-banner');
+        const graceText = document.getElementById('subscription-grace-text');
+
+        if (!expiryEl) return;
+
+        upgradeBtn.classList.toggle('hidden', plan !== 'pro' || status === 'none');
+        graceBanner.classList.toggle('hidden', status !== 'grace_period');
+        statusMsg.classList.add('hidden');
+
+        if (status === 'active') {
+            expiryEl.textContent = expiryText ? `Renews on ${expiryText}` : 'Active';
+            renewBtn.textContent = 'Renew Plan';
+        } else if (status === 'grace_period') {
+            expiryEl.textContent = expiryText ? `Expired ${expiryText} — grace period active` : 'Grace period active';
+            graceText.textContent = 'Your subscription has expired. Renew within the grace period to stay discoverable.';
+            renewBtn.textContent = 'Renew Plan';
+        } else if (status === 'expired') {
+            expiryEl.textContent = 'Subscription expired';
+            statusMsg.textContent = 'Your subscription has expired and your profile is no longer discoverable. Renew to reactivate.';
+            statusMsg.classList.remove('hidden');
+            renewBtn.textContent = 'Renew Plan';
+        } else {
+            expiryEl.textContent = 'No active subscription';
+            renewBtn.textContent = 'Get Pro';
+        }
+    }
+
+    function handleSubscriptionAction(action) {
+        const plan = action === 'upgrade' ? 'elite' : (trainerUser?.subscription_plan || 'pro');
+        const btnIds = ['btn-subscription-renew', 'btn-subscription-upgrade', 'btn-grace-renew'];
+        const buttons = btnIds.map(id => document.getElementById(id)).filter(Boolean);
+        const originalTexts = buttons.map(b => b.textContent);
+
+        purchaseSubscription(plan, (status, message) => {
+            if (status === 'loading') {
+                buttons.forEach(b => { b.disabled = true; b.textContent = message; });
+            } else if (status === 'error') {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                if (message) alert(message);
+            } else if (status === 'done') {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                alert(message);
+                window.location.reload();
+            } else {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+            }
+        });
     }
 
     async function renderRoute(route) {
