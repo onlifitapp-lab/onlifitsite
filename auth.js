@@ -2273,16 +2273,14 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
                         : '<div class="flex-grow"></div>'
                     }
 
-                    <div class="mt-auto pt-2">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <div class="flex items-baseline gap-1 text-sm">${renderPriceLine(t)}</div>
-                                ${renderOfferLine()}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <a href="${escapeHtml(messageHref)}" class="h-8 inline-flex items-center justify-center px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors" onclick="event.stopPropagation()">Message</a>
-                                <a href="${escapeHtml(profileHref)}" class="h-8 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors" onclick="event.stopPropagation()">View Profile</a>
-                            </div>
+                    <div class="mt-auto pt-3 border-t border-outline-variant/10">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-baseline gap-1 text-sm min-w-0 truncate">${renderPriceLine(t)}</div>
+                            ${renderOfferLine()}
+                        </div>
+                        <div class="mt-2 grid grid-cols-2 gap-2">
+                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()">Message</a>
+                            <a href="${escapeHtml(profileHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors truncate" onclick="event.stopPropagation()">View Profile</a>
                         </div>
                     </div>
                 </div>
