@@ -370,9 +370,48 @@
         }
 
         .badge-rejected {
-            background: #F5F5F5;
-            color: #000000;
-            border: 1px solid #D0D0D0;
+            background: #FDECEC;
+            color: #C0362C;
+            border: 1px solid #F3C6C2;
+        }
+
+        /* Empty / error states (shared across all tables) */
+        .empty-state, .error-state {
+            padding: 48px 24px;
+            text-align: center;
+        }
+
+        .empty-state p, .error-state p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .empty-state p:first-child {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p:last-child {
+            color: #999999;
+        }
+
+        .error-state p:first-child {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .error-state p {
+            color: #C0362C;
+        }
+
+        .table-empty {
+            text-align: center;
+            color: #999999;
+            padding: 40px !important;
+            font-size: 14px;
         }
 
         /* Modal */
@@ -1497,7 +1536,7 @@
 
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                document.getElementById('recent-activity').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading dashboard data</p>';
+                document.getElementById('recent-activity').innerHTML = '<div class="error-state"><p>Error loading dashboard data</p></div>';
             }
         }
 
@@ -1537,7 +1576,7 @@
 
             } catch (error) {
                 console.error('Error loading recent activity:', error);
-                document.getElementById('recent-activity').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading activity</p>';
+                document.getElementById('recent-activity').innerHTML = '<div class="error-state"><p>Error loading activity</p></div>';
             }
         }
 
@@ -1577,7 +1616,7 @@
 
             } catch (error) {
                 console.error('Error loading trainers:', error);
-                document.getElementById('trainers-table').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading trainers</p>';
+                document.getElementById('trainers-table').innerHTML = '<div class="error-state"><p>Error loading trainers</p></div>';
             }
         }
 
@@ -1617,7 +1656,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="6" style="text-align: center; color: #718096; padding: 40px;">No trainers found</td></tr>';
+                html += '<tr><td colspan="6" class="table-empty">No trainers found</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -1665,10 +1704,7 @@
             } catch (error) {
                 console.error('Error loading revenue:', error);
                 document.getElementById('revenue-table').innerHTML = `
-                    <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666666; margin-bottom: 10px; font-size: 16px;">Revenue tracking will be available once bookings are created</p>
-                        <p style="color: #999999; font-size: 14px;">Connect your payment gateway to start tracking revenue</p>
-                    </div>
+                    <div class="empty-state"><p>Revenue tracking will be available once bookings are created</p><p>Connect your payment gateway to start tracking revenue</p></div>
                 `;
             }
         }
@@ -1676,10 +1712,7 @@
         function renderRevenueTable(revenue) {
             if (!revenue || revenue.length === 0) {
                 document.getElementById('revenue-table').innerHTML = `
-                    <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666666; margin-bottom: 10px; font-size: 16px;">No revenue data yet</p>
-                        <p style="color: #999999; font-size: 14px;">Revenue will appear here once bookings are completed</p>
-                    </div>
+                    <div class="empty-state"><p>No revenue data yet</p><p>Revenue will appear here once bookings are completed</p></div>
                 `;
                 return;
             }
@@ -1768,10 +1801,7 @@
             } catch (error) {
                 console.error('Error loading bookings:', error);
                 document.getElementById('bookings-table').innerHTML = `
-                    <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666666; margin-bottom: 10px; font-size: 16px;">No bookings yet</p>
-                        <p style="color: #999999; font-size: 14px;">Bookings will appear here once clients start booking trainers</p>
-                    </div>
+                    <div class="empty-state"><p>No bookings yet</p><p>Bookings will appear here once clients start booking trainers</p></div>
                 `;
             }
         }
@@ -1779,10 +1809,7 @@
         function renderBookingsTable(bookings) {
             if (!bookings || bookings.length === 0) {
                 document.getElementById('bookings-table').innerHTML = `
-                    <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666666; margin-bottom: 10px; font-size: 16px;">No bookings found</p>
-                        <p style="color: #999999; font-size: 14px;">Bookings will appear here once clients start booking trainers</p>
-                    </div>
+                    <div class="empty-state"><p>No bookings found</p><p>Bookings will appear here once clients start booking trainers</p></div>
                 `;
                 return;
             }
@@ -1969,7 +1996,7 @@
 
             } catch (error) {
                 console.error('Error loading trainer details:', error);
-                document.getElementById('trainer-modal-body').innerHTML = '<p style="color: #f56565; padding: 20px;">Error loading trainer details</p>';
+                document.getElementById('trainer-modal-body').innerHTML = '<div class="error-state"><p>Error loading trainer details</p></div>';
             }
         }
 
@@ -2311,7 +2338,7 @@
 
             } catch (error) {
                 console.error('Error loading clients:', error);
-                document.getElementById('clients-table').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading clients</p>';
+                document.getElementById('clients-table').innerHTML = '<div class="error-state"><p>Error loading clients</p></div>';
             }
         }
 
@@ -2391,7 +2418,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="7" style="text-align: center; color: #718096; padding: 40px;">No clients found</td></tr>';
+                html += '<tr><td colspan="7" class="table-empty">No clients found</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -2696,7 +2723,7 @@
                 }
             } catch (error) {
                 console.error('Error loading blogs:', error);
-                document.getElementById('blogs-table').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading blogs</p>';
+                document.getElementById('blogs-table').innerHTML = '<div class="error-state"><p>Error loading blogs</p></div>';
             }
         }
 
@@ -2740,7 +2767,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="6" style="text-align:center; color:#718096; padding:40px;">No blogs found</td></tr>';
+                html += '<tr><td colspan="6" class="table-empty">No blogs found</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -2889,7 +2916,7 @@
 
             } catch (error) {
                 console.error('Error loading plans:', error);
-                document.getElementById('plans-cards').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading plans</p>';
+                document.getElementById('plans-cards').innerHTML = '<div class="error-state"><p>Error loading plans</p></div>';
             }
         }
 
@@ -2926,7 +2953,7 @@
                     `;
                 });
             } else {
-                html = '<div style="padding: 40px; text-align: center; color: #666;">No plans yet. Create your first subscription plan!</div>';
+                html = '<div class="empty-state"><p>No plans yet. Create your first subscription plan!</p></div>';
             }
 
             document.getElementById('plans-cards').innerHTML = html;
@@ -2967,7 +2994,7 @@
                 console.error('Error loading subscriptions:', error);
                 document.getElementById('subscriptions-table').innerHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666;">No subscriptions yet</p>
+                        <div class="empty-state"><p>No subscriptions yet</p></div>
                     </div>
                 `;
             }
@@ -3016,7 +3043,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="7" style="text-align: center; color: #718096; padding: 40px;">No subscriptions found</td></tr>';
+                html += '<tr><td colspan="7" class="table-empty">No subscriptions found</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -3140,7 +3167,7 @@
 
             } catch (error) {
                 console.error('Error loading promo codes:', error);
-                document.getElementById('promo-codes-table').innerHTML = '<p style="padding: 20px; color: #f56565;">Error loading promo codes</p>';
+                document.getElementById('promo-codes-table').innerHTML = '<div class="error-state"><p>Error loading promo codes</p></div>';
             }
         }
 
@@ -3191,7 +3218,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="6" style="text-align: center; color: #718096; padding: 40px;">No promo codes yet</td></tr>';
+                html += '<tr><td colspan="6" class="table-empty">No promo codes yet</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -3561,7 +3588,7 @@
                 console.error('Error loading tickets:', error);
                 document.getElementById('tickets-table').innerHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666;">No support tickets yet</p>
+                        <div class="empty-state"><p>No support tickets yet</p></div>
                         <p style="color: #999; font-size: 14px;">Tickets will appear here when users contact support</p>
                     </div>
                 `;
@@ -3653,7 +3680,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="8" style="text-align: center; color: #718096; padding: 40px;">No tickets found</td></tr>';
+                html += '<tr><td colspan="8" class="table-empty">No tickets found</td></tr>';
             }
 
             html += '</tbody></table>';
@@ -4322,7 +4349,7 @@
                 console.error('Error loading notifications:', error);
                 document.getElementById('notifications-table').innerHTML = `
                     <div style="padding: 40px; text-align: center;">
-                        <p style="color: #666;">No notifications sent yet</p>
+                        <div class="empty-state"><p>No notifications sent yet</p></div>
                         <p style="color: #999; font-size: 14px;">Send your first announcement to users</p>
                     </div>
                 `;
@@ -4395,7 +4422,7 @@
                     `;
                 });
             } else {
-                html += '<tr><td colspan="6" style="text-align: center; color: #718096; padding: 40px;">No notifications yet</td></tr>';
+                html += '<tr><td colspan="6" class="table-empty">No notifications yet</td></tr>';
             }
 
             html += '</tbody></table>';
