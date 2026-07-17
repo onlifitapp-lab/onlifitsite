@@ -283,8 +283,7 @@
     <main class="pt-24">
 
         <!-- Hero Section -->
-        <!-- Hero Section -->
-        <section class="relative px-6 py-12 lg:py-24 overflow-hidden bg-surface">
+        <section class="relative px-6 pt-14 pb-16 lg:pt-20 lg:pb-24 overflow-hidden bg-surface">
             <!-- Decorative background blobbies -->
             <div class="absolute -top-10 -right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-0"></div>
             <div class="absolute top-40 -left-20 w-80 h-80 bg-tertiary/10 rounded-full blur-3xl -z-0"></div>
@@ -293,20 +292,25 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Left Column: Text Content -->
                     <div class="flex flex-col text-center lg:text-left">
+                        <!-- Eyebrow -->
+                        <div class="inline-flex items-center gap-2 self-center lg:self-start mb-5 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-on-surface">India's Largest Trainer Network</span>
+                        </div>
+
                         <!-- Main Header (H1) -->
-                        <h1 class="font-headline text-4xl lg:text-5xl xl:text-6xl font-black text-on-surface mb-6 leading-[1.1] tracking-tight">
+                        <h1 class="font-headline text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-5 leading-[1.05] tracking-tight">
                             Find the perfect trainer today
                         </h1>
-                        
+
                         <!-- Subtext (H2) -->
-                        <h2 class="text-on-surface-variant text-base lg:text-lg mb-10 leading-relaxed font-medium">
-                            <span class="block mb-2">India's largest community of certified personal trainers</span>
-                            <span class="block mb-2">Pick your favorite trainer and book sessions in person or online</span>
-                            <span class="block">1st session free, no commitment</span>
+                        <h2 class="text-on-surface-variant text-lg lg:text-xl mb-8 leading-relaxed font-medium max-w-xl mx-auto lg:mx-0">
+                            Verified trainers, online or in-person — message directly on WhatsApp.
                         </h2>
 
                         <!-- Search Bar -->
-                        <div class="hero-search-bar bg-white rounded-2xl shadow-xl w-full p-2 border border-outline-variant/50 mb-8 transform transition-all hover:shadow-2xl relative z-50 overflow-hidden">
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-3 text-center lg:text-left">Search verified trainers near you</p>
+                        <div class="hero-search-bar bg-white rounded-2xl shadow-ambient-medium w-full p-2 border border-outline-variant/50 mb-6 transform transition-all hover:shadow-elevated relative z-50 overflow-hidden">
                     <div class="hero-search-segment hero-search-input-wrap flex items-center relative">
                         <div class="relative w-full flex items-center">
                             <span class="material-symbols-outlined absolute left-0 text-on-surface-variant pointer-events-none">search</span>
@@ -363,10 +367,22 @@
                 </div>
 
                         <!-- Reassurance -->
-                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3 bg-white/60 backdrop-blur-md px-6 py-3 rounded-full border border-outline-variant/30 shadow-sm">
-                            <span class="inline-flex items-center gap-2 text-sm font-semibold text-on-surface">
-                                <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                Verified trainers | WhatsApp communication | Online &amp; offline sessions
+                        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface bg-white px-3 py-2 rounded-full border border-outline-variant/40 shadow-sm">
+                                <span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                Verified trainers
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface bg-white px-3 py-2 rounded-full border border-outline-variant/40 shadow-sm">
+                                <span class="material-symbols-outlined text-primary text-[16px]">location_on</span>
+                                Online &amp; offline
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface bg-white px-3 py-2 rounded-full border border-outline-variant/40 shadow-sm">
+                                <span class="material-symbols-outlined text-primary text-[16px]">chat</span>
+                                Direct on WhatsApp
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface bg-white px-3 py-2 rounded-full border border-outline-variant/40 shadow-sm">
+                                <span class="material-symbols-outlined text-primary text-[16px]">payments</span>
+                                No commission
                             </span>
                         </div>
                     </div>
@@ -393,75 +409,27 @@
             </div>
         </section>
 
-        <!-- Trust Cards (replaced Highlights Bar) -->
-        <section class="bg-surface-container-lowest border-y border-outline-variant/30 py-6 px-4">
+        <!-- Popular Fitness Goals — quick-search chips right under the hero -->
+        <section class="bg-surface-container-lowest border-y border-outline-variant/30 py-5 px-4">
             <div class="max-w-7xl mx-auto">
-                <div class="sr-only">Trust & safety highlights</div>
-
-                <!-- Mobile: horizontal carousel; Desktop: 4-column grid; Tablet: 2x2 -->
-                <div id="trust-cards" class="carousel hide-scrollbar flex gap-4 overflow-x-auto md:grid md:grid-cols-2 lg:grid-cols-4 md:gap-6 lg:gap-8">
-
-                    <!-- Card 1: Verified Trainers -->
-                    <article class="trust-card shrink-0 w-[78%] sm:w-[46%] md:w-auto bg-surface p-4 md:p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-elevated transition-transform duration-200 hover:-translate-y-1 text-center md:text-left">
-                        <div class="flex items-start md:items-center gap-4">
-                            <div class="w-14 h-14 md:w-14 md:h-14 flex-shrink-0 flex items-center justify-center rounded-lg bg-transparent text-on-surface" style="font-size:48px;">
-                                <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1;">verified_user</span>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-headline font-black text-lg">Verified Trainers</div>
-                                <p class="text-on-surface-variant text-sm mt-1">Certified professionals with verified credentials and background checks.</p>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 2: Onlifit Black -->
-                    <article class="trust-card shrink-0 w-[78%] sm:w-[46%] md:w-auto bg-surface p-4 md:p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-elevated transition-transform duration-200 hover:-translate-y-1 text-center md:text-left">
-                        <div class="flex items-start md:items-center gap-4">
-                            <div class="w-14 h-14 md:w-14 md:h-14 flex-shrink-0 flex items-center justify-center rounded-lg bg-transparent text-on-surface" style="font-size:48px;">
-                                <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1;">stars</span>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-headline font-black text-lg">Onlifit Black</div>
-                                <p class="text-on-surface-variant text-sm mt-1">Elite, handpicked trainers offering premium services and experiences.</p>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 3: Online & Offline -->
-                    <article class="trust-card shrink-0 w-[78%] sm:w-[46%] md:w-auto bg-surface p-4 md:p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-elevated transition-transform duration-200 hover:-translate-y-1 text-center md:text-left">
-                        <div class="flex items-start md:items-center gap-4">
-                            <div class="w-14 h-14 md:w-14 md:h-14 flex-shrink-0 flex items-center justify-center rounded-lg bg-transparent text-on-surface" style="font-size:48px;">
-                                <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1;">location_on</span>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-headline font-black text-lg">Online &amp; Offline</div>
-                                <p class="text-on-surface-variant text-sm mt-1">Flexible training modes to suit your schedule and preferences.</p>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- Card 4: Direct Communication -->
-                    <article class="trust-card shrink-0 w-[78%] sm:w-[46%] md:w-auto bg-surface p-4 md:p-6 rounded-2xl border border-outline-variant/20 shadow-sm hover:shadow-elevated transition-transform duration-200 hover:-translate-y-1 text-center md:text-left">
-                        <div class="flex items-start md:items-center gap-4">
-                            <div class="w-14 h-14 md:w-14 md:h-14 flex-shrink-0 flex items-center justify-center rounded-lg bg-transparent text-on-surface" style="font-size:48px;">
-                                <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1;">chat</span>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-headline font-black text-lg">Direct Communication</div>
-                                <p class="text-on-surface-variant text-sm mt-1">Connect with trainers directly on WhatsApp. No middleman.</p>
-                            </div>
-                        </div>
-                    </article>
-
-
-
+                <div id="goal-chips" class="flex gap-2 overflow-x-auto hide-scrollbar snap-x snap-mandatory justify-start md:justify-center">
+                    <button type="button" onclick="onlifitSearchCategory('Weight Loss')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Weight Loss</button>
+                    <button type="button" onclick="onlifitSearchCategory('Muscle Gain')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Muscle Gain</button>
+                    <button type="button" onclick="onlifitSearchCategory('Strength')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Strength</button>
+                    <button type="button" onclick="onlifitSearchCategory('Yoga')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Yoga</button>
+                    <button type="button" onclick="onlifitSearchCategory('CrossFit')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">CrossFit</button>
+                    <button type="button" onclick="onlifitSearchCategory('Powerlifting')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Powerlifting</button>
+                    <button type="button" onclick="onlifitSearchCategory('Calisthenics')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Calisthenics</button>
+                    <button type="button" onclick="onlifitSearchCategory('Running')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Running</button>
+                    <button type="button" onclick="onlifitSearchCategory('Home Workout')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Home Workout</button>
+                    <button type="button" onclick="onlifitSearchCategory('Women\'s Fitness')" class="shrink-0 snap-start px-4 py-2 rounded-full bg-white border border-outline-variant/40 text-sm font-bold text-on-surface hover:border-primary hover:text-primary transition-colors">Women's Fitness</button>
                 </div>
             </div>
         </section>
 
         <!-- --- Redesigned Homepage Sections (mobile-first, carousels, simplified flows) --- -->
 
-        <!-- 1 — Featured Trainers Carousel -->
+        <!-- 2 — Featured Trainers -->
         <section class="py-12 px-6 border-t border-outline-variant/30">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
@@ -484,34 +452,7 @@
             </div>
         </section>
 
-        <!-- 2 — Trainer Categories Carousel -->
-        <section class="py-8 px-6 bg-surface-container-lowest">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-headline text-xl font-black">Categories</h3>
-                    <p class="text-on-surface-variant text-sm">Browse by specialty</p>
-                </div>
-                <div id="categories-carousel" class="carousel flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-6">
-                    <div class="carousel-pill shrink-0 w-[36%] sm:w-[28%] md:w-[18%] p-3">
-                        <div class="bg-white rounded-2xl p-4 text-center ghost-border">Yoga</div>
-                    </div>
-                    <div class="carousel-pill shrink-0 w-[36%] sm:w-[28%] md:w-[18%] p-3">
-                        <div class="bg-white rounded-2xl p-4 text-center ghost-border">Weight Loss</div>
-                    </div>
-                    <div class="carousel-pill shrink-0 w-[36%] sm:w-[28%] md:w-[18%] p-3">
-                        <div class="bg-white rounded-2xl p-4 text-center ghost-border">Strength</div>
-                    </div>
-                    <div class="carousel-pill shrink-0 w-[36%] sm:w-[28%] md:w-[18%] p-3">
-                        <div class="bg-white rounded-2xl p-4 text-center ghost-border">Pilates</div>
-                    </div>
-                    <div class="carousel-pill shrink-0 w-[36%] sm:w-[28%] md:w-[18%] p-3">
-                        <div class="bg-white rounded-2xl p-4 text-center ghost-border">HIIT</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3 — How It Works (4 compact steps, horizontal) -->
+        <!-- 3 — How Onlifit Works -->
         <section class="py-12 px-6">
             <div class="max-w-7xl mx-auto text-center mb-6">
                 <h2 class="font-headline text-3xl font-black">How Onlifit Works</h2>
@@ -524,29 +465,29 @@
                             <div class="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                                 <span class="material-symbols-outlined text-primary">search</span>
                             </div>
-                            <h4 class="font-bold">Find Trainer</h4>
+                            <h4 class="font-bold">Search</h4>
                             <p class="text-on-surface-variant text-sm mt-2">Search by goal, location or specialty.</p>
                         </div>
                         <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
                             <div class="w-12 h-12 mx-auto rounded-xl bg-secondary/10 flex items-center justify-center mb-4">
                                 <span class="material-symbols-outlined text-secondary">playlist_add_check</span>
                             </div>
-                            <h4 class="font-bold">Choose Plan</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Select sessions and pricing that suit you.</p>
+                            <h4 class="font-bold">Choose Trainer</h4>
+                            <p class="text-on-surface-variant text-sm mt-2">Compare pricing, ratings and reviews.</p>
                         </div>
                         <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
                             <div class="w-12 h-12 mx-auto rounded-xl bg-tertiary/10 flex items-center justify-center mb-4">
                                 <span class="material-symbols-outlined text-tertiary">chat</span>
                             </div>
-                            <h4 class="font-bold">Contact Trainer</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Connect directly via WhatsApp to discuss plans.</p>
+                            <h4 class="font-bold">Contact on WhatsApp</h4>
+                            <p class="text-on-surface-variant text-sm mt-2">Message directly, no middleman.</p>
                         </div>
                         <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
                             <div class="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                                <span class="material-symbols-outlined text-primary">chat</span>
+                                <span class="material-symbols-outlined text-primary">fitness_center</span>
                             </div>
-                            <h4 class="font-bold">Start on WhatsApp</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Connect with your trainer instantly on WhatsApp.</p>
+                            <h4 class="font-bold">Start Training</h4>
+                            <p class="text-on-surface-variant text-sm mt-2">First session's free, no commitment.</p>
                         </div>
                     </div>
                     <!-- Connecting line -->
@@ -557,35 +498,99 @@
             </div>
         </section>
 
-        <!-- 4 — ONLIFIT BLACK (Premium Showcase + Carousel) -->
-        <section class="py-12 px-6 bg-surface-container-lowest">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-6">
-                <div class="flex-1">
-                    <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">ONLIFIT BLACK</h2>
-                    <p class="text-on-surface-variant text-sm">Our highest-rated and most trusted trainers.</p>
-                    <ul class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-on-surface-variant">
-                        <li>✓ Verified Identity</li>
-                        <li>✓ Top Reviews</li>
-                        <li>✓ Consistent Performance</li>
-                        <li>✓ Priority Visibility</li>
-                    </ul>
+        <!-- 4 — Browse Categories -->
+        <section class="py-10 px-6 bg-surface-container-lowest">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="font-headline text-xl font-black">Browse by specialty</h3>
+                    <p class="text-on-surface-variant text-sm hidden sm:block">Tap a category to search</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <a href="trainers.html?filter=onlifit_black" class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-black text-white font-bold shadow-lg hover:opacity-95 transition-all">Explore Black Trainers</a>
-                    <div class="hidden md:flex gap-2">
-                        <button class="carousel-arrow prev" data-target="black-trainers" aria-label="Previous"><span class="material-symbols-outlined">west</span></button>
-                        <button class="carousel-arrow next" data-target="black-trainers" aria-label="Next"><span class="material-symbols-outlined">east</span></button>
-                    </div>
-                </div>
-            </div>
-            <div id="black-trainers" class="carousel flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-6">
-                <div class="carousel-card shrink-0 w-[84%] sm:w-[48%] md:w-[32%] lg:w-[28%] p-4">
-                    <div class="bg-surface-container-low p-4 rounded-2xl h-full shadow-sm"></div>
+                <div id="categories-carousel" class="carousel flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
+                    <button type="button" onclick="onlifitSearchCategory('Yoga')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">self_improvement</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">Yoga</span>
+                        </div>
+                    </button>
+                    <button type="button" onclick="onlifitSearchCategory('Weight Loss')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-tertiary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-tertiary">monitor_weight</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">Weight Loss</span>
+                        </div>
+                    </button>
+                    <button type="button" onclick="onlifitSearchCategory('Strength')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-secondary">fitness_center</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">Strength</span>
+                        </div>
+                    </button>
+                    <button type="button" onclick="onlifitSearchCategory('CrossFit')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">sports_gymnastics</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">CrossFit</span>
+                        </div>
+                    </button>
+                    <button type="button" onclick="onlifitSearchCategory('Running')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-tertiary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-tertiary">directions_run</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">Running</span>
+                        </div>
+                    </button>
+                    <button type="button" onclick="onlifitSearchCategory('Home Workout')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                            <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-secondary">home</span>
+                            </div>
+                            <span class="text-sm font-bold text-on-surface">Home Workout</span>
+                        </div>
+                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- 5 — Success Stories (Testimonials Carousel) -->
+        <!-- 5 — Onlifit Black -->
+        <section class="py-16 lg:py-20 px-6 bg-on-surface text-white">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
+                <div class="flex-1">
+                    <div class="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-white/10 border border-white/20">
+                        <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">stars</span>
+                        <span class="text-[11px] font-bold uppercase tracking-widest">Premium Tier</span>
+                    </div>
+                    <h2 class="font-headline text-3xl md:text-4xl font-black">Onlifit Black</h2>
+                    <p class="text-white/60 mt-2 max-w-lg">Our highest-rated and most trusted trainers — handpicked for consistent results.</p>
+                    <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/80">
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Verified Identity</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Top Reviews</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Consistent Performance</li>
+                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Priority Visibility</li>
+                    </ul>
+                </div>
+                <div class="flex items-center gap-4 shrink-0">
+                    <a href="trainers.html?filter=onlifit_black" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-on-surface font-bold shadow-lg hover:opacity-90 transition-all">Explore Black Trainers</a>
+                    <div class="hidden md:flex gap-2">
+                        <button class="carousel-arrow prev w-11 h-11 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 transition-colors" data-target="black-trainers" aria-label="Previous"><span class="material-symbols-outlined text-[18px]">west</span></button>
+                        <button class="carousel-arrow next w-11 h-11 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 transition-colors" data-target="black-trainers" aria-label="Next"><span class="material-symbols-outlined text-[18px]">east</span></button>
+                    </div>
+                </div>
+            </div>
+            <div id="black-trainers" class="carousel flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
+                <div class="carousel-card shrink-0 w-[84%] sm:w-[48%] md:w-[32%] lg:w-[28%] p-4">
+                    <div class="bg-white/5 p-4 rounded-2xl h-full"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6 — Testimonials -->
         <section id="reviews-section" class="py-12 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
@@ -609,58 +614,7 @@
             </div>
         </section>
 
-        <!-- 6 — Why Onlifit (3 cards only) -->
-        <section class="py-12 px-6 bg-surface">
-            <div class="max-w-7xl mx-auto text-center mb-8">
-                <h2 class="font-headline text-3xl font-black">Why Onlifit</h2>
-                <p class="text-on-surface-variant">A premium fitness marketplace built for results.</p>
-            </div>
-            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white rounded-2xl p-6 border border-outline-variant/30 shadow-sm text-center">
-                    <div class="w-14 h-14 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4" style="font-size:48px;">
-                        <span class="material-symbols-outlined text-primary">verified_user</span>
-                    </div>
-                    <h4 class="font-headline font-black mb-2">Verified Trainers</h4>
-                    <p class="text-on-surface-variant text-sm">Every trainer is manually reviewed and verified.</p>
-                </div>
-
-                <div class="bg-white rounded-2xl p-6 border border-outline-variant/30 shadow-sm text-center">
-                    <div class="w-14 h-14 mx-auto rounded-xl bg-secondary/10 flex items-center justify-center mb-4" style="font-size:48px;">
-                        <span class="material-symbols-outlined text-secondary">swap_horiz</span>
-                    </div>
-                    <h4 class="font-headline font-black mb-2">Flexible Plans</h4>
-                    <p class="text-on-surface-variant text-sm">Choose sessions that fit your schedule and goals.</p>
-                </div>
-
-                <div class="bg-white rounded-2xl p-6 border border-outline-variant/30 shadow-sm text-center">
-                    <div class="w-14 h-14 mx-auto rounded-xl bg-tertiary/10 flex items-center justify-center mb-4" style="font-size:48px;">
-                        <span class="material-symbols-outlined text-tertiary">lock</span>
-                    </div>
-                    <h4 class="font-headline font-black mb-2">Secure Payments</h4>
-                    <p class="text-on-surface-variant text-sm">Protected checkout powered by Razorpay.</p>
-                </div>
-
-                <div class="bg-white rounded-2xl p-6 border border-outline-variant/30 shadow-sm text-center">
-                    <div class="w-14 h-14 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4" style="font-size:48px;">
-                        <span class="material-symbols-outlined text-primary">public</span>
-                    </div>
-                    <h4 class="font-headline font-black mb-2">Online &amp; Offline Training</h4>
-                    <p class="text-on-surface-variant text-sm">Train anywhere — virtually or in-person with the right coach.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 7 — Final Browse Trainers CTA -->
-        <section class="py-12 px-6">
-            <div class="max-w-7xl mx-auto text-center">
-                <a href="trainers.html" class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-primary text-on-primary font-black text-base shadow-lg shadow-primary/30 hover:opacity-95 transition-all">
-                    Browse All Trainers
-                    <span class="material-symbols-outlined">search</span>
-                </a>
-            </div>
-        </section>
-
-        <!-- Join as Trainer Section -->
+        <!-- 7 — Become a Trainer -->
         <section class="px-4 md:px-6 py-16 lg:py-24 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
                 <div class="relative rounded-[2.5rem] overflow-hidden group min-h-[500px] md:min-h-[600px] flex items-center shadow-2xl transition-all duration-500 hover:shadow-black/20">
@@ -681,7 +635,7 @@
                             </div>
                             
                             <h2 class="font-headline text-4xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6">
-                                Turn your <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-container font-black">passion</span> <br class="hidden md:block"> into your profession.
+                                Turn your <span class="text-white underline decoration-white/30 decoration-4 underline-offset-8 font-black">passion</span> <br class="hidden md:block"> into your profession.
                             </h2>
                             
                             <p class="text-white/80 text-lg md:text-xl leading-relaxed mb-10 max-w-xl font-medium">
@@ -704,6 +658,60 @@
                                 <div class="text-3xl font-black text-white mb-1">Zero</div>
                                 <div class="text-sm font-medium text-white/80">Upfront fees to setup your profile</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8 — FAQ -->
+        <section class="py-16 px-6 bg-surface">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="font-headline text-2xl md:text-3xl font-black text-center mb-8">Frequently Asked Questions</h2>
+                <div class="space-y-4">
+                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                            <span class="font-bold">How do I find the right trainer?</span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                        </button>
+                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                            Search by goal, location, or specialty at the top of this page. Every trainer's profile shows their rating, reviews, and pricing so you can compare before reaching out.
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                            <span class="font-bold">Is the first session really free?</span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                        </button>
+                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                            Yes — most trainers offer a free first class so you can decide if they're the right fit before committing to a plan.
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                            <span class="font-bold">How do I contact a trainer?</span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                        </button>
+                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                            Directly on WhatsApp — no in-app messaging, no middleman. You'll find the contact option on every trainer's card and profile.
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                            <span class="font-bold">What's the difference between Onlifit Black and regular trainers?</span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                        </button>
+                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                            Onlifit Black highlights our highest-rated, most consistent trainers with verified identity and priority visibility — a curated shortlist, not just another filter.
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                            <span class="font-bold">Can I train online and offline with the same trainer?</span>
+                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                        </button>
+                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                            Many trainers offer both — check the Online/Offline badge on their card, or ask directly on WhatsApp what works for your schedule.
                         </div>
                     </div>
                 </div>
@@ -909,7 +917,7 @@
             try {
                 const { data, error } = await supabaseClient
                     .from('reviews')
-                    .select('id, rating, text, created_at')
+                    .select('id, rating, text, created_at, client:client_id(name, city, location), trainer:trainer_id(name, avatar_url)')
                     .order('created_at', { ascending: false })
                     .limit(10);
 
@@ -928,6 +936,12 @@
                     const rating = Number(r.rating);
                     const safeText = escapeHtml(r.text || '');
                     const dateText = formatShortDate(r.created_at);
+                    const clientName = escapeHtml(r.client?.name || 'Onlifit Member');
+                    const location = escapeHtml(r.client?.city || r.client?.location || '');
+                    const trainerName = escapeHtml(r.trainer?.name || '');
+                    const trainerAvatar = r.trainer?.avatar_url;
+                    const hasAvatar = trainerAvatar && /^https?:\/\//i.test(trainerAvatar);
+                    const initial = (r.client?.name || 'O').charAt(0).toUpperCase();
                     return `
                         <div class="testimonial-card bg-surface p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
                             <div class="flex items-center justify-between mb-4">
@@ -936,10 +950,13 @@
                             </div>
                             <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"${safeText}"</p>
                             <div class="flex items-center gap-3">
-                                <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-black flex-shrink-0">R</div>
-                                <div class="flex flex-col">
-                                    <p class="font-bold text-sm text-on-surface">Onlifit Review</p>
-                                    <p class="text-xs font-semibold text-on-surface-variant">Client feedback</p>
+                                ${hasAvatar
+                                    ? `<img src="${escapeHtml(trainerAvatar)}" alt="${trainerName}" class="h-10 w-10 rounded-full object-cover flex-shrink-0" loading="lazy" />`
+                                    : `<div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-black flex-shrink-0">${escapeHtml(initial)}</div>`
+                                }
+                                <div class="flex flex-col min-w-0">
+                                    <p class="font-bold text-sm text-on-surface truncate">${clientName}${location ? ` <span class="font-medium text-on-surface-variant">· ${location}</span>` : ''}</p>
+                                    <p class="text-xs font-semibold text-on-surface-variant truncate">${trainerName ? `Trained with ${trainerName}` : 'Verified feedback'}</p>
                                 </div>
                             </div>
                         </div>
@@ -958,18 +975,27 @@
                     rating: 5,
                     text: 'Found my trainer in less than a day. Sessions are structured and I already feel stronger in week two.',
                     date: '12 Apr 2026',
+                    name: 'Ananya K.',
+                    location: 'Hyderabad',
+                    trainer: 'Rahul Sharma',
                     initial: 'A'
                 },
                 {
                     rating: 5,
                     text: 'The online plan was super practical for my work schedule. My coach checks in every week and keeps me consistent.',
                     date: '02 Apr 2026',
+                    name: 'Rohan M.',
+                    location: 'Bengaluru',
+                    trainer: 'Priya Nair',
                     initial: 'R'
                 },
                 {
                     rating: 4,
                     text: 'Booked an offline trainer nearby and the experience has been smooth. Clear pricing and easy communication.',
                     date: '22 Mar 2026',
+                    name: 'Sneha P.',
+                    location: 'Mumbai',
+                    trainer: 'Arjun Verma',
                     initial: 'S'
                 }
             ];
@@ -983,9 +1009,9 @@
                     <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"${escapeHtml(r.text)}"</p>
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-black flex-shrink-0">${r.initial}</div>
-                        <div class="flex flex-col">
-                            <p class="font-bold text-sm text-on-surface">Onlifit Member</p>
-                            <p class="text-xs font-semibold text-on-surface-variant">Verified feedback</p>
+                        <div class="flex flex-col min-w-0">
+                            <p class="font-bold text-sm text-on-surface truncate">${escapeHtml(r.name)} <span class="font-medium text-on-surface-variant">· ${escapeHtml(r.location)}</span></p>
+                            <p class="text-xs font-semibold text-on-surface-variant truncate">Trained with ${escapeHtml(r.trainer)}</p>
                         </div>
                     </div>
                 </div>
@@ -1060,7 +1086,9 @@
 
             requestAnimationFrame(() => {
                 void renderAuthNav();
-                void renderDynamicTrainers();
+                // Initial featured-trainers render is handled by populateFeaturedAndBlack()
+                // (see DOMContentLoaded listener below), which wraps cards in .carousel-card
+                // for the carousel layout. renderDynamicTrainers() is still used by performSearch().
                 void loadHomepageReviews();
             });
         });
@@ -1117,31 +1145,10 @@
             });
         }
 
-        (async () => {
-            // Wait for auth.js and Supabase to load (they're marked defer, so they should be available by inline script execution)
-            let attempts = 0;
-            while (typeof getTrainers !== 'function' && attempts < 50) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                attempts++;
-            }
-            if (typeof getTrainers === 'function') {
-                // Preload trainers in the background immediately
-                if (homepageTrainersLoading) return;
-                homepageTrainersLoading = true;
-                const preload = getTrainers({
-                    onUpdate: (trainers) => {
-                        // Update UI immediately when trainers arrive
-                        renderHomepageTrainers(trainers);
-                    }
-                }).catch(e => console.warn('Early trainer preload failed:', e));
-
-                preload.then((trainers) => {
-                    renderHomepageTrainers(trainers);
-                }).finally(() => {
-                    homepageTrainersLoading = false;
-                });
-            }
-        })();
+        // Note: initial featured-trainers render is handled by populateFeaturedAndBlack()
+        // (wraps cards in .carousel-card for the carousel layout). renderHomepageTrainers()
+        // is still used below for post-search results, which intentionally replace the
+        // carousel with a plain results grid.
 
         async function renderDynamicTrainers(query = '', location = '', mode = '') {
             const container = document.getElementById('trainers-container') || document.getElementById('featured-trainers');
@@ -1174,6 +1181,19 @@
                     homepageTrainersLoading = false;
                 }
             }
+        }
+
+        function onlifitSearchCategory(term) {
+            const input = document.getElementById('search-query');
+            if (input) input.value = term;
+            performSearch();
+        }
+
+        function toggleFaq(btn) {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            content.classList.toggle('hidden');
+            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
         }
 
         async function performSearch() {
@@ -1592,9 +1612,18 @@
                 const trainers = await getTrainers({});
                 if (!Array.isArray(trainers) || trainers.length === 0) return;
 
-                // Featured: explicit flag or top-rated
-                const featured = trainers.filter(t => t?.featured === true || (Number(t?.rating) || 0) >= 4.5).slice(0, 8);
-                const black = trainers.filter(t => t?.onlifit_black === true || t?.is_onlifit_black === true || (Array.isArray(t?.badges) && t.badges.includes('onlifit_black'))).slice(0, 8);
+                // Featured: explicit flag or top-rated, falling back to any trainers so the
+                // section never renders empty before enough trainers have ratings/flags set.
+                let featured = trainers.filter(t => t?.featured === true || (Number(t?.rating) || 0) >= 4.5).slice(0, 8);
+                if (featured.length === 0) featured = trainers.slice(0, 8);
+                const featuredIds = new Set(featured.map(t => t?.id).filter(Boolean));
+
+                // Black: explicit flag only. Never reuse a trainer already shown in Featured —
+                // showing the same cards twice undermines the "premium tier" the section promises.
+                const black = trainers
+                    .filter(t => t?.onlifit_black === true || t?.is_onlifit_black === true || (Array.isArray(t?.badges) && t.badges.includes('onlifit_black')))
+                    .filter(t => !featuredIds.has(t?.id))
+                    .slice(0, 8);
 
                 const featuredContainer = document.getElementById('featured-trainers');
                 const blackContainer = document.getElementById('black-trainers');
@@ -1605,9 +1634,12 @@
 
                 if (blackContainer && typeof window.renderPremiumTrainerCardHTML === 'function') {
                     if (black.length === 0) {
-                        // fallback: show top featured if no explicit black trainers
-                        const fallback = featured.slice(0, 4);
-                        blackContainer.innerHTML = fallback.map(t => `<div class="carousel-card shrink-0 w-[84%] sm:w-[48%] lg:w-[32%] p-4">${window.renderPremiumTrainerCardHTML(t, { context: 'public' })}</div>`).join('');
+                        blackContainer.innerHTML = `
+                            <div class="w-full py-12 text-center">
+                                <span class="material-symbols-outlined text-4xl text-white/30 mb-3">stars</span>
+                                <h3 class="font-headline text-lg font-bold text-white mb-1">Premium trainers coming soon</h3>
+                                <p class="text-white/50 text-sm max-w-sm mx-auto">We're curating our first Onlifit Black lineup. Check back shortly.</p>
+                            </div>`;
                     } else {
                         blackContainer.innerHTML = black.map(t => `<div class="carousel-card shrink-0 w-[84%] sm:w-[48%] lg:w-[32%] p-4">${window.renderPremiumTrainerCardHTML(t, { context: 'public' })}</div>`).join('');
                     }

@@ -2236,7 +2236,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const profileHref = options?.profileHref || (`trainer-profile.html?id=${encodeURIComponent(id)}`);
         const messageHref = getDefaultMessageHref(id, options);
         const saved = typeof options?.saved === 'boolean' ? options.saved : isTrainerSaved(id);
-        const cardImageDimensions = { width: 640, height: 360 };
+        const cardImageDimensions = { width: 4, height: 3 };
 
         return `
             <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
@@ -2279,7 +2279,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
                             ${renderOfferLine()}
                         </div>
                         <div class="mt-2 grid grid-cols-2 gap-2">
-                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()">Message</a>
+                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center gap-1 px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()"><span class="material-symbols-outlined text-[14px]">chat</span>WhatsApp</a>
                             <a href="${escapeHtml(profileHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors truncate" onclick="event.stopPropagation()">View Profile</a>
                         </div>
                     </div>
