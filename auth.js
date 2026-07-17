@@ -2384,11 +2384,11 @@ async function renderAuthNav() {
         const dashboardHref = getDashboardPathForRole(user.role);
         const desktopHtml = `
             <div class="flex items-center gap-2">
-                <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
                     <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
-                    <span>Dashboard</span>
+                    <span class="hidden sm:inline">Dashboard</span>
                 </a>
-                <span class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant">Guest mode</span>
+                <span class="px-2 sm:px-3 py-1 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-full bg-surface-container text-on-surface-variant whitespace-nowrap"><span class="sm:hidden">Guest</span><span class="hidden sm:inline">Guest mode</span></span>
             </div>
         `;
         const mobileHtml = `
@@ -2412,11 +2412,14 @@ async function renderAuthNav() {
 
             const desktopHtml = `
                 <div class="flex items-center gap-2">
-                    <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                    <a href="${dashboardHref}" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
                         <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
-                        <span>Dashboard</span>
+                        <span class="hidden sm:inline">Dashboard</span>
                     </a>
-                    <button onclick="logout()" class="px-4 text-sm font-bold rounded-lg bg-primary text-on-primary hover:opacity-90 transition-all inline-flex items-center h-9">Logout</button>
+                    <button onclick="logout()" class="sm:px-4 text-sm font-bold rounded-full sm:rounded-lg bg-primary text-on-primary hover:opacity-90 transition-all inline-flex items-center justify-center h-11 w-11 sm:h-9 sm:w-auto">
+                        <span class="material-symbols-outlined text-[20px] leading-none sm:hidden">logout</span>
+                        <span class="hidden sm:inline">Logout</span>
+                    </button>
                 </div>
             `;
 
@@ -2455,19 +2458,22 @@ async function renderAuthNav() {
                 <div class="h-6 w-[1px] bg-outline-variant hidden sm:block"></div>
 
                 <!-- Dashboard link (Grid + Text) -->
-                <a href="${dashboardHref}" 
-                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center gap-2 h-9">
+                <a href="${dashboardHref}"
+                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
                     <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
-                    <span>Dashboard</span>
+                    <span class="hidden sm:inline">Dashboard</span>
                 </a>
 
                 <!-- Name Initial / Avatar (S circle) -->
-                <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center text-sm font-bold text-primary">
+                <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant shadow-sm flex items-center justify-center text-sm font-bold text-primary shrink-0">
                     ${user.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
 
                 <!-- Logout Button -->
-                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all inline-flex items-center h-9">Logout</button>
+                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all inline-flex items-center justify-center h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
+                    <span class="material-symbols-outlined text-[20px] leading-none sm:hidden">logout</span>
+                    <span class="hidden sm:inline">Logout</span>
+                </button>
             </div>
         `;
         
