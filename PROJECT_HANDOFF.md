@@ -1,5 +1,5 @@
 # Project Handoff — Onlifit
-*Last updated: 2026-07-17, end of Homepage V3 redesign session*
+*Last updated: 2026-07-17, end of trainers.html redesign + nav-fix session*
 
 ## 1. Project Overview
 
@@ -14,14 +14,16 @@
 | Area | Status |
 |---|---|
 | Backend / Supabase | Stable, untouched this phase. Project `lnbsgnfrhewdqhuqqotx`, 6 migrations applied (see below). |
-| Frontend | Homepage fully redesigned (V3). Other pages received only bug fixes (overflow, mojibake), not redesigns. |
-| Authentication | Untouched. Supabase auth + `auth.js` shared helpers. |
+| Frontend | Homepage (V3) and `trainers.html` fully redesigned. Site-wide mobile header/nav bug fixed. Other pages received only bug fixes (overflow, mojibake), not redesigns. |
+| Authentication | Untouched. Supabase auth + `auth.js` shared helpers, except a responsive-only fix to `renderAuthNav()` (see Section 3b) — no logic/routing changes. |
 | Payments | Untouched. Razorpay subscription flow (Phase 4/4.5) live. |
 | Trainer flow | Previously approved (functional). Not touched this phase. |
 | Client flow | Previously approved (functional). Not touched this phase. |
 | Admin | Admin dashboard audited/fixed (dead buttons, XSS, duplicate listeners) two sessions ago. Not touched this phase. |
-| Homepage | **Fully redesigned — see Section 3.** Live changes uncommitted (see Section 10). |
-| Responsive status | Site-wide: 20 pages × 4–8 breakpoints (320–1440px) verified zero horizontal-overflow via automated headless-Chrome audits, most recently re-confirmed after this session's `styles.css` changes. |
+| Homepage | Fully redesigned (V3, see Section 3). Committed and pushed: `1bd7902`. |
+| Mobile navigation | **Site-wide overflow bug fixed this session — see Section 3b.** Committed and pushed: `0707b82`. |
+| `trainers.html` | **Fully redesigned this session — see Section 3c.** Committed and pushed: `af845d1`. |
+| Responsive status | Site-wide: 20 pages × 4–8 breakpoints (320–1440px) verified zero horizontal-overflow via automated audits. `trainers.html` additionally verified at 320/360/375/390/414/768/1024/1280px this session, including the corrected desktop 3-column grid. |
 
 ## 3. Homepage V3 Summary (this session)
 
@@ -41,13 +43,47 @@ Full section-by-section rebuild of `onlifit.html`, following a user-specified st
 
 **Removed sections** (not in the user's 10-section spec, previously flagged as filler/redundant in a UX review done mid-session): the "Flexible Plans / Secure Payments" 2-card strip, and the mid-page "Browse All Trainers" CTA button.
 
-## 4. Files Modified (this session, uncommitted)
+## 3b. Mobile Navigation Fix (this session — commit `0707b82`)
 
-| File | Why |
-|---|---|
-| `onlifit.html` | Full section rebuild described above — new goal-chips section, reordered sections, Onlifit Black exclusion/coming-soon logic, testimonial query + rendering rewrite, FAQ section + `toggleFaq()` function, gradient-text contrast fix, removed two filler sections. |
-| `auth.js` | Two small, targeted changes to the **shared** `renderPremiumTrainerCardHTML()` function: (1) trainer card image aspect ratio changed from 16:9 to 4:3 for a more photo-first feel, (2) the "Message" button relabeled "WhatsApp" with an icon. Href/onclick logic unchanged. **This function is used by 5+ pages — see Section 5.** |
-| `styles.css` | Hand-patched CSS additions only (no rebuild) — see Section 6/8 for why this is necessary. This session added ~25 new utility rules for classes newly used on the homepage (spacing, `lg:`/`md:`/`sm:` responsive variants, arbitrary widths, opacity colors). Purely additive; cannot break anything since it only adds rules for classes that previously had no effect. |
+**Root cause found:** `renderAuthNav()` in `auth.js` rendered one fixed-width desktop HTML block (notification bell, dashboard link, avatar, logout button) into every page's `#nav-auth`/`#auth-nav` container, with no responsive collapse. Only `onlifit.html` had a guard against this (`hidden sm:flex` + a separate `#mobile-nav-auth` block in its own mobile dropdown). Every other page that calls `renderAuthNav()` didn't. Reproduced live: at 320px, a logged-in user's header overflowed by 26px with the Logout button partially clipped off-screen.
+
+**Fix, centralized in the shared component:** `renderAuthNav()`'s logged-in/guest/Clerk-auth markup now collapses to icon-only 44×44px controls below the `sm` (640px) breakpoint and expands back to the original icon+text layout at `sm` and up — purely additive Tailwind classes, no auth logic, hrefs, or routing touched. This one change fixes the bug on **every** page using `renderAuthNav()`: `trainers.html`, `trainer-profile.html`, `client-dashboard.html`, `bookings.html`, `about.html`, `pricing.html`, `faq.html`, `calculators.html`, `map.html`, `messages.html`, `notifications.html`, `settings.html`, `support.html`.
+
+Also fixed per-page:
+- `trainers.html` — added a mobile hamburger menu for About/Pricing/Join Us (previously had zero mobile fallback for those links), copied from the homepage's proven pattern. Nav padding `px-8` → `px-6 md:px-8` (desktop unchanged).
+- `trainer-profile.html` — same padding fix (no hamburger needed, no hideable links on that page's nav).
+- `client-dashboard.html` / `bookings.html` — sidebar/hamburger behavior was already correct and untouched; only tightened the `#nav-auth` gap so the now-compact icons sit cleanly next to the existing sidebar toggle.
+
+Verified at 320/360/375/390/414/768px: no overflow, no logo/icon collisions, 44px touch targets, hamburger open/close works, desktop (≥640px) pixel-identical to before.
+
+## 3c. `trainers.html` Redesign (this session — commit `af845d1`)
+
+Photo-first, structurally-leaner redesign of the main trainer-browsing page, reusing the shared trainer-card component and search engine unchanged (no `auth.js` card changes, no Supabase query changes this pass).
+
+- **Goal chips** — replaced the old 6-button specialty filter with the homepage's full goal vocabulary (Weight Loss, Muscle Gain, Strength, Yoga, CrossFit, Powerlifting, Calisthenics, Running, Home Workout, Women's Fitness, All). Wired to the existing free-text search path (fills `#search-query`, calls `applyAllFilters()`) rather than the old exact-match specialty filter, to avoid a chip returning zero results on a taxonomy mismatch.
+- **New client-side filters** — price range and minimum rating, both using fields already fetched by `getTrainers()` (`plans.hourly.price`, `rating`). No new queries.
+- **Onlifit Black** — checkbox+label replaced with a black pill toggle matching the homepage's Black section treatment.
+- **Trust strip** — "`N+ verified trainers · X.X★ average rating · Pan-India`", computed entirely from already-loaded data.
+- **Empty state** — now differentiates "no trainers yet" / "no matches for your search" / "no Black trainers right now" instead of one generic message.
+- **"Most Experienced" sort — real bug fixed, not just a UX nit.** The `experience` column is a free-text string (e.g. `"5+ years"`); the old comparator did `(b.experience || 0) - (a.experience || 0)`, which is `NaN - NaN` on strings and silently no-op'd — the sort option existed in the UI but never actually reordered anything. Fixed with a `parseExperienceYears()` helper that extracts the leading number from the string. Verified against test data (10 → 8+ → 5+ → 2 years sorts correctly now).
+- **Dead code removed** — ~9 unused functions/vars left over from before this page adopted the shared card component (`formatPrice`, `getTrainerMeta`, `normalizeTrainingMode`, `escapeHtml`, `renderTrainerAvatar`, `renderTrainerRatingChip`, `renderTrainerPriceLine`, `renderTrainerBadgeLine`, `renderTrainerOfferLine`) — confirmed zero call sites before deletion.
+- **Accessibility** — `aria-pressed` on chips/Black toggle, `aria-label` on previously-unlabeled filter selects, `aria-live="polite"` on the result count, `aria-hidden` on decorative icons.
+- **Desktop grid bug found during QA and fixed** — at desktop widths (≥1024px) the trainer grid was rendering 2 columns instead of the intended 3. Root cause: `styles.css` (see Section 8) had accumulated a **duplicate** `.md\:grid-cols-2` rule inside a separately hand-patched `@media (min-width:768px)` block, positioned *after* `.lg\:grid-cols-3` in file order. Since both rules have equal CSS specificity, the browser resolves the tie by source order — so the later duplicate `md:` rule was winning over `lg:` at all widths ≥1024px too. Fix was a single-line, purely subtractive removal of the one duplicate declaration; the correct `.md\:grid-cols-2` rule earlier in the file (inside the main `md:` block) was untouched, so `md:` behavior (768–1023px) is unchanged. Verified 1/2/3-column behavior at 320/768/1024/1280px after the fix.
+
+Verified at 320/360/375/390/414/768/1024/1280px: no overflow, 44px touch targets throughout, correct 1→2→3 column grid progression.
+
+## 4. Files Modified (cumulative across this session's commits)
+
+| File | Commit | Why |
+|---|---|---|
+| `onlifit.html` | `1bd7902` | Full section rebuild — see Section 3. |
+| `auth.js` | `1bd7902` | Trainer card image ratio 16:9→4:3, "Message"→"WhatsApp" label (Section 3, Section 5). |
+| `auth.js` | `0707b82` | `renderAuthNav()` made responsive at `sm` breakpoint — see Section 3b. |
+| `trainers.html` | `0707b82` | Mobile hamburger + nav padding fix (Section 3b). |
+| `trainer-profile.html` | `0707b82` | Nav padding fix (Section 3b). |
+| `client-dashboard.html` / `bookings.html` | `0707b82` | `#nav-auth` gap tightened (Section 3b). |
+| `trainers.html` | `af845d1` | Full page redesign — see Section 3c. |
+| `styles.css` | `1bd7902`, `0707b82`, `af845d1` | Hand-patched CSS additions across all three commits (see Section 8) — additive plus one duplicate-rule removal in `af845d1` (Section 3c). |
 
 ## 5. Important Shared Components — handle with care
 
@@ -67,13 +103,15 @@ Full section-by-section rebuild of `onlifit.html`, following a user-specified st
 
 ## 7. Known Issues
 
-- **`styles.css` is a stale, non-reproducible compiled Tailwind build** (see Section 8 — this is the single most important thing for the next session to know).
+- **`styles.css` is a stale, non-reproducible compiled Tailwind build** (see Section 8 — this is the single most important thing for the next session to know). It has also accumulated genuine duplicate/conflicting rules from repeated hand-patching (one caused a real desktop bug, fixed this session — see Section 3c) — worth being alert to the possibility of more.
 - `reviews` table has 0 rows in production — testimonials are showing the (now-improved) dummy fallback everywhere. Real reviews will automatically flow through once they exist.
 - Most trainers in the seed/current data have `rating: 0` and `featured: false` — the homepage's "Featured Trainers" filter falls back to showing any trainers (by design, added this session) rather than showing nothing.
 - `trainer-onboarding.html` still writes to a `session_mode` field that doesn't exist in production (real column is `training_mode`) — pre-existing, unrelated to this phase, not fixed.
-- `footer-component.js` duplicate-footer bug is confirmed fixed on the homepage only; other pages with rich footers of their own are unaudited (see Section 5).
+- `footer-component.js` duplicate-footer bug is confirmed fixed on the homepage only; other pages with rich footers of their own are unaudited (see Section 5). `trainers.html` was checked this session and is **not** affected (it has no `<footer>` element, so the script takes its safe "create new footer" branch rather than the duplicate-append branch).
 - No admin-role account currently exists in production for testing (per prior handoff note — unverified if still true).
 - Onlifit Black feature's long-term business status was previously "parked/undecided" per an earlier handoff note — the redesign treats it as a real feature (with a coming-soon fallback) but that's a presentation decision, not a business confirmation.
+- **Mobile-nav fix (Section 3b) was validated primarily via direct DOM/CSS measurement and markup injection, not a real logged-in session** — this sandbox has no network access to Supabase. `trainer-profile.html` and `bookings.html` in particular redirect/change state without a real auth session, so their fixes were verified by structural equivalence to the fully-tested `trainers.html`/`client-dashboard.html` cases rather than end-to-end. Worth a quick real-browser sanity check when convenient.
+- `client-dashboard.html`'s `#sidebar-toggle` didn't open the sidebar when tested in the offline sandbox — most likely a sandbox artifact (page-level auth-check behaving differently without network), not something touched this session. Unconfirmed either way in a real browser.
 
 ## 8. Technical Decisions — do not change without understanding why
 
@@ -84,23 +122,26 @@ Full section-by-section rebuild of `onlifit.html`, following a user-specified st
 
 ## 9. Next Recommended Tasks (priority order)
 
-1. **Fix the Tailwind build pipeline properly** (install `@tailwindcss/cli` with network access, run a real build, diff against the hand-patched file) — this is infrastructure debt that will keep costing time on every future UI session until it's fixed once, properly.
-2. **`trainers.html`** — the main trainer-browsing/search-results page. High traffic, likely benefits most from the same photo-first card treatment and structural polish just applied to the homepage.
-3. **`trainer-profile.html`** — individual trainer detail page; first real "product page" a converting visitor sees after the homepage/search.
-4. **`client-dashboard.html`** — logged-in client experience; explicitly deferred multiple sessions ago pending this homepage work.
-5. **Footer-component.js duplicate-footer audit** across all other pages (quick, low-risk, same fix pattern already proven on the homepage).
+1. **`trainer-profile.html`** — individual trainer detail page; first real "product page" a converting visitor sees after the homepage/search or the newly-redesigned `trainers.html`. Natural next step in the funnel now that discovery (homepage) and browsing (`trainers.html`) are both done. Its nav overflow bug is already fixed (Section 3b) — this would be a content/structure redesign pass, same scope-confirmation approach used for `trainers.html`.
+2. **Fix the Tailwind build pipeline properly** (install `@tailwindcss/cli` with network access, run a real build, diff against the hand-patched file) — infrastructure debt that will keep costing time on every future UI session, and has now caused at least one real production bug (Section 3c), not just cosmetic gaps.
+3. **`client-dashboard.html`** — logged-in client experience; explicitly deferred multiple sessions ago. Nav overflow bug already fixed (Section 3b); redesign scope not yet started.
+4. **Footer-component.js duplicate-footer audit** across all other pages (quick, low-risk, same fix pattern already proven on the homepage; `trainers.html` confirmed unaffected this session).
+5. **Real-browser sanity check** of the mobile-nav fix on `trainer-profile.html`/`bookings.html`/`client-dashboard.html` — this session's sandbox had no network access to Supabase, so those three were validated by structural equivalence rather than a live logged-in session (see Section 7).
 6. **Reviews/testimonials real data** — not a code task, but flag to the business: the testimonial section is ready for real data the moment reviews start coming in.
 
 ## 10. Git Status
 
-- **Modified, uncommitted:** `auth.js`, `onlifit.html`, `styles.css`, `PROJECT_HANDOFF.md` (this file).
-- **Last commit:** `e5d2f25` — "feat: homepage SaaS conversion audit — card layout, footer, CSS gaps" (2026-07-16 16:31:47 +0530).
-- **Branch:** `main`, 4 commits ahead of `origin/main` (not pushed): `12d5a25`, `d588307`, `63fc72d`, `e5d2f25`.
-- **Testing done:** Full 20-page × 4-breakpoint automated overflow regression (clean). Manual functional verification of goal-chip search and FAQ toggle via headless Chrome. Visual verification via screenshots at 375/768/1440px. **Not done:** a human hasn't visually reviewed the live result yet — the user was about to do this when this handoff was requested instead.
-- **Nothing has been committed or pushed this session** — that's the user's explicit call to make.
+- **Working tree clean.** No uncommitted changes.
+- **Branch:** `main`, up to date with `origin/main`.
+- **Commits this overall arc (oldest → newest, all pushed):**
+  - `1bd7902` — Homepage V3 redesign.
+  - `0707b82` — Site-wide mobile header/nav overflow fix (Section 3b).
+  - `af845d1` — `trainers.html` redesign + desktop grid CSS-ordering fix (Section 3c).
+- **Testing done:** Full 20-page × 4-breakpoint automated overflow regression (homepage phase). `trainers.html` + nav-fix pages verified at 320/360/375/390/414/768/1024/1280px this session (Sections 3b, 3c) — overflow, touch targets, hamburger/toggle behavior, and the corrected desktop grid all confirmed. Filter/sort/reset logic on `trainers.html` verified via injected test data (no live Supabase in this sandbox).
+- **Not done:** a human hasn't visually reviewed `trainers.html` or the nav fix live in a real browser with real data yet — all verification this session was automated/injected-data due to no network access in the sandbox.
 
 ## 11. New Chat Prompt
 
 Paste this into a new conversation to continue:
 
-> Continue work on the Onlifit project. Read `PROJECT_HANDOFF.md` in the repo root for full context — it covers the just-completed Homepage V3 redesign (uncommitted: `auth.js`, `onlifit.html`, `styles.css`), the site's design system, and a critical technical note about `styles.css` being a stale hand-patched Tailwind build (not a real build pipeline) that every UI change needs to account for. First step: help me review the homepage changes live, then commit if approved. After that, the next priority is redesigning `trainers.html` using the same photo-first, structurally lean approach — but confirm with me before starting since it's a new page.
+> Continue work on the Onlifit project. Read `PROJECT_HANDOFF.md` in the repo root for full context — it covers the completed Homepage V3 redesign (`1bd7902`), the site-wide mobile-nav overflow fix (`0707b82`), and the `trainers.html` redesign + desktop grid bug fix (`af845d1`), all committed and pushed to `origin/main`. It also covers the design system and a critical technical note about `styles.css` being a stale hand-patched Tailwind build (not a real build pipeline) that has already caused one real production bug (a duplicate rule breaking the desktop grid) — every UI change needs to account for this. The next recommended priority is `trainer-profile.html` — but confirm scope with the user before starting, following the same approach used for `trainers.html`.
