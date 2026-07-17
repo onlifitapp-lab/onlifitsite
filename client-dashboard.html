@@ -159,7 +159,7 @@
   gtag('config', 'G-4W2306MJ1Y');
 </script>
 </head>
-<body class="app-shell bg-surface-container-low font-body text-on-surface">
+<body class="app-shell bg-surface-container-low font-body text-on-surface" data-hide-global-footer="true">
 
 <!-- â”€â”€ Top Nav â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <nav class="app-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
@@ -406,20 +406,15 @@
     async function initDashboard() {
         // Prevent re-initialization that could cause loops
         if (dashboardInitialized) {
-            console.log('Dashboard already initialized, skipping');
             return;
         }
-        
-        console.log('=== STARTING DASHBOARD INIT ===');
-        
-        // removed stray template return that caused parsing errors
-            if (user.role === 'trainer') {
-                console.log('User is trainer, redirecting to trainer dashboard');
-                window.location.href = 'bookings.html';
-                return;
-            }
-            
-            console.log('User is client or no role set, continuing with client dashboard');
+
+        try {
+            // requireAuth() redirects anonymous users to login.html and
+            // wrong-role users to their own dashboard (e.g. a trainer here
+            // gets sent to bookings.html) — same pattern bookings.html uses.
+            user = await requireAuth('client', window.location.href);
+            if (!user) return;
 
             // Mark as initialized to prevent loops
             dashboardInitialized = true;
@@ -439,9 +434,7 @@
             document.getElementById('sidebar-name').textContent = userName;
             document.getElementById('welcome-heading').textContent = `Welcome back, ${firstName}!`;
 
-            console.log('Dashboard UI updated, rendering content...');
             await renderAll();
-            console.log('=== DASHBOARD INIT COMPLETE ===');
         } catch (error) {
             console.error('Error during dashboard initialization:', error);
             alert('Error loading dashboard: ' + error.message);
@@ -1304,7 +1297,8 @@ async function ensureMessagesInitialized() {
         messagesInitialized = true;
         try {
             document.getElementById('chat-view')?.classList.add('hidden');
-            document.getElementById('chat-history')?.innerHTML = '<div class="p-6 text-center opacity-60">Platform messaging is disabled.</div>';
+            const chatHistoryEl = document.getElementById('chat-history');
+            if (chatHistoryEl) chatHistoryEl.innerHTML = '<div class="p-6 text-center opacity-60">Platform messaging is disabled.</div>';
             document.getElementById('message-input-area')?.classList.add('hidden');
         } catch (e) {}
         return;
