@@ -52,6 +52,17 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
+        /* mobile-optimizations.css sets a blanket padding:12px 16px on every
+           text input under 768px, which collapses the hero search bar's icon
+           clearance back down and re-causes the icon/text overlap this fix
+           addresses. #search-query needs its own left padding preserved. */
+        @media (max-width: 767px) {
+            #search-query {
+                padding-left: 2.25rem !important;
+                padding-right: 0.5rem !important;
+            }
+        }
+
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -203,7 +214,7 @@
         }
 
         .testimonial-dots button.active {
-            background: var(--primary, #ff5a5f);
+            background: #000000;
         }
 
         @keyframes countUp {
@@ -317,9 +328,9 @@
                             <div class="relative w-full flex items-center overflow-hidden">
                                     <label for="search-query" class="sr-only">Search trainers by goal</label>
                                     <input id="search-query" type="text" 
-                                    class="w-full border-none focus:ring-0 text-on-surface text-sm md:text-base outline-none p-0 pl-8 pr-2 bg-transparent z-10 relative bg-white mix-blend-multiply placeholder-transparent focus:placeholder-transparent" 
+                                    class="w-full border-none focus:ring-0 text-on-surface text-sm md:text-base outline-none p-0 pl-9 pr-2 bg-transparent z-10 relative bg-white mix-blend-multiply placeholder-transparent focus:placeholder-transparent"
                                     autocomplete="off" />
-                                <div id="dynamic-placeholder" class="hero-dynamic-placeholder absolute left-8 top-0 h-full flex flex-col justify-center transition-transform duration-500 pointer-events-none text-on-surface-variant/70 select-none z-0">
+                                <div id="dynamic-placeholder" class="hero-dynamic-placeholder absolute left-9 top-0 h-full flex flex-col justify-center transition-transform duration-500 pointer-events-none text-on-surface-variant/70 select-none z-0">
                                     <!-- Populated by JS -->
                                 </div>
                             </div>
