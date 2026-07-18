@@ -332,7 +332,6 @@ function buildTemporaryUser(role = inferTemporaryRole(), overrides = {}) {
         const hasOAuthParams = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
         if (!hasOAuthParams) return;
 
-        console.log('GLOBAL OAUTH CATCHER: OAuth params detected in URL');
         await handleOAuthCallback({ redirectEverywhere: true });
     } catch (err) {
         console.error('Global oauth catcher failed:', err);
@@ -358,8 +357,6 @@ async function signUp(name, email, password, role, trainerData, phone) {
     }
 
     try {
-        console.log('=== AUTH.JS SIGNUP DEBUG ===');
-        console.log('Received parameters:', { name, email, role, phone, trainerData });
         
         const signupData = {
             email,
@@ -379,15 +376,12 @@ async function signUp(name, email, password, role, trainerData, phone) {
             }
         };
         
-        console.log('Supabase signUp call with data:', signupData);
         
         // Sign up with Supabase Auth - profile will be created automatically by database trigger
         const { data: authData, error: authError } = await supabaseClient.auth.signUp(signupData);
 
         if (authError) throw authError;
         
-        console.log('Auth signup successful, user ID:', authData.user?.id);
-        console.log('User metadata:', authData.user?.user_metadata);
 
         // Profile is automatically created by database trigger - no manual insert needed!
         // Wait a moment for trigger to complete
@@ -413,10 +407,8 @@ async function signUp(name, email, password, role, trainerData, phone) {
 
             if (!profileFetchError && Array.isArray(profileRows) && profileRows.length > 0) {
                 let profile = profileRows[0];
-                console.log('Profile fetched after signup:', { id: profile.id, role: profile.role });
 
                 if (normalizedSignupRole === 'trainer' && profile.role !== 'trainer') {
-                    console.log('Profile role is not trainer, updating...');
                     const { data: updatedRows, error: promoteError } = await supabaseClient
                         .from('profiles')
                         .update({ role: 'trainer' })
@@ -426,12 +418,10 @@ async function signUp(name, email, password, role, trainerData, phone) {
 
                     if (!promoteError && Array.isArray(updatedRows) && updatedRows.length > 0) {
                         profile = updatedRows[0];
-                        console.log('✅ Profile role updated to trainer');
                     }
                 }
 
                 mergedUser = { ...authData.user, ...profile };
-                console.log('Merged user after profile sync:', { id: mergedUser.id, role: mergedUser.role });
             }
         } catch (profileSyncError) {
             console.warn('Unable to sync profile role after signup:', profileSyncError?.message || profileSyncError);
@@ -471,7 +461,6 @@ async function signInWithGoogle(role = 'client', isSignup = false, options = {})
             };
         }
 
-        console.log('Google auth initiated with role:', normalizedRole, 'isSignup:', isSignup, 'source:', signupSource);
 
         // Keep local intent bridge for signup/login role routing and onboarding enforcement.
         const joinUsTrainerSignup = isSignup && normalizedRole === 'trainer' && signupSource === 'join-us';
@@ -703,7 +692,6 @@ async function handleOAuthCallback(options = {}) {
     const hasAccessToken = window.location.hash.includes('access_token=');
     const hadOAuthParams = !!code || hasAccessToken;
 
-    console.log('handleOAuthCallback invoked.', { hadOAuthParams, oauthIsSignup, oauthRole });
 
     // Helper: wait briefly for a session to appear (Supabase can finalize asynchronously).
     async function waitForSession(maxMs) {
@@ -729,7 +717,6 @@ async function handleOAuthCallback(options = {}) {
     } else {
         // OAuth return visit.
         if (!session && code) {
-            console.log('Exchanging OAuth code for session...');
             const { data: exchangeData, error: exchangeError } = await supabaseClient.auth.exchangeCodeForSession(code);
             if (exchangeError) {
                 console.error('exchangeCodeForSession failed:', exchangeError);
@@ -768,7 +755,6 @@ async function handleOAuthCallback(options = {}) {
     }
 
     const user = session.user;
-    console.log('OAuth session established for user:', user?.id);
 
     // Fetch profile role (DB is the source of truth). Be tolerant of 0 or duplicate rows.
     let profile = null;
@@ -800,7 +786,6 @@ async function handleOAuthCallback(options = {}) {
     // Not a new signup. Treat as normal login and clear signup intent.
     const isExistingUserInSignupMode = oauthIsSignup && profile;
     if (isExistingUserInSignupMode) {
-        console.log('OAuth in signup mode but profile exists: Existing user detected. Treating as login, not signup.');
     }
 
     // Create profile if missing (mainly for first-time OAuth signups)
@@ -868,22 +853,9 @@ async function handleOAuthCallback(options = {}) {
     const isJoinUsTrainerSignup = (oauthIsSignup && oauthSignupSource === 'join-us') || joinUsTrainerIntent;
     const finalRoleBackup = (isJoinUsTrainerSignup && finalRole !== 'admin') ? 'trainer' : finalRole;
     
-    console.log('handleOAuthCallback - Role Resolution:', { 
-        finalRole, 
-        finalRoleBackup,
-        isJoinUsTrainerSignup,
-        joinUsTrainerIntent,
-        oauthIsSignup,
-        oauthSignupSource,
-        profileRole: profile?.role,
-        oauthRole,
-        userMetadataRole: user?.user_metadata?.role
-    });
-    
     const shouldRedirectNow = redirectEverywhere || window.location.pathname.includes('login');
     if (!shouldRedirectNow) return;
 
-    console.log('Redirecting after OAuth. Final Role:', finalRoleBackup);
     if (finalRoleBackup === 'admin') {
         window.location.replace('admin-dashboard.html');
     } else if (finalRoleBackup === 'trainer') {
@@ -941,13 +913,10 @@ async function handleOAuthCallback(options = {}) {
         const actuallyNewSignup = oauthIsSignup && !profile?.id;  // New signup with no profile
         const isCompleted = profile?.onboarding_completed;
         
-        console.log('Client redirect decision:', { oauthIsSignup, profileExists: !!profile?.id, onboardingCompleted: isCompleted });
         
         if (actuallyNewSignup && !isCompleted) {
-            console.log('New signup client without onboarding, sending to onboarding.html');
             window.location.replace('onboarding.html');
         } else {
-            console.log('Existing user or completed onboarding, sending to dashboard');
             window.location.replace(getDashboardPathForRole('client'));
         }
     }

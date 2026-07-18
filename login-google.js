@@ -168,7 +168,6 @@
                     // Check if error is due to existing account
                     const isExistingAccountError = /already exists|already registered|email.*in use|sign in instead/i.test(errorText);
                     if (isExistingAccountError) {
-                        console.log('Detected existing account, switching to signin and attempting login...');
                         setNotice('Account already exists. Signing you in...', 'success');
                         
                         // Switch to signin mode
@@ -184,7 +183,6 @@
                         
                         const loginResult = await login(email, password);
                         if (loginResult?.success) {
-                            console.log('Existing account login successful, redirecting...');
                             setNotice('Signed in successfully. Redirecting...', 'success');
                             const strictTrainerIntent = isTrainerJoinUsSignupFlow();
                             let userRole = loginResult?.user?.role || state.role || 'client';
@@ -251,11 +249,9 @@
                             
                             if (profileCheck && Array.isArray(profileCheck) && profileCheck.length > 0) {
                                 const currentRole = profileCheck[0]?.role;
-                                console.log('Trainer profile role check:', currentRole);
                                 
                                 // If role is not trainer, update it
                                 if (currentRole !== 'trainer') {
-                                    console.log('Updating profile role to trainer...');
                                     const { error: promoteError } = await sb
                                         .from('profiles')
                                         .update({ role: 'trainer' })
@@ -266,7 +262,6 @@
                                     }
                                 }
                             } else {
-                                console.log('No profile row found yet, creating trainer profile fallback...');
                                 const { error: upsertError } = await sb.from('profiles').upsert({
                                     id: createdUserId,
                                     email,
@@ -307,7 +302,6 @@
                     // Wait a bit more to ensure DB sync
                     await new Promise(resolve => setTimeout(resolve, 800));
                     
-                    console.log('Trainer signup complete, redirecting to onboarding...');
                     window.location.href = 'trainer-onboarding.html?role=trainer&source=join-us';
                     return;
                 }
