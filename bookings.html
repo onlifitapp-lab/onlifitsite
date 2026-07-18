@@ -644,6 +644,12 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-semibold mb-3">Location</label>
+                    <input type="text" id="location" placeholder="e.g., Bandra, Mumbai" class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+                    <p class="text-xs text-on-surface-variant mt-1">Shown to clients on your profile and in search results.</p>
+                </div>
+
+                <div>
                     <label class="block text-sm font-semibold mb-3">About / Bio</label>
                     <textarea id="bio" rows="4" placeholder="Tell clients about your training philosophy, achievements, and what makes you unique..." class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all"></textarea>
                 </div>
@@ -2355,10 +2361,6 @@ window.addEventListener('load', () => {
     }
 
     async function loadProfile() {
-        // Debug: log user object to see what's loaded
-        console.log('Loading profile for user:', settingsUser);
-        console.log('User role:', settingsUser.role);
-        
         // Set basic info
         document.getElementById('name').value = settingsUser.name || '';
         document.getElementById('email').value = settingsUser.email || '';
@@ -2396,13 +2398,12 @@ window.addEventListener('load', () => {
         // Show trainer settings if user is a trainer
         // Check both 'trainer' and 'Trainer' (case insensitive)
         const isTrainer = settingsUser.role && settingsUser.role.toLowerCase() === 'trainer';
-        console.log('Is trainer?', isTrainer);
-        
+
         if (isTrainer) {
-            console.log('Showing trainer settings');
             document.getElementById('trainer-settings').classList.remove('hidden');
             document.getElementById('specialty').value = settingsUser.specialty || '';
             document.getElementById('experience').value = settingsUser.experience || '';
+            document.getElementById('location').value = settingsUser.location || '';
             document.getElementById('bio').value = settingsUser.bio || '';
 
             // Load pricing plans
@@ -2432,8 +2433,6 @@ window.addEventListener('load', () => {
             if (certs && certs.length > 0) {
                 displayCertifications(certs);
             }
-        } else {
-            console.log('NOT showing trainer settings - user is not a trainer');
         }
     }
 
@@ -2508,6 +2507,7 @@ window.addEventListener('load', () => {
             if (settingsUser.role === 'trainer') {
                 updates.specialty = document.getElementById('specialty').value;
                 updates.experience = document.getElementById('experience').value;
+                updates.location = document.getElementById('location').value;
                 updates.bio = document.getElementById('bio').value;
 
                 // Build pricing plans object
