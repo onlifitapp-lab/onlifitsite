@@ -1429,6 +1429,9 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', async function() {
             await checkAdminAuth();
+            // checkAdminAuth() already redirected away (window.location.replace)
+            // for any failed check — don't fire admin data queries in that case.
+            if (!window.adminUser) return;
             loadDashboard();
         });
 
@@ -1482,7 +1485,6 @@
                     email: profile.email
                 };
 
-                console.log('Admin authenticated:', profile.name);
             } catch (err) {
                 console.error('Auth check error:', err);
                 redirectToAdminLogin('auth-error');
@@ -2031,7 +2033,6 @@
                     return;
                 }
 
-                console.log('Deleting trainer:', trainerId, '(' + trainer.email + ')');
 
                 // Delete related bookings
                 const { error: bookingsError } = await supabase.from('bookings').delete().eq('trainer_id', trainerId);
@@ -2096,7 +2097,6 @@
                     return;
                 }
 
-                console.log('Deleting client:', clientId, '(' + client.email + ')');
 
                 // Delete related bookings
                 const { error: bookingsError } = await supabase.from('bookings').delete().eq('client_id', clientId);
