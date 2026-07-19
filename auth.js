@@ -1349,7 +1349,7 @@ function matchesTrainingModeFilter(trainerMode, searchMode) {
 //     Experience          0-6   (years parsed from free-text field, capped
 //                                 at 10+ years for full marks)
 //   Paid / status signals — 26 pts max:
-//     Verified trainer    0-8   (verification_status === 'approved')
+//     Verified trainer    0-8   (verification_status === 'verified')
 //     Active boost        0-10  (temporary — profiles.boost_expires_at in
 //                                 the future; dormant/always-0 until that
 //                                 migration lands)
@@ -1389,7 +1389,7 @@ function scoreTrainerForRanking(t) {
     score += Math.min(6, parseExperienceYearsForRanking(t?.experience) / 10 * 6);
 
     // Paid / status signals (26 pts max)
-    if (String(t?.verification_status || '').toLowerCase() === 'approved') {
+    if (String(t?.verification_status || '').toLowerCase() === 'verified') {
         score += 8;
     }
 
@@ -2006,7 +2006,7 @@ function normalizeTrainerBadges(record) {
     );
 
     const verificationStatus = String(record.verification_status || '').toLowerCase();
-    const isFullyVerified = verificationStatus === 'approved' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
+    const isFullyVerified = verificationStatus === 'verified' || (Boolean(record.kyc_verified) && Boolean(record.certificates_verified));
 
     return { ...record, hasBlackStatus, isFullyVerified };
 }

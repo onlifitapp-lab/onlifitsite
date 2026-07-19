@@ -140,7 +140,7 @@
 
       const { data: bySlug } = await supabase
         .from('blog_posts')
-        .select('id, slug, title, category, image, description, content, read_time, created_at')
+        .select('id, slug, title, category, image, description, content, reading_time, created_at')
         .eq('is_published', true)
         .eq('slug', slugOrId)
         .maybeSingle();
@@ -149,7 +149,7 @@
 
       const { data: byId } = await supabase
         .from('blog_posts')
-        .select('id, slug, title, category, image, description, content, read_time, created_at')
+        .select('id, slug, title, category, image, description, content, reading_time, created_at')
         .eq('is_published', true)
         .eq('id', slugOrId)
         .maybeSingle();
@@ -240,7 +240,7 @@
         ? `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 mt-4">${trainerCards}</div>`
         : '<p class="post-subtitle">Trainers will be available soon</p>';
 
-      const readTime = post.read_time || estimateReadTime(post.content || '');
+      const readTime = post.reading_time != null ? `${post.reading_time} min read` : estimateReadTime(post.content || '');
 
       wrap.innerHTML = `
         <header>

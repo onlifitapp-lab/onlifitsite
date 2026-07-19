@@ -234,7 +234,7 @@
     const avatarEl = document.getElementById('trainer-avatar');
     renderAvatarInto(avatarEl, trainer);
 
-    const verified = String(trainer.verification_status || '').toLowerCase() === 'approved' || (Boolean(trainer.kyc_verified) && Boolean(trainer.certificates_verified));
+    const verified = String(trainer.verification_status || '').toLowerCase() === 'verified' || (Boolean(trainer.kyc_verified) && Boolean(trainer.certificates_verified));
     document.getElementById('trainer-verified').classList.toggle('hidden', !verified);
 
     renderRating(trainer);

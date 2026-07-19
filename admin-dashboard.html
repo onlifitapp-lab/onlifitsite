@@ -1037,7 +1037,7 @@
                             </div>
                             <div>
                                 <label style="display: block; font-size: 12px; color: #666; margin-bottom: 6px; font-weight: 600;">Read Time (optional)</label>
-                                <input id="blog-read-time" type="text" class="search-bar" style="width: 100%;" placeholder="e.g. 6 min read" />
+                                <input id="blog-read-time" type="number" min="1" step="1" class="search-bar" style="width: 100%;" placeholder="e.g. 6 (minutes)" />
                             </div>
                         </div>
 
@@ -1339,8 +1339,8 @@
 
         function getTrainerVerificationStatus(trainer) {
             const direct = String(trainer?.verification_status || '').trim().toLowerCase();
-            if (direct === 'approved' || direct === 'rejected') return direct;
-            if (trainer?.kyc_verified && trainer?.certificates_verified) return 'approved';
+            if (direct === 'verified' || direct === 'under_review' || direct === 'rejected') return direct;
+            if (trainer?.kyc_verified && trainer?.certificates_verified) return 'verified';
             if (trainer?.kyc_verified) return 'kyc_verified';
             if (trainer?.certificates_verified) return 'certificates_verified';
             return 'pending';
@@ -2285,7 +2285,8 @@
                     await supabase
                         .from('profiles')
                         .update({
-                            verification_status: 'approved',
+                            verification_status: 'verified',
+                            verification_verified_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', trainerId);
@@ -2647,8 +2648,7 @@
         function estimateReadTimeFromContent(content) {
             const plain = String(content || '').replace(/<[^>]*>/g, ' ').trim();
             const words = plain ? plain.split(/\s+/).length : 0;
-            const minutes = Math.max(1, Math.ceil(words / 220));
-            return `${minutes} min read`;
+            return Math.max(1, Math.ceil(words / 220));
         }
 
         function escapeHtml(value) {
@@ -2701,7 +2701,7 @@
             try {
                 const { data, error } = await supabase
                     .from('blog_posts')
-                    .select('id, slug, title, category, image, description, content, read_time, is_published, created_at')
+                    .select('id, slug, title, category, image, description, content, reading_time, is_published, created_at')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -2754,7 +2754,7 @@
                                 <small style="color:#666;">${escapeHtml(blog.slug || '')}</small>
                             </td>
                             <td>${escapeHtml(blog.category || 'General')}</td>
-                            <td>${escapeHtml(blog.read_time || 'Auto')}</td>
+                            <td>${blog.reading_time != null ? escapeHtml(`${blog.reading_time} min read`) : 'Auto'}</td>
                             <td><span class="badge ${pubBadge}">${blog.is_published ? 'Yes' : 'No'}</span></td>
                             <td>${createdAt}</td>
                             <td>
@@ -2782,7 +2782,7 @@
             document.getElementById('blog-title').value = blog.title || '';
             document.getElementById('blog-category').value = blog.category || 'General';
             document.getElementById('blog-description').value = blog.description || '';
-            document.getElementById('blog-read-time').value = blog.read_time || '';
+            document.getElementById('blog-read-time').value = blog.reading_time != null ? blog.reading_time : '';
             document.getElementById('blog-image-url').value = blog.image || '';
             document.getElementById('blog-content').value = blog.content || '';
 
@@ -2798,7 +2798,8 @@
                 const category = String(document.getElementById('blog-category').value || '').trim();
                 const description = String(document.getElementById('blog-description').value || '').trim();
                 const content = String(document.getElementById('blog-content').value || '').trim();
-                const readTimeInput = String(document.getElementById('blog-read-time').value || '').trim();
+                const readTimeInputRaw = String(document.getElementById('blog-read-time').value || '').trim();
+                const readTimeInput = readTimeInputRaw ? parseInt(readTimeInputRaw, 10) : null;
                 const imageUrlInput = String(document.getElementById('blog-image-url').value || '').trim();
                 const fileInput = document.getElementById('blog-image-file');
                 const imageFile = fileInput?.files?.[0] || null;
@@ -2820,7 +2821,7 @@
                     image: finalImage || null,
                     description: description || null,
                     content,
-                    read_time: readTimeInput || estimateReadTimeFromContent(content),
+                    reading_time: (readTimeInput != null && !Number.isNaN(readTimeInput)) ? readTimeInput : estimateReadTimeFromContent(content),
                     is_published: true,
                     created_by: window.adminUser?.id || null
                 };
@@ -4274,7 +4275,7 @@
 
             // Calculate stats
             const totalTrainers = trainers.length;
-            const verifiedTrainers = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'approved').length;
+            const verifiedTrainers = trainers.filter(t => normalizeStatus(getTrainerVerificationStatus(t)) === 'verified').length;
             const verificationRate = totalTrainers > 0 ?
                 ((verifiedTrainers / totalTrainers) * 100).toFixed(1) : 0;
 
