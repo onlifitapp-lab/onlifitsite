@@ -1328,21 +1328,101 @@ function matchesTrainingModeFilter(trainerMode, searchMode) {
     return has === wanted || has === 'both';
 }
 
-// Ranking comparator (Phase 3A): only fields with real production data today.
-// Tiers, in order: Rating desc, Review Count desc, Profile Completion desc,
-// Last Active desc. Subscription-plan tiers and Active Boost are deferred to
-// Phase 3B (subscriptions/boosts don't exist yet). Distance is intentionally
-// omitted entirely — no trainer has real coordinate data, so no distance
-// tier is implemented (not even as a text-based proxy).
+// ─── SEARCH RANKING (weighted score, not a strict tier ladder) ────────────────
+//
+// A strict "Verified > Boost > Tier > Quality" tier ladder (each tier only
+// broken by the next) would let a boosted or Elite trainer with a 1-star
+// rating outrank a non-paying trainer with a 5-star rating and 100 reviews —
+// paid/status signals would *completely* override quality. That's explicitly
+// what this must NOT do. So every signal below contributes points to one
+// weighted score instead, and trainers are sorted by total score descending.
+//
+// Point budget (max ~100, quality-weighted so paid/status signals nudge
+// rank rather than override it):
+//   Quality signals (attainable by every trainer, paid or not) — 71 pts max:
+//     Rating              0-25  (rating/5 * 25 — single biggest factor)
+//     Review count        0-15  (log-scaled so 1 review isn't ~0 and 500
+//                                 reviews doesn't dwarf everything else)
+//     Profile completion  0-15  (profile_completion_score/100 * 15)
+//     Recent activity     0-10  (full marks within 7 days, decays to 0 by
+//                                 90+ days inactive)
+//     Experience          0-6   (years parsed from free-text field, capped
+//                                 at 10+ years for full marks)
+//   Paid / status signals — 26 pts max:
+//     Verified trainer    0-8   (verification_status === 'approved')
+//     Active boost        0-10  (temporary — profiles.boost_expires_at in
+//                                 the future; dormant/always-0 until that
+//                                 migration lands)
+//     Subscription tier   0-8   (free=0, pro=4, elite=8)
+//   Dormant — 3 pts max:
+//     Response rate       0-3   (no response-rate column exists yet;
+//                                 always contributes 0 today, wired so it
+//                                 activates automatically once it does)
+//
+// With this budget, a trainer with a perfect quality score (71) always beats
+// a trainer with zero quality signals even if the latter is verified,
+// boosted, AND on Elite (26 + 3 = 29 max) — paid features can move a
+// trainer up among peers of similar quality, never leapfrog real quality.
+function parseExperienceYearsForRanking(experience) {
+    const match = String(experience || '').match(/\d+(\.\d+)?/);
+    return match ? parseFloat(match[0]) : 0;
+}
+
+function scoreTrainerForRanking(t) {
+    let score = 0;
+
+    // Quality signals (71 pts max)
+    const rating = Number(t?.rating) || 0;
+    score += Math.max(0, Math.min(5, rating)) / 5 * 25;
+
+    const reviewCount = Number(t?.review_count) || 0;
+    score += Math.min(15, Math.log10(reviewCount + 1) * 7);
+
+    const completion = Number(t?.profile_completion_score) || 0;
+    score += Math.max(0, Math.min(100, completion)) / 100 * 15;
+
+    if (t?.last_active_at) {
+        const daysInactive = (Date.now() - new Date(t.last_active_at).getTime()) / 86400000;
+        score += Math.max(0, 10 - (daysInactive / 90) * 10);
+    }
+
+    score += Math.min(6, parseExperienceYearsForRanking(t?.experience) / 10 * 6);
+
+    // Paid / status signals (26 pts max)
+    if (String(t?.verification_status || '').toLowerCase() === 'approved') {
+        score += 8;
+    }
+
+    // Dormant until profiles.boost_expires_at exists (see migration proposal) —
+    // reads safely as undefined today, contributing 0.
+    if (t?.boost_expires_at && new Date(t.boost_expires_at).getTime() > Date.now()) {
+        score += 10;
+    }
+
+    const tier = String(t?.subscription_plan || 'free').toLowerCase();
+    if (tier === 'elite') score += 8;
+    else if (tier === 'pro') score += 4;
+
+    // Dormant until a response-rate column exists — always 0 today.
+    const responseRate = Number(t?.response_rate);
+    if (Number.isFinite(responseRate)) {
+        score += Math.max(0, Math.min(1, responseRate)) * 3;
+    }
+
+    return score;
+}
+
 function compareTrainersForRanking(a, b) {
+    const scoreDiff = scoreTrainerForRanking(b) - scoreTrainerForRanking(a);
+    if (Math.abs(scoreDiff) > 1e-9) return scoreDiff;
+
+    // Deterministic tie-break for trainers whose scores land exactly equal
+    // (e.g. two brand-new, unrated, unverified free-tier trainers).
     const rating = (Number(b?.rating) || 0) - (Number(a?.rating) || 0);
     if (rating !== 0) return rating;
 
     const reviews = (Number(b?.review_count) || 0) - (Number(a?.review_count) || 0);
     if (reviews !== 0) return reviews;
-
-    const completion = (Number(b?.profile_completion_score) || 0) - (Number(a?.profile_completion_score) || 0);
-    if (completion !== 0) return completion;
 
     const aActive = a?.last_active_at ? new Date(a.last_active_at).getTime() : 0;
     const bActive = b?.last_active_at ? new Date(b.last_active_at).getTime() : 0;
