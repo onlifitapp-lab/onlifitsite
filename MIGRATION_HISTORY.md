@@ -23,8 +23,10 @@
 | 15 | `20260719201056` | `lock_down_new_migration_functions` | ✅ created 2026-07-21 | ✅ yes | Current |
 | 16 | `20260719201538` | `fix_response_time_constraint_to_match_live_form` | ✅ created 2026-07-21 | ✅ yes | Current — **supersedes** #12's constraint |
 | 17 | `20260719201549` | `fix_black_eligibility_verification_value` | ✅ created 2026-07-21 | ✅ yes | Current — **supersedes** #1's `check_onlifit_black_eligibility()` body |
+| 18 | `20260720185509` | `add_activate_boost_purchase_function` | ✅ created 2026-07-21 (Phase 2) | ✅ yes | Current — Boost payment activation, verified live against test data before any API code depended on it |
+| 19 | `20260720190959` | `optimize_boost_purchases_select_policy` | ✅ created 2026-07-21 (Phase 2) | ✅ yes | Current — RLS performance fix caught by `get_advisors` during Phase 2 QA |
 
-All 17 versions above are confirmed present in `supabase_migrations.schema_migrations` via the `list_migrations` tool, which reads that table directly — not inferred from file contents or dates.
+All 19 versions above are confirmed present in `supabase_migrations.schema_migrations` via the `list_migrations` tool, which reads that table directly — not inferred from file contents or dates.
 
 ## Which migrations have been superseded
 
