@@ -245,10 +245,10 @@
                         </div>
                         <div class="text-right">
                             <div class="text-2xl font-black font-headline">₹499</div>
-                            <button type="button" disabled title="Boost purchases are coming soon" class="mt-2 px-6 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold text-on-surface-variant opacity-60 cursor-not-allowed">Coming Soon</button>
+                            <button type="button" id="boost-buy-3" onclick="handleBoostPurchaseClick(3)" class="mt-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Buy Boost</button>
                         </div>
                     </div>
-                    
+
                     <div class="bg-white p-6 rounded-2xl border border-primary shadow-md flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">BEST VALUE</div>
                         <div>
@@ -257,10 +257,13 @@
                         </div>
                         <div class="text-right">
                             <div class="text-2xl font-black font-headline">₹999</div>
-                            <button type="button" disabled title="Boost purchases are coming soon" class="mt-2 px-6 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold text-on-surface-variant opacity-60 cursor-not-allowed">Coming Soon</button>
+                            <button type="button" id="boost-buy-7" onclick="handleBoostPurchaseClick(7)" class="mt-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Buy Boost</button>
                         </div>
                     </div>
-                    
+
+                    <p class="text-xs text-on-surface-variant/80 px-1">
+                        Boost affects search ranking only — it improves visibility among trainers of similar quality, but never overrides rating, reviews, or profile completeness. It does not guarantee bookings.
+                    </p>
                 </div>
             </div>
         </div>
@@ -350,6 +353,15 @@
                     Every trainer starts on the Free plan with no time limit — list your profile and get discovered by clients right away. Upgrade to Pro or Elite anytime for more visibility and features; you can cancel anytime.
                 </div>
             </div>
+            <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
+                    <span class="font-bold">Does buying Boost again while I'm already boosted waste my purchase?</span>
+                    <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                </button>
+                <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
+                    No — a new Boost purchase extends your current Boost's remaining time rather than replacing it, so you always get the full duration you paid for.
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -395,6 +407,7 @@
 <script src="supabase-client.js"></script>
 <script src="auth.js"></script>
 <script src="subscription-payments.js"></script>
+<script src="boost-payments.js"></script>
 <script>
     renderAuthNav();
 
@@ -409,6 +422,36 @@
             });
         }
     })();
+
+    async function handleBoostPurchaseClick(durationDays) {
+        const user = await getCurrentUser();
+        if (!user || user.role !== 'trainer') {
+            window.location.href = 'join-us.html';
+            return;
+        }
+
+        const btn = document.getElementById('boost-buy-' + durationDays);
+        if (!btn) return;
+        const originalText = btn.textContent;
+
+        purchaseBoost(durationDays, (status, message) => {
+            if (status === 'loading') {
+                btn.disabled = true;
+                btn.textContent = message;
+            } else if (status === 'error') {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                if (message) alert(message);
+            } else if (status === 'done') {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                alert(message);
+            } else {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+    }
 
     async function handlePlanClick(plan, btn) {
         const user = await getCurrentUser();
