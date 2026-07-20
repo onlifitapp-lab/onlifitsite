@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     const order = await razorpay.orders.create({
         amount: amountPaise,
         currency: 'INR',
-        notes: { trainer_id: trainerId, plan }
+        notes: { trainer_id: trainerId, plan, type: 'subscription' }
     });
 
     const { error: insertErr } = await supabase.from('subscription_payments').insert([{
