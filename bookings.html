@@ -231,6 +231,28 @@
             <p id="subscription-status-msg" class="hidden px-6 py-3 text-xs font-bold text-on-surface-variant"></p>
         </div>
 
+        <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
+            <div class="px-6 py-5 border-b border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-headline text-lg font-black">Boost</h3>
+                    <p class="text-xs text-on-surface-variant mt-1" id="boost-status-text">Loading…</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="handleBoostAction(3)" id="btn-boost-3" class="px-4 py-2 bg-white border border-outline-variant rounded-lg text-sm font-bold hover:bg-surface-container transition-colors">3-Day — ₹499</button>
+                    <button onclick="handleBoostAction(7)" id="btn-boost-7" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">7-Day — ₹999</button>
+                </div>
+            </div>
+            <div id="boost-expiry-warning" class="hidden px-6 py-3 bg-yellow-50 border-b border-yellow-200 text-xs font-bold text-yellow-900"></div>
+            <div class="px-6 py-4">
+                <button onclick="toggleBoostHistory()" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80">
+                    <span id="boost-history-toggle-label">Show purchase history</span>
+                </button>
+                <div id="boost-history-panel" class="hidden mt-3 divide-y divide-outline-variant/20 border-t border-outline-variant/20">
+                    <div class="py-3 text-xs text-on-surface-variant">No Boost purchases yet.</div>
+                </div>
+            </div>
+        </div>
+
         <div class="trainer-dashboard-panels dash-panel-grid grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
                 <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
@@ -839,6 +861,7 @@
 <script src="supabase-client.js"></script>
 <script src="auth.js?v=20260428"></script>
 <script src="subscription-payments.js?v=20260428"></script>
+<script src="boost-payments.js?v=20260721"></script>
 
 <script>
 
@@ -1820,6 +1843,7 @@
         if (leadEl) leadEl.textContent = String(totalLeads30d || 0);
 
         renderSubscriptionCard(trainerUser);
+        renderBoostCard(trainerUser);
 
         const welcome = document.getElementById('welcome-message');
         if (welcome && trainerUser?.name) {
@@ -1877,6 +1901,169 @@
             expiryEl.textContent = 'No active subscription';
             renewBtn.textContent = 'Get Pro';
         }
+    }
+
+    let boostHistoryLoaded = false;
+
+    function formatBoostExpiry(iso) {
+        if (!iso) return null;
+        try {
+            return new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+        } catch { return null; }
+    }
+
+    function renderBoostCard(user) {
+        const statusEl = document.getElementById('boost-status-text');
+        const warningEl = document.getElementById('boost-expiry-warning');
+        if (!statusEl) return;
+
+        const expiresAt = user?.boost_expires_at ? new Date(user.boost_expires_at) : null;
+        const now = new Date();
+        const isActive = expiresAt && expiresAt.getTime() > now.getTime();
+
+        warningEl.classList.add('hidden');
+
+        if (isActive) {
+            const msRemaining = expiresAt.getTime() - now.getTime();
+            const hoursRemaining = msRemaining / 3600000;
+            const daysRemaining = Math.floor(hoursRemaining / 24);
+            const hoursPart = Math.floor(hoursRemaining % 24);
+            statusEl.textContent = `Active — ${daysRemaining}d ${hoursPart}h remaining (ends ${formatBoostExpiry(user.boost_expires_at)})`;
+
+            if (hoursRemaining <= 24) {
+                warningEl.textContent = 'Your Boost expires soon — buy again to extend it before it lapses.';
+                warningEl.classList.remove('hidden');
+            }
+        } else {
+            statusEl.textContent = 'No active Boost — buy one to appear higher in search results.';
+        }
+    }
+
+    function toggleBoostHistory() {
+        const panel = document.getElementById('boost-history-panel');
+        const label = document.getElementById('boost-history-toggle-label');
+        if (!panel) return;
+
+        const willShow = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        label.textContent = willShow ? 'Hide purchase history' : 'Show purchase history';
+
+        if (willShow && !boostHistoryLoaded) {
+            loadBoostHistory();
+        }
+    }
+
+    async function loadBoostHistory() {
+        const panel = document.getElementById('boost-history-panel');
+        if (!panel || !trainerUser?.id) return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('boost_purchases')
+                .select('id, duration_days, amount, gst_amount, status, invoice_number, starts_at, expires_at, created_at')
+                .eq('trainer_id', trainerUser.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            boostHistoryLoaded = true;
+            renderBoostHistory(data || []);
+        } catch (err) {
+            console.error('Failed to load Boost history:', err);
+            panel.innerHTML = '<div class="py-3 text-xs text-on-surface-variant">Could not load purchase history.</div>';
+        }
+    }
+
+    function renderBoostHistory(purchases) {
+        const panel = document.getElementById('boost-history-panel');
+        if (!panel) return;
+
+        if (!purchases.length) {
+            panel.innerHTML = '<div class="py-3 text-xs text-on-surface-variant">No Boost purchases yet.</div>';
+            return;
+        }
+
+        const statusBadge = { paid: 'bg-green-100 text-green-800', created: 'bg-yellow-100 text-yellow-800', failed: 'bg-red-100 text-red-800', refunded: 'bg-gray-200 text-gray-700' };
+
+        panel.innerHTML = purchases.map((p) => {
+            const date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+            const badgeClass = statusBadge[p.status] || 'bg-gray-100 text-gray-700';
+            const invoiceBtn = (p.status === 'paid' && p.invoice_number)
+                ? `<button onclick="viewBoostInvoice('${p.id}')" class="text-xs font-bold text-primary hover:opacity-80 ml-3">View Invoice</button>`
+                : '';
+            return `
+                <div class="py-3 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="font-bold text-sm">${p.duration_days}-Day Boost • ₹${Number(p.amount).toLocaleString('en-IN')}</div>
+                        <div class="text-xs text-on-surface-variant mt-0.5">Purchased ${date}${p.invoice_number ? ` • ${p.invoice_number}` : ''}</div>
+                    </div>
+                    <div class="flex items-center flex-shrink-0">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold capitalize ${badgeClass}">${p.status}</span>
+                        ${invoiceBtn}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        window._boostPurchasesCache = purchases;
+    }
+
+    function viewBoostInvoice(purchaseId) {
+        const purchase = (window._boostPurchasesCache || []).find((p) => p.id === purchaseId);
+        if (!purchase) return;
+
+        const win = window.open('', '_blank', 'width=480,height=640');
+        if (!win) return;
+
+        const gst = Number(purchase.gst_amount) || 0;
+        const total = Number(purchase.amount) || 0;
+        const dateStr = purchase.starts_at ? new Date(purchase.starts_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+
+        win.document.write(`
+            <html><head><title>Invoice ${purchase.invoice_number}</title>
+            <style>
+                body { font-family: -apple-system, sans-serif; padding: 32px; color: #111; }
+                h1 { font-size: 20px; margin-bottom: 4px; }
+                table { width: 100%; margin-top: 24px; border-collapse: collapse; }
+                td { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+                .label { color: #666; }
+                .total { font-weight: bold; font-size: 16px; }
+            </style></head><body>
+                <h1>Onlifit — Boost Invoice</h1>
+                <p style="color:#666;font-size:13px;">${purchase.invoice_number}</p>
+                <table>
+                    <tr><td class="label">Date</td><td>${dateStr}</td></tr>
+                    <tr><td class="label">Item</td><td>${purchase.duration_days}-Day Profile Boost</td></tr>
+                    <tr><td class="label">Amount</td><td>₹${(total - gst).toLocaleString('en-IN')}</td></tr>
+                    <tr><td class="label">GST</td><td>₹${gst.toLocaleString('en-IN')}</td></tr>
+                    <tr><td class="total">Total Paid</td><td class="total">₹${total.toLocaleString('en-IN')}</td></tr>
+                </table>
+                <p style="margin-top:32px;font-size:12px;color:#999;">Use your browser's Print / Save as PDF to download this invoice.</p>
+                <script>window.print();<\/script>
+            </body></html>
+        `);
+        win.document.close();
+    }
+
+    function handleBoostAction(durationDays) {
+        const btnIds = ['btn-boost-3', 'btn-boost-7'];
+        const buttons = btnIds.map(id => document.getElementById(id)).filter(Boolean);
+        const originalTexts = buttons.map(b => b.textContent);
+
+        purchaseBoost(durationDays, (status, message) => {
+            if (status === 'loading') {
+                buttons.forEach(b => { b.disabled = true; b.textContent = message; });
+            } else if (status === 'error') {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                if (message) alert(message);
+            } else if (status === 'done') {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                alert(message);
+                boostHistoryLoaded = false;
+                window.location.reload();
+            } else {
+                buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+            }
+        });
     }
 
     function handleSubscriptionAction(action) {
