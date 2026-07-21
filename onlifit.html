@@ -336,25 +336,19 @@
                             </div>
                         </div>
                         
-                        <!-- Autocomplete Dropdown -->
+                        <!-- Autocomplete Dropdown — goal list removed (was a redundant, buggy
+                             mini-selector duplicating the "Popular Fitness Goals" chip row
+                             below the hero, and the source of icon-ligature text leaking into
+                             the search input). Location suggestions remain, fixed to use a
+                             dedicated data-value instead of the whole button's innerText. -->
                         <div id="autocomplete-dropdown" class="absolute top-[120%] left-0 w-[calc(100vw-3rem)] md:w-[400px] bg-white rounded-xl shadow-elevated border border-outline-variant/30 overflow-hidden hidden transform transition-all duration-300 opacity-0 translate-y-2 z-50">
-                            <!-- Categories -->
-                            <div class="p-2">
-                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 mt-1 px-3">Filter by Goal</p>
-                                <ul class="space-y-0.5">
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-primary">self_improvement</span> Yoga</button></li>
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-tertiary">monitor_weight</span> Weight Loss</button></li>
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-secondary">fitness_center</span> Gym & Strength</button></li>
-                                </ul>
-                            </div>
-                            <div class="h-[1px] bg-outline-variant/30 w-full"></div>
                             <!-- Locations -->
                             <div class="p-2">
                                 <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 mt-1 px-3">Popular Locations</p>
                                 <ul class="space-y-0.5">
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Hyderabad</button></li>
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Kondapur</button></li>
-                                    <li><button type="button" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Bengaluru</button></li>
+                                    <li><button type="button" data-value="Hyderabad" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Hyderabad</button></li>
+                                    <li><button type="button" data-value="Kondapur" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Kondapur</button></li>
+                                    <li><button type="button" data-value="Bengaluru" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Bengaluru</button></li>
                                 </ul>
                             </div>
                         </div>
@@ -904,8 +898,10 @@
         // Handle suggestion clicking
         document.querySelectorAll('.autocomplete-item').forEach(item => {
             item.addEventListener('click', () => {
-                // Extract just the text, ignoring icons
-                const text = item.innerText.trim();
+                // Read the human-readable label from data-value -- item.innerText
+                // previously included the Material Symbols icon's ligature text
+                // (e.g. "monitor_weight") concatenated with the label.
+                const text = item.dataset.value || item.innerText.trim();
                 searchInput.value = text;
                 dynamicPlaceholder.style.display = 'none';
                 autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
