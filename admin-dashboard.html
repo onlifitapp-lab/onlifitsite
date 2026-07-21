@@ -1887,6 +1887,28 @@
             document.getElementById('bookings-table').innerHTML = html;
         }
 
+        // Generates a short-lived signed URL for a private trainer-documents
+        // object. Accepts either a legacy stored getPublicUrl()-style URL
+        // (every existing kyc_front_url/kyc_back_url on file today) or a bare
+        // object path, so no data migration or trainer re-upload is required.
+        async function getTrainerDocumentSignedUrl(storedValue) {
+            if (!storedValue) return null;
+            const marker = '/object/public/trainer-documents/';
+            const idx = storedValue.indexOf(marker);
+            const path = idx !== -1 ? storedValue.slice(idx + marker.length) : storedValue;
+
+            try {
+                const { data, error } = await supabase.storage
+                    .from('trainer-documents')
+                    .createSignedUrl(path, 3600);
+                if (error) throw error;
+                return data?.signedUrl || null;
+            } catch (err) {
+                console.error('Failed to sign trainer document URL:', err);
+                return null;
+            }
+        }
+
         // Trainer Modal Functions
         async function openTrainerModal(trainerId) {
             document.getElementById('trainer-modal').classList.add('active');
@@ -1900,6 +1922,11 @@
                     .single();
 
                 if (error) throw error;
+
+                const [kycFrontSignedUrl, kycBackSignedUrl] = await Promise.all([
+                    getTrainerDocumentSignedUrl(trainer.kyc_front_url),
+                    getTrainerDocumentSignedUrl(trainer.kyc_back_url)
+                ]);
 
                 let certificatesHTML = '';
                 if (trainer.certificate_urls && Array.isArray(trainer.certificate_urls) && trainer.certificate_urls.length > 0) {
@@ -1951,17 +1978,21 @@
                             <div class="document-grid">
                                 ${trainer.kyc_front_url ? `
                                     <div class="document-preview">
-                                        <a href="${escapeHtml(trainer.kyc_front_url)}">
-                                            <img src="${escapeHtml(trainer.kyc_front_url)}" alt="KYC Front">
-                                        </a>
+                                        ${kycFrontSignedUrl ? `
+                                            <a href="${escapeHtml(kycFrontSignedUrl)}">
+                                                <img src="${escapeHtml(kycFrontSignedUrl)}" alt="KYC Front">
+                                            </a>
+                                        ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
                                         <p><strong>ID Front</strong></p>
                                     </div>
                                 ` : ''}
                                 ${trainer.kyc_back_url ? `
                                     <div class="document-preview">
-                                        <a href="${escapeHtml(trainer.kyc_back_url)}">
-                                            <img src="${escapeHtml(trainer.kyc_back_url)}" alt="KYC Back">
-                                        </a>
+                                        ${kycBackSignedUrl ? `
+                                            <a href="${escapeHtml(kycBackSignedUrl)}">
+                                                <img src="${escapeHtml(kycBackSignedUrl)}" alt="KYC Back">
+                                            </a>
+                                        ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
                                         <p><strong>ID Back</strong></p>
                                     </div>
                                 ` : ''}
