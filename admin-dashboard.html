@@ -1889,8 +1889,10 @@
 
         // Generates a short-lived signed URL for a private trainer-documents
         // object. Accepts either a legacy stored getPublicUrl()-style URL
-        // (every existing kyc_front_url/kyc_back_url on file today) or a bare
-        // object path, so no data migration or trainer re-upload is required.
+        // (every existing kyc_front_url/kyc_back_url/certificate_urls[].url
+        // on file today) or a bare object path, so no data migration or
+        // trainer re-upload is required. Shared by both KYC and certificate
+        // rendering in openTrainerModal() -- same bucket, same URL shape.
         async function getTrainerDocumentSignedUrl(storedValue) {
             if (!storedValue) return null;
             const marker = '/object/public/trainer-documents/';
@@ -1928,15 +1930,23 @@
                     getTrainerDocumentSignedUrl(trainer.kyc_back_url)
                 ]);
 
+                const hasCertificates = trainer.certificate_urls && Array.isArray(trainer.certificate_urls) && trainer.certificate_urls.length > 0;
+                const certificateSignedUrls = hasCertificates
+                    ? await Promise.all(trainer.certificate_urls.map((cert) => getTrainerDocumentSignedUrl(cert.url)))
+                    : [];
+
                 let certificatesHTML = '';
-                if (trainer.certificate_urls && Array.isArray(trainer.certificate_urls) && trainer.certificate_urls.length > 0) {
+                if (hasCertificates) {
                     certificatesHTML = '<div class="document-grid">';
                     trainer.certificate_urls.forEach((cert, index) => {
+                        const signedUrl = certificateSignedUrls[index];
                         certificatesHTML += `
                             <div class="document-preview">
-                                <a href="${escapeHtml(cert.url)}">
-                                    <img src="${escapeHtml(cert.url)}" alt="${escapeHtml(cert.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
-                                </a>
+                                ${signedUrl ? `
+                                    <a href="${escapeHtml(signedUrl)}">
+                                        <img src="${escapeHtml(signedUrl)}" alt="${escapeHtml(cert.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
+                                    </a>
+                                ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
                                 <p><strong>${escapeHtml(cert.name)}</strong></p>
                                 <p style="font-size: 11px; color: ${cert.verified ? '#000000' : '#666666'}; font-weight: 600;">
                                     ${cert.verified ? 'VERIFIED' : 'PENDING'}
