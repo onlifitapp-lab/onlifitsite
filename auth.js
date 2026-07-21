@@ -1156,7 +1156,8 @@ async function getTrainers(options = {}) {
                 const res = await supabaseClient
                     .from('profiles')
                     .select(selectStr)
-                    .eq('role', 'trainer');
+                    .eq('role', 'trainer')
+                    .eq('onboarding_completed', true);
 
                 if (!res?.error) return res;
 
@@ -1174,7 +1175,8 @@ async function getTrainers(options = {}) {
             return await supabaseClient
                 .from('profiles')
                 .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-                .eq('role', 'trainer');
+                .eq('role', 'trainer')
+                .eq('onboarding_completed', true);
         })();
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
@@ -1470,7 +1472,8 @@ async function searchTrainers(query, location, mode) {
         let q = supabaseClient
             .from('profiles')
             .select(selectStr)
-            .eq('role', 'trainer');
+            .eq('role', 'trainer')
+            .eq('onboarding_completed', true);
 
         if (safeQuery) {
             q = q.or(`name.ilike.%${safeQuery}%,specialty.ilike.%${safeQuery}%,bio.ilike.%${safeQuery}%`);

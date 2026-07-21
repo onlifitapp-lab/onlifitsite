@@ -37,7 +37,7 @@
         <div class="max-w-4xl mx-auto px-4 py-4">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-bold">Complete Your Profile</span>
-                <span class="text-sm text-on-surface-variant">Step <span id="current-step">1</span> of 5</span>
+                <span class="text-sm text-on-surface-variant">Step <span id="current-step">1</span> of 7</span>
             </div>
             <div class="h-2 bg-outline-variant rounded-full overflow-hidden">
                 <div id="progress-bar" class="h-full bg-primary transition-all duration-300" style="width: 20%"></div>
@@ -519,7 +519,90 @@
                     </button>
                     <button type="button" id="submit-btn" onclick="submitTrainerProfile()"
                             class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
-                        Create Profile & Go Live ✓
+                        Save &amp; Review →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 6: Profile Review (trainer reviews their own details; this
+                 is NOT an admin approval step -- admin verification of KYC and
+                 certificates is a separate, unchanged process that happens
+                 after the profile is live) -->
+            <div id="step-6" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Review Your Profile</h2>
+                    <p class="text-on-surface-variant">Double-check everything before choosing a plan. You can go back and edit anything.</p>
+                </div>
+
+                <div class="p-6 bg-tertiary-container rounded-xl">
+                    <h3 class="font-bold mb-3">📋 Your Details</h3>
+                    <div id="full-profile-summary" class="text-sm space-y-2 text-on-surface-variant">
+                        <!-- Populated by updateFullProfileSummary() -->
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" onclick="prevStep(6)"
+                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back &amp; Edit
+                    </button>
+                    <button type="button" onclick="nextStep(6)"
+                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                        Looks Good, Choose Plan →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 7: Choose Plan (Pro or Elite only -- no Free tier. Payment
+                 happens via the existing purchaseSubscription() flow in
+                 subscription-payments.js, unchanged. The trainer's profile
+                 stays a draft, excluded from marketplace search, until payment
+                 succeeds -- see chooseTrainerPlan() below.) -->
+            <div id="step-7" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-black font-headline mb-2">Choose Your Plan</h2>
+                    <p class="text-on-surface-variant">Pick a plan to activate your profile and go live on Onlifit. You'll see the exact amount at checkout.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-6 rounded-2xl border-2 border-outline-variant bg-surface flex flex-col">
+                        <h3 class="font-headline text-xl font-black mb-1">Pro Plan</h3>
+                        <p class="text-sm text-on-surface-variant mb-4">For growing trainers</p>
+                        <ul class="text-sm space-y-2 mb-6 flex-1">
+                            <li>✓ Verified Profile badge</li>
+                            <li>✓ Up to 30 leads/month</li>
+                            <li>✓ WhatsApp lead notifications</li>
+                            <li>✓ Dashboard access with analytics</li>
+                            <li>✓ Higher search ranking</li>
+                        </ul>
+                        <button type="button" id="choose-plan-pro-btn" onclick="chooseTrainerPlan('pro')"
+                                class="w-full px-6 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-on-primary transition-colors">
+                            Choose Pro
+                        </button>
+                    </div>
+                    <div class="p-6 rounded-2xl border-2 border-primary bg-surface flex flex-col relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">BEST VALUE</div>
+                        <h3 class="font-headline text-xl font-black mb-1">Elite Plan</h3>
+                        <p class="text-sm text-on-surface-variant mb-4">For fitness business owners</p>
+                        <ul class="text-sm space-y-2 mb-6 flex-1">
+                            <li>✓ Everything in Pro</li>
+                            <li>✓ Unlimited leads</li>
+                            <li>✓ Priority ranking (above Pro)</li>
+                            <li>✓ Homepage featured placement</li>
+                            <li>✓ Onlifit Black eligibility</li>
+                            <li>✓ Priority support</li>
+                        </ul>
+                        <button type="button" id="choose-plan-elite-btn" onclick="chooseTrainerPlan('elite')"
+                                class="w-full px-6 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            Choose Elite
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" onclick="prevStep(7)"
+                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                        ← Back to Review
                     </button>
                 </div>
             </div>
@@ -548,6 +631,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
+    <script src="subscription-payments.js"></script>
     <script>
         // CRITICAL SAFEGUARD: Enforce trainer role
         // If somehow this page is reached by a non-trainer, redirect them appropriately
@@ -586,7 +670,7 @@
         })();
         
         let currentStep = 1;
-        const totalSteps = 5;
+        const totalSteps = 7;
         let approvalPollInterval = null;
 
         function getTrainerDashboardHref() {
@@ -870,8 +954,13 @@
                             description: '1 hour personalized training'
                         }
                     },
-                    onboarding_completed: true,
-                    profile_live: true
+                    // Saved as a draft, not yet live: onboarding_completed only
+                    // flips to true after successful payment in chooseTrainerPlan()
+                    // below. Until then this trainer is excluded from marketplace
+                    // search (getTrainers()/searchTrainers() in auth.js) and, on
+                    // their next login, is routed straight back to the Choose Plan
+                    // step instead of the dashboard or the start of this form.
+                    onboarding_completed: false
                 };
 
                 // Add package pricing if provided
@@ -913,15 +1002,96 @@
                     console.warn('Failed to clear trainer cache:', cacheError?.message || cacheError);
                 }
 
-                // Show success message
-                showPendingApprovalState();
-                
+                // Draft saved. Move to Profile Review -- payment/activation
+                // happens after the trainer confirms and chooses a plan.
+                goToProfileReview();
+
             } catch (error) {
                 console.error('Error saving profile:', error);
                 alert('Error saving profile: ' + error.message);
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Create Profile & Go Live ✓';
+                submitBtn.innerHTML = 'Save &amp; Review →';
             }
+        }
+
+        function goToProfileReview() {
+            document.getElementById('step-5').classList.remove('step-active');
+            document.getElementById('step-5').classList.add('step-hidden');
+
+            currentStep = 6;
+            document.getElementById('step-6').classList.remove('step-hidden');
+            document.getElementById('step-6').classList.add('step-active');
+
+            updateFullProfileSummary();
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        function updateFullProfileSummary() {
+            const val = (id) => document.getElementById(id)?.value || '—';
+            const tags = Array.from(document.querySelectorAll('input[name="tags"]:checked')).map(cb => cb.value);
+
+            const summary = `
+                <p><strong>Name:</strong> ${val('name')}</p>
+                <p><strong>Phone:</strong> ${val('phone')}</p>
+                <p><strong>WhatsApp Number:</strong> ${val('whatsapp_number')}</p>
+                <p><strong>Location:</strong> ${val('location')}</p>
+                <p><strong>Training Mode:</strong> ${val('session_mode')}</p>
+                <p><strong>Experience:</strong> ${val('experience')}</p>
+                <p><strong>Primary Specialty:</strong> ${val('specialty')}</p>
+                <p><strong>Training Areas:</strong> ${tags.join(', ') || '—'}</p>
+                <p><strong>Bio:</strong> ${val('bio')}</p>
+                <p><strong>Single Session Price:</strong> ₹${val('price_hourly')}/hour</p>
+                <p><strong>Response Time:</strong> ${val('response_time')}</p>
+            `;
+
+            document.getElementById('full-profile-summary').innerHTML = summary;
+        }
+
+        async function chooseTrainerPlan(plan) {
+            const proBtn = document.getElementById('choose-plan-pro-btn');
+            const eliteBtn = document.getElementById('choose-plan-elite-btn');
+            const buttons = [proBtn, eliteBtn].filter(Boolean);
+            const originalTexts = buttons.map(b => b.textContent);
+
+            const user = await getCurrentUser();
+            if (!user) {
+                alert('Please log in first');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            purchaseSubscription(plan, async (status, message) => {
+                if (status === 'loading') {
+                    buttons.forEach(b => { b.disabled = true; b.textContent = message; });
+                } else if (status === 'error') {
+                    buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                    if (message) alert(message);
+                    // Draft is already saved -- nothing else to do. The trainer
+                    // stays on this step and can retry or pick the other plan.
+                } else if (status === 'done') {
+                    try {
+                        await supabaseClient
+                            .from('profiles')
+                            .update({ onboarding_completed: true })
+                            .eq('id', user.id);
+                    } catch (activationError) {
+                        console.error('Failed to activate profile after payment:', activationError);
+                        alert('Payment succeeded, but activating your profile failed. Please contact support -- your payment is safe.');
+                        buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                        return;
+                    }
+
+                    try {
+                        localStorage.removeItem('onlifit_trainers_cache_v2');
+                        localStorage.removeItem('onlifit_trainers_time_v2');
+                    } catch (cacheError) {}
+
+                    window.location.replace(getTrainerDashboardHref());
+                } else {
+                    buttons.forEach((b, i) => { b.disabled = false; b.textContent = originalTexts[i]; });
+                }
+            });
         }
 
         function hasJoinUsTrainerIntent() {
@@ -1055,7 +1225,21 @@
                     window.location.replace(getTrainerDashboardHref());
                     return;
                 }
-                
+
+                // A draft was already saved (bio is only set once Step 2-5 have
+                // been submitted) but payment never completed -- skip straight
+                // back to Choose Plan instead of restarting the whole form.
+                if (user.bio) {
+                    console.log('Draft profile found with no completed payment; resuming at Choose Plan.');
+                    document.getElementById('step-1').classList.remove('step-active');
+                    document.getElementById('step-1').classList.add('step-hidden');
+                    currentStep = 7;
+                    document.getElementById('step-7').classList.remove('step-hidden');
+                    document.getElementById('step-7').classList.add('step-active');
+                    updateProgress();
+                    return;
+                }
+
                 // Pre-fill name and email if available from auth
                 if (user.name) {
                     document.getElementById('name').value = user.name;
