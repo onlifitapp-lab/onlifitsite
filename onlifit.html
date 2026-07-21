@@ -213,7 +213,33 @@
             scroll-snap-align: start;
         }
 
+        /* Hand-written, not dependent on Tailwind utility classes (styles.css
+           is a stale hand-compiled snapshot -- w-2/h-2/rounded-full/
+           bg-outline-variant classes used here previously may not be
+           compiled, which would leave an unstyled <button> for the base
+           state while only the raw .active background rule still applied,
+           rendering as an oversized black box instead of a small dot). */
+        .testimonial-dots {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .testimonial-dots button {
+            width: 6px;
+            height: 6px;
+            padding: 0;
+            border: none;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: background-color 0.25s ease, width 0.25s ease;
+        }
+        .testimonial-dots button:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
         .testimonial-dots button.active {
+            width: 16px;
             background: #000000;
         }
 
@@ -1551,7 +1577,9 @@
                     const cards = getCards();
                     cards.forEach((_, i) => {
                         const b = document.createElement('button');
-                        b.className = 'w-2 h-2 rounded-full bg-outline-variant/40';
+                        // Sizing/color come entirely from the hand-written
+                        // .testimonial-dots button CSS rule above -- no
+                        // Tailwind utility classes needed here.
                         b.type = 'button';
                         b.setAttribute('aria-label', `Go to testimonial ${i + 1}`);
                         b.addEventListener('click', () => {
