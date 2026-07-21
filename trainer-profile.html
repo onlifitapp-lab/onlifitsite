@@ -44,6 +44,75 @@
             .onlifit-modal-content .modal-cta-group-horizontal { display: flex; gap: 12px; }
             .onlifit-modal-content .modal-cta-group-horizontal .modal-cta { height: 48px; }
         }
+
+        /* Enquiry modal — chips, toggle, entrance animation, inline validation */
+        .enquiry-modal-enter { animation: enquiryModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes enquiryModalIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .enquiry-modal-enter { animation: none; }
+        }
+
+        .chip-option {
+            padding: 8px 14px;
+            min-height: 40px;
+            border-radius: 9999px;
+            border: 1.5px solid var(--md-sys-color-outline-variant, #d8d8d8);
+            background: transparent;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: inherit;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .chip-option:hover { border-color: var(--md-sys-color-primary, #000); }
+        .chip-option.chip-selected {
+            border-color: var(--md-sys-color-primary, #000);
+            background: var(--md-sys-color-primary, #000);
+            color: var(--md-sys-color-on-primary, #fff);
+        }
+        .chip-option:focus-visible,
+        .mode-option:focus-visible,
+        #enquiry-optional-toggle:focus-visible {
+            outline: 2px solid #000;
+            outline-offset: 2px;
+        }
+
+        .mode-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 48px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1.5px solid var(--md-sys-color-outline-variant, #d8d8d8);
+            background: transparent;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: inherit;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .mode-option:hover { border-color: var(--md-sys-color-primary, #000); }
+        .mode-option.mode-selected {
+            border-color: var(--md-sys-color-primary, #000);
+            background: var(--md-sys-color-primary-container, rgba(0,0,0,0.06));
+        }
+
+        .enquiry-input.enquiry-invalid { border-color: #dc2626 !important; }
+        #enquiry-goal-chips.enquiry-invalid,
+        #enquiry-mode-toggle.enquiry-invalid {
+            outline: 1.5px solid #dc2626;
+            outline-offset: 6px;
+            border-radius: 12px;
+        }
+        .text-error { color: #dc2626; }
+
+        .enquiry-optional-panel { overflow: hidden; }
+        #enquiry-optional-chevron.chevron-open { transform: rotate(180deg); }
     </style>
 </head>
 <body class="bg-surface-container-low font-body text-on-surface">
@@ -114,52 +183,121 @@
         </button>
     </div>
 
-    <!-- Booking Modal -->
+    <!-- Enquiry Modal -->
     <div id="booking-modal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeBookingModal()"></div>
-            <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto onlifit-modal-content">
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl relative max-h-[90vh] overflow-y-auto onlifit-modal-content enquiry-modal-enter">
                 <button type="button" onclick="closeBookingModal()" aria-label="Close"
-                    class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface min-h-[44px] min-w-[44px] flex items-center justify-center">
+                    class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
                     <span class="material-symbols-outlined" aria-hidden="true">close</span>
                 </button>
-                <h3 id="booking-modal-title" class="font-headline text-xl font-bold mb-1">Book Session</h3>
+                <h3 id="booking-modal-title" class="font-headline text-xl font-bold mb-1">Contact Trainer</h3>
                 <p id="modal-trainer-name" class="text-on-surface-variant text-sm mb-6"></p>
 
                 <div id="modal-plan-info" class="bg-primary-container/30 rounded-xl p-4 mb-6"></div>
 
-                <form id="booking-form" onsubmit="handleBooking(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1.5">Preferred Date</label>
-                        <input id="booking-date" type="date" required
-                            class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm" />
+                <form id="booking-form" onsubmit="handleBooking(event)" class="space-y-4" novalidate>
+                    <!-- Name -->
+                    <div class="enquiry-field">
+                        <label for="enquiry-name" class="block text-sm font-medium mb-1.5">Name <span class="text-error">*</span></label>
+                        <input id="enquiry-name" type="text" required autocomplete="name" maxlength="100" aria-invalid="false"
+                            class="enquiry-input w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]"
+                            placeholder="Your full name" />
+                        <p id="enquiry-name-error" class="enquiry-error hidden text-xs text-error mt-1"></p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1.5">Preferred Time</label>
-                        <select id="booking-time" required
-                            class="w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm">
-                            <option value="7:00 AM">7:00 AM</option>
-                            <option value="8:00 AM">8:00 AM</option>
-                            <option value="9:00 AM">9:00 AM</option>
-                            <option value="10:00 AM" selected>10:00 AM</option>
-                            <option value="11:00 AM">11:00 AM</option>
-                            <option value="4:00 PM">4:00 PM</option>
-                            <option value="5:00 PM">5:00 PM</option>
-                            <option value="6:00 PM">6:00 PM</option>
-                            <option value="7:00 PM">7:00 PM</option>
-                        </select>
+
+                    <!-- WhatsApp Number -->
+                    <div class="enquiry-field">
+                        <label for="enquiry-whatsapp" class="block text-sm font-medium mb-1.5">WhatsApp Number <span class="text-error">*</span></label>
+                        <input id="enquiry-whatsapp" type="tel" required autocomplete="tel" inputmode="tel" maxlength="20" aria-invalid="false"
+                            class="enquiry-input w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]"
+                            placeholder="+91 98765 43210" />
+                        <p id="enquiry-whatsapp-error" class="enquiry-error hidden text-xs text-error mt-1"></p>
+                    </div>
+
+                    <!-- Fitness Goal -->
+                    <div class="enquiry-field">
+                        <label id="enquiry-goal-label" class="block text-sm font-medium mb-1.5">Fitness Goal <span class="text-error">*</span></label>
+                        <div id="enquiry-goal-chips" class="flex flex-wrap gap-2" role="group" aria-labelledby="enquiry-goal-label" tabindex="-1">
+                            <button type="button" class="chip-option" data-value="Weight Loss" aria-pressed="false">Weight Loss</button>
+                            <button type="button" class="chip-option" data-value="Muscle Gain" aria-pressed="false">Muscle Gain</button>
+                            <button type="button" class="chip-option" data-value="Fat Loss" aria-pressed="false">Fat Loss</button>
+                            <button type="button" class="chip-option" data-value="Strength" aria-pressed="false">Strength</button>
+                            <button type="button" class="chip-option" data-value="General Fitness" aria-pressed="false">General Fitness</button>
+                            <button type="button" class="chip-option" data-value="Athletic Performance" aria-pressed="false">Athletic Performance</button>
+                            <button type="button" class="chip-option" data-value="Rehab" aria-pressed="false">Rehab</button>
+                            <button type="button" class="chip-option" data-value="Other" aria-pressed="false">Other</button>
+                        </div>
+                        <input id="enquiry-goal-other" type="text" placeholder="Tell us your goal" maxlength="100" aria-label="Describe your fitness goal"
+                            class="enquiry-input hidden mt-2 w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]" />
+                        <p id="enquiry-goal-error" class="enquiry-error hidden text-xs text-error mt-1"></p>
+                    </div>
+
+                    <!-- Training Mode -->
+                    <div class="enquiry-field">
+                        <label id="enquiry-mode-label" class="block text-sm font-medium mb-1.5">Training Mode <span class="text-error">*</span></label>
+                        <div id="enquiry-mode-toggle" class="grid grid-cols-2 gap-2" role="group" aria-labelledby="enquiry-mode-label" tabindex="-1">
+                            <button type="button" class="mode-option" data-value="Online" aria-pressed="false">
+                                <span class="material-symbols-outlined text-[18px]" aria-hidden="true">videocam</span> Online
+                            </button>
+                            <button type="button" class="mode-option" data-value="Offline" aria-pressed="false">
+                                <span class="material-symbols-outlined text-[18px]" aria-hidden="true">person_pin_circle</span> Offline
+                            </button>
+                        </div>
+                        <p id="enquiry-mode-error" class="enquiry-error hidden text-xs text-error mt-1"></p>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="enquiry-field">
+                        <label for="enquiry-location" class="block text-sm font-medium mb-1.5">Location <span class="text-error">*</span></label>
+                        <input id="enquiry-location" type="text" required autocomplete="address-level2" maxlength="100" aria-invalid="false"
+                            class="enquiry-input w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]"
+                            placeholder="e.g. Andheri, Mumbai" />
+                        <p id="enquiry-location-error" class="enquiry-error hidden text-xs text-error mt-1"></p>
+                    </div>
+
+                    <!-- Optional section -->
+                    <div class="border-t border-outline-variant/20 pt-3">
+                        <button type="button" id="enquiry-optional-toggle" aria-expanded="false" aria-controls="enquiry-optional-panel"
+                            class="w-full flex items-center justify-between text-sm font-bold text-on-surface-variant hover:text-primary transition-colors min-h-[44px]">
+                            Additional Preferences (Optional)
+                            <span class="material-symbols-outlined text-[20px] transition-transform" id="enquiry-optional-chevron" aria-hidden="true">expand_more</span>
+                        </button>
+                        <div id="enquiry-optional-panel" class="enquiry-optional-panel hidden space-y-4 pt-3">
+                            <div>
+                                <label for="enquiry-budget" class="block text-sm font-medium mb-1.5">Budget</label>
+                                <input id="enquiry-budget" type="text"
+                                    class="enquiry-input w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]"
+                                    placeholder="e.g. ₹5,000 - ₹10,000/month" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1.5">Preferred Training Time</label>
+                                <div id="enquiry-time-chips" class="flex flex-wrap gap-2" role="group" aria-label="Preferred training time">
+                                    <button type="button" class="chip-option" data-value="Morning (6-10 AM)">Morning (6–10 AM)</button>
+                                    <button type="button" class="chip-option" data-value="Afternoon (12-4 PM)">Afternoon (12–4 PM)</button>
+                                    <button type="button" class="chip-option" data-value="Evening (5-9 PM)">Evening (5–9 PM)</button>
+                                    <button type="button" class="chip-option" data-value="Flexible">Flexible</button>
+                                    <button type="button" class="chip-option" data-value="Other">Other</button>
+                                </div>
+                                <input id="enquiry-time-other" type="text" placeholder="Tell us your preferred time"
+                                    class="enquiry-input hidden mt-2 w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm min-h-[48px]" />
+                            </div>
+                            <div>
+                                <label for="enquiry-notes" class="block text-sm font-medium mb-1.5">Additional Notes</label>
+                                <textarea id="enquiry-notes" rows="3"
+                                    class="enquiry-input w-full px-4 py-3 rounded-xl bg-surface-container-low border border-outline-variant/30 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm resize-none"
+                                    placeholder="Anything else the trainer should know?"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-2 border-t border-outline-variant/20">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-sm text-on-surface-variant">Total</span>
-                            <span id="modal-price" class="text-2xl font-black text-primary font-headline"></span>
-                        </div>
                         <button type="submit"
-                            class="modal-cta w-full bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">chat</span> Contact on WhatsApp
+                            class="modal-cta w-full bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 min-h-[52px]">
+                            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span> Get Connected on WhatsApp
                         </button>
-                        <p class="text-[10px] text-on-surface-variant text-center mt-2">You'll be connected with the trainer on WhatsApp to discuss details and payment directly.</p>
+                        <p class="text-[11px] text-on-surface-variant text-center mt-2">We'll open WhatsApp so you can continue the conversation directly.</p>
                     </div>
                 </form>
             </div>
@@ -175,11 +313,12 @@
                     <span class="material-symbols-outlined text-tertiary text-4xl" aria-hidden="true"
                         style="font-variation-settings: 'FILL' 1;">check_circle</span>
                 </div>
-                <h3 id="success-modal-title" class="font-headline text-2xl font-bold mb-2">Booking Confirmed!</h3>
-                <p class="text-on-surface-variant text-sm">Your session has been booked successfully. The trainer will confirm within 12 hours.</p>
+                <h3 id="success-modal-title" class="font-headline text-2xl font-bold mb-2">Enquiry Sent!</h3>
+                <p class="text-on-surface-variant text-sm">Opening WhatsApp so you can connect with the trainer directly.</p>
+                <p id="success-whatsapp-hint" class="hidden text-xs text-error mt-3">Didn't open automatically? Your browser may have blocked the popup — tap the button below.</p>
                 <div class="modal-cta-group-horizontal">
-                    <a href="/client/bookings" class="modal-cta bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View My Bookings</a>
-                    <a id="success-whatsapp" href="#" target="_blank" class="modal-cta hidden bg-white border border-outline-variant text-sm font-bold text-on-surface rounded-xl hover:bg-surface-container transition-all">Contact Trainer on WhatsApp</a>
+                    <a href="/client/bookings" class="modal-cta bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View My Enquiries</a>
+                    <a id="success-whatsapp" href="#" target="_blank" class="modal-cta hidden bg-white border border-outline-variant text-sm font-bold text-on-surface rounded-xl hover:bg-surface-container transition-all">Open WhatsApp</a>
                 </div>
             </div>
         </div>
@@ -466,11 +605,6 @@
         `;
 
             document.getElementById('trainer-plans').innerHTML = plansHTML;
-
-            // Set min date to today
-            const todayDate = new Date().toISOString().split('T')[0];
-            document.getElementById('booking-date').min = todayDate;
-            document.getElementById('booking-date').value = todayDate;
         }
 
         function getAvailablePlanIds() {
@@ -548,11 +682,14 @@
                 <span class="text-primary font-black font-headline">${formatPrice(plan.price)}</span>
             </div>
         `;
-            document.getElementById('modal-price').textContent = formatPrice(plan.price);
+
+            resetEnquiryForm();
+            prefillEnquiryForm(user);
+
             lastFocusedBeforeModal = document.activeElement;
             const modalEl = document.getElementById('booking-modal');
             modalEl.classList.remove('hidden');
-            modalEl.querySelector('button[aria-label="Close"]')?.focus();
+            modalEl.querySelector('#enquiry-name')?.focus();
         }
 
         function closeBookingModal() {
@@ -564,6 +701,199 @@
         }
 
         let lastFocusedBeforeModal = null;
+
+        // ---------------------------------------------------------------
+        // Enquiry form: chip selects, mode toggle, optional section,
+        // prefill, and real-time (blur + input) validation.
+        // ---------------------------------------------------------------
+        let selectedGoal = null;
+        let selectedMode = null;
+        let selectedTime = null;
+
+        function initEnquiryFormControls() {
+            document.querySelectorAll('#enquiry-goal-chips .chip-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#enquiry-goal-chips .chip-option').forEach(b => {
+                        b.classList.remove('chip-selected');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('chip-selected');
+                    btn.setAttribute('aria-pressed', 'true');
+                    selectedGoal = btn.dataset.value;
+                    const otherInput = document.getElementById('enquiry-goal-other');
+                    otherInput.classList.toggle('hidden', selectedGoal !== 'Other');
+                    if (selectedGoal === 'Other') otherInput.focus();
+                    clearFieldError(document.getElementById('enquiry-goal-chips'));
+                });
+            });
+
+            document.querySelectorAll('#enquiry-time-chips .chip-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#enquiry-time-chips .chip-option').forEach(b => {
+                        b.classList.remove('chip-selected');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('chip-selected');
+                    btn.setAttribute('aria-pressed', 'true');
+                    selectedTime = btn.dataset.value;
+                    const otherInput = document.getElementById('enquiry-time-other');
+                    otherInput.classList.toggle('hidden', selectedTime !== 'Other');
+                    if (selectedTime === 'Other') otherInput.focus();
+                });
+            });
+
+            document.querySelectorAll('#enquiry-mode-toggle .mode-option').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#enquiry-mode-toggle .mode-option').forEach(b => {
+                        b.classList.remove('mode-selected');
+                        b.setAttribute('aria-pressed', 'false');
+                    });
+                    btn.classList.add('mode-selected');
+                    btn.setAttribute('aria-pressed', 'true');
+                    selectedMode = btn.dataset.value;
+                    clearFieldError(document.getElementById('enquiry-mode-toggle'));
+                });
+            });
+
+            const optionalToggle = document.getElementById('enquiry-optional-toggle');
+            optionalToggle.addEventListener('click', () => {
+                const panel = document.getElementById('enquiry-optional-panel');
+                const chevron = document.getElementById('enquiry-optional-chevron');
+                const expanded = optionalToggle.getAttribute('aria-expanded') === 'true';
+                optionalToggle.setAttribute('aria-expanded', String(!expanded));
+                panel.classList.toggle('hidden', expanded);
+                chevron.classList.toggle('chevron-open', !expanded);
+            });
+
+            // Real-time validation: clear/show error as the user leaves a
+            // required field, not only on submit.
+            ['enquiry-name', 'enquiry-whatsapp', 'enquiry-location'].forEach(id => {
+                const el = document.getElementById(id);
+                el.addEventListener('blur', () => validateEnquiryField(id));
+                el.addEventListener('input', () => clearFieldError(el));
+            });
+        }
+
+        function resetEnquiryForm() {
+            document.getElementById('booking-form').reset();
+            selectedGoal = null;
+            selectedMode = null;
+            selectedTime = null;
+            document.querySelectorAll('.chip-option, .mode-option').forEach(b => {
+                b.classList.remove('chip-selected', 'mode-selected');
+                b.setAttribute('aria-pressed', 'false');
+            });
+            document.getElementById('enquiry-goal-other').classList.add('hidden');
+            document.getElementById('enquiry-time-other').classList.add('hidden');
+            document.getElementById('enquiry-optional-panel').classList.add('hidden');
+            document.getElementById('enquiry-optional-toggle').setAttribute('aria-expanded', 'false');
+            document.getElementById('enquiry-optional-chevron').classList.remove('chevron-open');
+            document.querySelectorAll('.enquiry-error').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.enquiry-invalid').forEach(e => e.classList.remove('enquiry-invalid'));
+            document.querySelectorAll('.enquiry-input[aria-invalid]').forEach(e => e.setAttribute('aria-invalid', 'false'));
+            document.querySelectorAll('[aria-describedby]').forEach(e => e.removeAttribute('aria-describedby'));
+        }
+
+        function prefillEnquiryForm(user) {
+            const nameEl = document.getElementById('enquiry-name');
+            const waEl = document.getElementById('enquiry-whatsapp');
+            const locEl = document.getElementById('enquiry-location');
+            if (user.name) nameEl.value = user.name;
+            if (user.whatsapp_number || user.phone) waEl.value = user.whatsapp_number || user.phone;
+            if (user.location) locEl.value = user.location;
+        }
+
+        // el is always the exact control that should carry the invalid
+        // visual state — either the input itself (name/whatsapp/location)
+        // or the chip/toggle group container (goal/mode). Never search for
+        // a substitute inside the field, since that previously matched the
+        // wrong (hidden) node for the goal chips.
+        function clearFieldError(el) {
+            const field = el.closest('.enquiry-field') || el;
+            const error = field.querySelector('.enquiry-error');
+            el.classList.remove('enquiry-invalid');
+            if (typeof el.getAttribute === 'function' && el.hasAttribute('aria-invalid')) {
+                el.setAttribute('aria-invalid', 'false');
+            }
+            el.removeAttribute('aria-describedby');
+            if (error) error.classList.add('hidden');
+        }
+
+        function showFieldError(el, message) {
+            const field = el.closest('.enquiry-field') || el;
+            const error = field.querySelector('.enquiry-error');
+            el.classList.add('enquiry-invalid');
+            if (el.hasAttribute('aria-invalid')) el.setAttribute('aria-invalid', 'true');
+            if (error) {
+                error.textContent = message;
+                error.classList.remove('hidden');
+                el.setAttribute('aria-describedby', error.id);
+            }
+        }
+
+        function isValidWhatsappNumber(value) {
+            const digits = String(value || '').replace(/\D/g, '');
+            return digits.length >= 10;
+        }
+
+        function validateEnquiryField(id) {
+            const el = document.getElementById(id);
+            const value = el.value.trim();
+
+            if (id === 'enquiry-name') {
+                if (!value) { showFieldError(el, 'Please enter your name.'); return false; }
+            }
+            if (id === 'enquiry-whatsapp') {
+                if (!value) { showFieldError(el, 'Please enter your WhatsApp number.'); return false; }
+                if (!isValidWhatsappNumber(value)) { showFieldError(el, 'Enter a valid WhatsApp number.'); return false; }
+            }
+            if (id === 'enquiry-location') {
+                if (!value) { showFieldError(el, 'Please enter your location.'); return false; }
+            }
+            clearFieldError(el);
+            return true;
+        }
+
+        function validateEnquiryForm() {
+            let valid = true;
+            ['enquiry-name', 'enquiry-whatsapp', 'enquiry-location'].forEach(id => {
+                if (!validateEnquiryField(id)) valid = false;
+            });
+
+            if (!selectedGoal || (selectedGoal === 'Other' && !document.getElementById('enquiry-goal-other').value.trim())) {
+                showFieldError(document.getElementById('enquiry-goal-chips'), 'Please select a fitness goal.');
+                valid = false;
+            }
+
+            if (!selectedMode) {
+                showFieldError(document.getElementById('enquiry-mode-toggle'), 'Please choose a training mode.');
+                valid = false;
+            }
+
+            return valid;
+        }
+
+        function getEnquiryPayload() {
+            const goal = selectedGoal === 'Other'
+                ? document.getElementById('enquiry-goal-other').value.trim()
+                : selectedGoal;
+            const preferredTime = selectedTime === 'Other'
+                ? document.getElementById('enquiry-time-other').value.trim()
+                : selectedTime;
+
+            return {
+                clientName: document.getElementById('enquiry-name').value.trim(),
+                phoneNumber: document.getElementById('enquiry-whatsapp').value.trim(),
+                fitnessGoal: goal || null,
+                trainingMode: selectedMode,
+                location: document.getElementById('enquiry-location').value.trim(),
+                budget: document.getElementById('enquiry-budget').value.trim() || null,
+                preferredTime: preferredTime || null,
+                message: document.getElementById('enquiry-notes').value.trim() || null
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', initEnquiryFormControls);
 
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
@@ -579,13 +909,20 @@
         async function handleBooking(e) {
             e.preventDefault();
 
+            if (!validateEnquiryForm()) {
+                // Bring the first invalid field into view instead of
+                // silently doing nothing.
+                document.querySelector('.enquiry-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
             // Disable immediately (before any await) so a rapid double-click
             // cannot fire this handler twice for the same submission.
             const bookingBtn = e.target.querySelector('button[type="submit"]');
             if (bookingBtn.disabled) return;
             const originalBtnContent = bookingBtn.innerHTML;
             bookingBtn.disabled = true;
-            bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Creating enquiry...';
+            bookingBtn.innerHTML = '<div class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div> Connecting...';
 
             // One idempotency key per submit attempt, so a network retry of
             // this exact request cannot create a duplicate enquiry.
@@ -607,19 +944,37 @@
                     throw new Error('Please log in to continue.');
                 }
 
-                // Create enquiry via API
-                const response = await fetch('/api/create-lead', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': authHeader
-                    },
-                    body: JSON.stringify({
-                        trainerId: trainer.id,
-                        planType: selectedPlan,
-                        idempotencyKey
-                    })
-                });
+                const enquiry = getEnquiryPayload();
+
+                // Create enquiry via API — abort after 15s so a hung
+                // request doesn't leave the button disabled indefinitely.
+                const timeoutController = new AbortController();
+                const timeoutId = setTimeout(() => timeoutController.abort(), 15000);
+
+                let response;
+                try {
+                    response = await fetch('/api/create-lead', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': authHeader
+                        },
+                        body: JSON.stringify({
+                            trainerId: trainer.id,
+                            planType: selectedPlan,
+                            idempotencyKey,
+                            ...enquiry
+                        }),
+                        signal: timeoutController.signal
+                    });
+                } catch (fetchError) {
+                    if (fetchError.name === 'AbortError') {
+                        throw new Error('This is taking longer than expected. Please check your connection and try again.');
+                    }
+                    throw fetchError;
+                } finally {
+                    clearTimeout(timeoutId);
+                }
 
                 const data = await response.json();
 
@@ -635,19 +990,38 @@
                 // Hide booking modal
                 document.getElementById('booking-modal').classList.add('hidden');
 
-                // Configure WhatsApp button on success modal
+                // Configure WhatsApp button on success modal (also the
+                // fallback if the automatic window.open below is blocked)
                 const waBtn = document.getElementById('success-whatsapp');
-                if (waBtn && data.whatsappUrl) {
-                    waBtn.href = data.whatsappUrl;
-                    waBtn.classList.remove('hidden');
-                } else if (waBtn && data.trainerPhone) {
+                let whatsappUrl = null;
+                if (data.whatsappUrl) {
+                    whatsappUrl = data.whatsappUrl;
+                } else if (data.trainerPhone) {
                     const msg = encodeURIComponent(`Hi ${data.trainerName || 'Trainer'}, I'm interested in your plan on Onlifit.`);
-                    waBtn.href = 'https://wa.me/' + data.trainerPhone + '?text=' + msg;
+                    whatsappUrl = 'https://wa.me/' + data.trainerPhone + '?text=' + msg;
+                }
+                if (waBtn && whatsappUrl) {
+                    waBtn.href = whatsappUrl;
                     waBtn.classList.remove('hidden');
                 }
+                document.getElementById('success-whatsapp-hint')?.classList.add('hidden');
 
-                // Show success modal
+                // Show success modal briefly, then auto-open WhatsApp. The
+                // fallback button above stays visible either way; if the
+                // popup was blocked (most browsers block window.open once
+                // it's outside the direct click's call stack), surface an
+                // explicit hint instead of leaving the user to notice
+                // nothing happened.
                 document.getElementById('success-modal').classList.remove('hidden');
+                if (whatsappUrl) {
+                    setTimeout(() => {
+                        const opened = window.open(whatsappUrl, '_blank');
+                        const hint = document.getElementById('success-whatsapp-hint');
+                        if (!opened || opened.closed) {
+                            hint?.classList.remove('hidden');
+                        }
+                    }, 600);
+                }
 
             } catch (error) {
                 alert('Could not create enquiry: ' + error.message);

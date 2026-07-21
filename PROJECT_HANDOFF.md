@@ -1,183 +1,227 @@
 # Project Handoff — Onlifit
-*Last updated: 2026-07-18, end of Feature Completion planning session (before any Boost/taxonomy/support code was written)*
+*Last updated: end of the Phase 2 Lead Management / Trainer CRM foundation session (database + enhanced enquiry flow), tagged `v1.2.0-lead-crm-foundation`. This file supersedes all prior handoff notes. Read this file, `DATABASE_MIGRATION_PLAN.md`, `MIGRATION_HISTORY.md`, `IMPLEMENTATION_ROADMAP.md` and the five deployment docs listed in §12 before doing anything else.*
 
-## 0. Read This First
+## 0. Read This First — Next Session Starting Point
 
-This file, `DATABASE_MIGRATION_PLAN.md`, and `IMPLEMENTATION_ROADMAP.md` together replace all prior handoff notes. **No migrations have been applied. No Boost/taxonomy/support/blog-CMS code has been written.** The last session ended at a proposal stage — 7 migrations were proposed and two design questions were answered by the user, but the user then paused all further code/commits/pushes to have this documentation written instead. The next session's first job is to get explicit go-ahead on the migration plan, then execute in the order in `IMPLEMENTATION_ROADMAP.md`.
+**The single most important open question, carried forward and reconfirmed this session:** Vercel deployment status is still unconfirmed and this session directly verified it's stale. Live-checked `https://www.onlifit.in/trainer-profile.html` against production Supabase data during this session's smoke test and found it is **still serving the pre-Phase-2 build** — the old date/time booking modal (`#booking-date` present in the live DOM) rather than the new enquiry form (`#enquiry-name` absent). This means **not just Phase 2, but potentially the earlier `5ace2e9`/`43d0c27`/`50c65e9` commits from the previous session may also still be unconfirmed live** — no Vercel access exists in this environment (see §11), so deployment cannot be triggered or verified from here. **First action next session: confirm via the Vercel dashboard (or ask the user) which commit is actually live, trigger a redeploy if needed, then re-run the full smoke test in §9a against whatever is actually serving traffic.**
+
+**Second open item, unresolved and unverifiable this session for the same reason:** an earlier session found `trainers.html`/homepage returning "0 trainers found" in production with a slow-query console warning. Still never re-verified against a confirmed-current deployment — see §9.
 
 ## 1. Project Overview
 
-**What Onlifit is:** A two-sided marketplace connecting clients with independent personal trainers across India, for online or in-person sessions. Trainers set their own rates; clients discover trainers by search/goal/location, contact them directly on WhatsApp (no in-app messaging), and book/pay through the platform. Revenue comes from trainer subscriptions (free/pro/elite tiers via Razorpay), not per-booking commission. A "Boost" (paid temporary visibility) feature is planned but not yet built — see `DATABASE_MIGRATION_PLAN.md` and `IMPLEMENTATION_ROADMAP.md`.
+**What Onlifit is:** A two-sided marketplace connecting clients with independent personal trainers across India, online or in-person. Trainers set their own rates; clients discover trainers by search/goal/location and contact them directly on WhatsApp (no in-app messaging). Revenue comes from trainer subscriptions (Pro/Elite via Razorpay) and, as of this session, one-time "Boost" visibility purchases — **not** per-booking commission.
 
-**Current phase:** Transitioning from "UI polish" to "feature completion." Three major features are approved-in-concept but not started: Boost payments, an expanded search taxonomy, and a support-ticket widget (AI chat deferred — see decisions below).
+**Design philosophy:** Minimal, high-contrast black/white/gray palette (M3-inspired token names), Poppins headlines + Inter body, restrained "premium SaaS" aesthetic. Homepage V3 (`onlifit.html`) is the design-system reference for the whole site.
 
-**Design philosophy:** Minimal, high-contrast black/white/gray palette (M3-inspired token names: `primary`, `on-surface`, `outline-variant`, etc.), Poppins for headlines + Inter for body, restrained "premium SaaS" aesthetic (Airbnb/Stripe/Linear reference points). Homepage V3 borrowed **structural/UX patterns** (not visuals) from Superprof.com. **Homepage V3 is the design-system reference for the whole site** — every other page should match its logo, nav, spacing, colors, buttons, radius, shadows, typography, icon, and card conventions (this was explicitly restated in the most recent polish session — do not let other pages drift from it).
+**Current phase:** Feature-complete for launch on the core marketplace + Boost + payment-gated onboarding. Just pushed a Release Candidate through a full audit → blocker fixes → deployment → smoke test → UX polish cycle. Not yet confirmed fully live/verified end-to-end in production — see §0.
 
 ## 2. Git Status (as of this handoff)
 
 - **Branch:** `main`
-- **Working tree:** clean, nothing uncommitted
-- **10 commits ahead of `origin/main`, none pushed:**
-  ```
-  2401f0a feat: rewrite search ranking as a weighted score, not a tier ladder
-  5b06be7 fix: trainer onboarding missing 6 goal tags promised by homepage/trainers.html
-  b7ba32f fix: pricing.html — dead Boost buttons and false marketing claims
-  9543109 fix: homepage hero search icon overlap + red testimonial dot
-  7e728eb fix: trainer onboarding wrote to nonexistent session_mode column
-  f207898 chore: remove debug console.log trail from auth/OAuth flow
-  0e64c82 fix: admin-dashboard.html fired data queries before auth check settled
-  59212dc fix: trainer location field couldn't be edited after onboarding
-  1705bbf fix: pricing.html mobile nav, missing script, and dead CSS rules
-  f01376f fix: client-dashboard.html completely broken — two real syntax errors
-  ```
-  (Earlier, already-pushed history: `6545bb6` trainer-profile.html redesign, `5e9ffc6` docs, `af845d1` trainers.html redesign, `0707b82` mobile nav fix, `1bd7902` Homepage V3.)
-- **Explicit instruction from the user: do not push these 10 commits until told to.**
-- **Files changed across the 10 unpushed commits** (10 files, 198 insertions / 101 deletions total):
-  `admin-dashboard.html`, `auth.js`, `bookings.html`, `client-dashboard.html`, `login-google.js`, `onlifit.html`, `pricing.html`, `settings.html`, `styles.css`, `trainer-onboarding.html`.
+- **Remote:** `origin` → `https://github.com/onlifitapp-lab/onlifitsite.git`
+- **Push status:** all commits through `50c65e9` are pushed and confirmed present on `origin/main` (`git ls-remote origin main` returns `50c65e9...`, matching local `HEAD` exactly).
+- **Working tree:** 5 untracked files, **not committed, not pushed**:
+  `DEPLOYMENT_CHECKLIST.md`, `DEPLOYMENT_GUIDE.md`, `OPERATIONS_RUNBOOK.md`, `RELEASE_NOTES_v1.md`, `SMOKE_TEST_CHECKLIST.md` — all written this session (§12), never staged since they weren't explicitly requested to be committed. Decide next session whether to commit these.
 
-## 3. Completed Work (chronological, across this whole arc)
+## 3. Latest Commit Hashes, Chronological (oldest → newest, this session)
 
-### 3a. Homepage V3 (`1bd7902`, pushed)
-Full rebuild of `onlifit.html`: condensed hero, new "Popular Fitness Goals" chip row (Weight Loss, Muscle Gain, Strength, Yoga, CrossFit, Powerlifting, Calisthenics, Running, Home Workout, Women's Fitness — wired to real search), Featured Trainers moved up with 4:3 photo-first cards, relabeled "How Onlifit Works" steps, Onlifit Black section (fixed a real bug where it could show duplicate trainers already in Featured), richer testimonials with joined client/trainer data, contrast fix on "Become a Trainer" section, new FAQ, footer opt-out flag added. This is the **design-system reference** for the rest of the site.
+Session started right after `2401f0a` (last commit in the previous handoff).
 
-### 3b. Site-wide mobile nav overflow fix (`0707b82`, pushed)
-Root cause: `renderAuthNav()` in `auth.js` rendered a fixed-width desktop auth block into every page's nav with no responsive collapse; only the homepage had a guard. Centralized fix: the logged-in/guest nav markup now collapses to icon-only 44×44px controls below 640px. Fixed the same class of bug on 13+ pages from one function change, plus added a mobile hamburger to `trainers.html`.
+| Hash | Summary |
+|---|---|
+| `a3047b5` | fix: post-migration regressions from Phase 1 schema changes (verification_status rename, blog read_time→reading_time fallout) |
+| `7310114` | docs(db): synchronize repository migration history with production (11 missing migration files recreated) |
+| `dabc287` | docs: update project handoff, migration plan, and implementation roadmap |
+| `4b76546` | feat(boost): backend order creation, verification, and activation |
+| `91346a8` | feat(boost): branch shared Razorpay webhook between Boost and subscriptions |
+| `1c93ac9` | feat(boost): enable Boost purchase flow on pricing.html |
+| `2035967` | feat(boost): trainer dashboard Boost card, history, and invoice view |
+| `d1cf9e1` | feat(boost): admin Boost analytics (revenue, active, failures, expiries) |
+| `1318864` | chore(boost): QA pass — RLS perf fix, regression sweep, docs |
+| `ea9637e` | fix(ranking): include boost_expires_at and subscription_plan in trainer search selects (**RC BLOCKER fix**) |
+| `8131191` | fix(admin): render KYC documents via signed URLs instead of broken public URLs |
+| `9c4dd84` | fix(admin): render trainer certificates via signed URLs (same defect as KYC) |
+| `5ace2e9` | fix(ux): RC1 UX patch — search field, training area grid, nav buttons, pricing, WhatsApp field |
+| `43d0c27` | feat(onboarding): payment-gated trainer flow for new registrations only |
+| `50c65e9` | fix(ux): dashboard settings radio cards, bookings page polish, testimonial dots — **current HEAD** |
 
-### 3c. `trainers.html` redesign (`af845d1`, pushed)
-Homepage-vocabulary goal chips, client-side price/rating filters, Onlifit Black pill toggle, trust strip, differentiated empty states, fixed a real bug where "Most Experienced" sort was comparing `NaN - NaN` on a free-text field (silently never sorted), removed ~9 dead functions, accessibility pass, and found+fixed a desktop grid bug (a **duplicate** `.md\:grid-cols-2` CSS rule, hand-patched into `styles.css` at some earlier point, sat *after* `.lg\:grid-cols-3` in file order and won the cascade at all widths ≥1024px — removed the one duplicate line).
+## 4. Completed Work This Session
 
-### 3d. `trainer-profile.html` redesign (`6545bb6`, pushed)
-Fixed a real conversion bug: the header "Contact / Book" CTA silently did nothing if no plan was pre-selected (`if (!selectedPlan) return;`). New `handlePrimaryCta()` now auto-selects a plan (opens booking directly if only one plan exists, scrolls + highlights if multiple, scrolls to pricing if none set). Added a sticky mobile action bar. Fixed two more real CSS bugs found during QA: `.lg\:sticky` and `.lg\:hidden` had no compiled rules in `styles.css` at all — the pricing sidebar never actually stuck, and (if untouched) the new sticky mobile bar would have shown on desktop too. Added modal accessibility (`role="dialog"`, focus management, Escape-to-close), visible disabled-button states, and a trust-building reviews empty state using only real trainer fields (no fabricated reviews).
+### 4a. Boost payment system — fully built (`4b76546` → `1318864`)
+- **Schema** (migrations, all applied to production, see `MIGRATION_HISTORY.md`): `profiles.boost_expires_at`, `boost_purchases` table (payment audit trail with GST/coupon/invoice/refund fields), 8 structured taxonomy columns (`goals`, `services`, `training_styles`, `languages`, `target_audience`, `equipment`, `training_modes`, `specializations` — schema only, **no UI built for these yet**), `availability` jsonb, trainer verification lifecycle (`pending`/`under_review`/`verified`/`rejected`, admin-only writes enforced by a new DB trigger `trg_enforce_verification_admin_only`), `response_time`, generated `search_keywords` column, `activate_boost_purchase()` RPC.
+- **Backend:** `api/create-boost-order.js` (reuses a recent unpaid order instead of duplicating), `api/verify-boost-payment.js`, shared webhook extended (`api/razorpay-subscription-webhook.js` now branches Boost vs. subscription by table lookup, not by trusting Razorpay's `notes.type`), `api/_analytics.js` (best-effort event logging to the existing `user_activity_log` table).
+- **Ranking:** `activate_boost_purchase()` extends expiry from `GREATEST(current expiry, now())` — live-tested against synthetic DB rows, confirmed correct stacking/idempotency math before any API code depended on it.
+- **UI:** `pricing.html` Boost cards enabled (was "Coming Soon"), `bookings.html` trainer dashboard Boost card + purchase history + print-to-PDF invoice view, `admin-dashboard.html` Boost Analytics section (revenue, active count, failures, expired count).
+- **Refunds are manual-only, by design** — no automated recompute of `boost_expires_at` on refund. Documented, not a defect.
 
-### 3e. Production QA session 1 (`f01376f` → `f207898`, unpushed)
-Four parallel background audits (auth flows, settings/uploads, dashboards/admin/nav, sitewide dead-code sweep) found:
-- **CRITICAL, confirmed via `node --check`:** `client-dashboard.html`'s main script had **two separate genuine `SyntaxError`s** — a `catch` block with no matching `try` (from a prior edit that deleted the try-block and the actual auth-check logic along with a bug it was fixing, per an in-code comment), and `document.getElementById(...)?.innerHTML = '...'` (optional chaining cannot be an assignment target). **The entire script block failed to parse in every browser** — not just the dashboard init, but every function in that block, including the sidebar toggle (this fully explains a "sidebar-toggle didn't open, maybe a sandbox artifact" note from an even earlier handoff — it wasn't an artifact, the whole script was dead). Fixed both; restored the auth guard using the same `requireAuth('client', ...)` helper `bookings.html` already used correctly. Verified live against production Supabase: anonymous visitors now correctly redirect to `login.html`.
-- `client-dashboard.html` had its own hand-written `<footer>` with no `data-hide-global-footer` flag → duplicate footer content injected by `footer-component.js`. Fixed.
-- `pricing.html` had zero mobile nav fallback (no hamburger) and never loaded `supabase-client.js` at all (so `getCurrentUser()` silently fell through to a Clerk fallback path on every load). Both fixed.
-- Trainer `location` field could be set at onboarding but had no edit UI anywhere afterward — added to both `settings.html` and `bookings.html`'s own (separate, duplicated) settings tab.
-- `admin-dashboard.html`'s `loadDashboard()` fired admin data queries even when the auth check failed (redirect doesn't halt script execution) — gated behind `window.adminUser`.
-- Extensive debug `console.log` trail in `auth.js`/`login-google.js` running on every login/signup for every user — removed (kept `console.error`/`console.warn`).
-- Ran `node --check` against **every inline `<script>` block on every page plus every standalone `.js` file** — found zero other syntax errors sitewide (this is the strongest sitewide correctness check performed this arc).
+### 4b. Migration history reconciliation (`7310114`)
+Local `supabase/migrations/` had drifted from what was actually applied to production. Recreated the 11 missing migration files under their real recorded versions; documented version drift in two pre-existing files and the immutable-history policy in `MIGRATION_HISTORY.md`. **19 migrations total**, all confirmed applied and reconciled as of this session — no new schema changes since.
 
-### 3f. Production QA session 2 (`7e728eb`, unpushed)
-Live schema introspection against production Supabase found `trainer-onboarding.html` was writing to `session_mode`, **a column that has never existed** (real column: `training_mode`, used everywhere else). It didn't hard-fail — a schema-fallback retry loop (`updateProfileWithSchemaFallback`) silently strips unknown columns and retries — so onboarding "succeeded" but `training_mode` has never actually been saved for any trainer who has ever onboarded. Fixed the one-line key mismatch (no schema change needed, `training_mode` already existed). **Six more onboarding payload keys point at columns confirmed not to exist** (`training_approach`, `kyc_id_type`, `kyc_id_number`, `response_time`, `teaching_style`, `training_focus`, `profile_live`) — **flagged, not fixed**, since each needs either a real migration or a product decision to remove the corresponding form field. Still outstanding — see §13.
+### 4c. Release Candidate audit → BLOCKER found and fixed (`ea9637e`)
+A full production-readiness audit found one confirmed BLOCKER: `getTrainers()` and `searchTrainers()` in `auth.js` (the **only** two functions building marketplace search results, confirmed via repo-wide grep) never selected `boost_expires_at` or `subscription_plan` — meaning the entire Boost feature, and the pre-existing Pro/Elite ranking bonus, had **zero effect on real search ranking** despite being fully built. Fixed with a 4-line, surgical diff. Verified the fix reaches both `trainers.html` and the homepage (both call only these two functions).
 
-### 3g. Product Polish sprint (`9543109` → `2401f0a`, unpushed)
-- **Hero search icon overlap** (homepage): measured live — icon and typed text only 8px apart. Fixed the input padding, then discovered a sitewide `mobile-optimizations.css` rule (`input[type="text"] { padding: 12px 16px }` under 768px) silently collapsed the fix back down on mobile — exactly where the bug was most visible. Added a scoped override so the fix holds on mobile too.
-- **Red pagination dot** on testimonials carousel: a CSS custom property (`--primary`) was never defined anywhere, so its fallback color (`#ff5a5f`, a coral/red not in Onlifit's palette) was always what rendered. Fixed to the real theme black.
-- **Investigated the "Boost" feature before touching it**, per instructions: confirmed the "Buy Boost" buttons have zero `onclick`/handler, the "1 free day of Boost on signup" claim has zero backing logic, and — most importantly — the "How Search Ranking Works" box (Boosted > Elite > Pro > Free) was **false**: the real ranking function only ever used rating/reviews/completion/activity, no tier or boost signal at all. Fixed the dead buttons (disabled "Coming Soon" state), removed the false free-day claim, rewrote the false "14-day Pro trial" FAQ, and rewrote the false ranking-tier copy to describe the actual algorithm — all copy/UI fixes, no fake payment infrastructure built.
-- **6 homepage/trainers.html goal chips had no matching onboarding checkbox** (CrossFit, Powerlifting, Calisthenics, Running, Home Workout, Women's Fitness) — a trainer could never tag themselves with these terms, so those chips could return zero real results. Added the 6 checkboxes using the existing flexible `tags` array — no schema change.
-- **Rewrote `compareTrainersForRanking()`** as a weighted point score (not a tier ladder) — see §9 below for the full algorithm. This was committed as real, working code (not a proposal) because it needed no schema change and is fully backward-compatible (reads `boost_expires_at`/`response_rate` defensively; both are always `undefined` today and contribute 0 until their migrations land).
+### 4d. KYC and certificate document viewing — BLOCKER found and fixed (`8131191`, `9c4dd84`)
+Traced end-to-end with direct DB/code evidence (not assumption): `trainer-onboarding.html`'s upload flow always falls through to the **private** `trainer-documents` bucket (the intended primary bucket, `'Trainers Kyc'`, has zero RLS policies and every upload against it silently fails). The stored URL is a `getPublicUrl()`-style URL, which per Supabase's own docs does not work for a private bucket. `admin-dashboard.html` rendered these raw, so **admins could never actually view KYC documents or certificates** for any real trainer. Fixed by generating short-lived signed URLs (`createSignedUrl`) at render time in `openTrainerModal()`, reusing one shared helper for both KYC and certificates. Verified against the 4 real KYC records in production and the live RLS policy (`bucket_id = 'trainer-documents' AND profiles.role = 'admin'`, no other restriction — already authorizes this for any admin).
 
-### 3h. Feature-completion planning (this session, no code written)
-User wants Boost, ranking (done, see above), search taxonomy, and a support system **built**, not removed. Live schema was pulled from production before proposing anything (`list_tables` via the Supabase MCP tool — this session has real, working access to apply migrations directly, not just draft SQL files). Found `support_tickets` + `ticket_messages` + `ticket_attachments` **already exist in full** with threading, attachments, and status — no migration needed there. Presented a 7-migration proposal (`DATABASE_MIGRATION_PLAN.md`). User answered two design questions:
-- **AI chat assistant: deferred.** Build the ticket creation/threading/admin-reply flow using the existing tables; add AI later once a provider/API key is chosen.
-- **Taxonomy shape: "Services" gets its own `services text[]` column (not folded into `tags`); "Availability" becomes real structured scheduling (`availability jsonb`, days + time-of-day, not full calendar slots).**
+### 4e. Deployment prep and first production deployment
+- Produced 5 deployment documents (§12), all still uncommitted.
+- Pushed to GitHub, deployed to Vercel (project `onlifit`, org `team_LWqZD7IDZfWL6HbvWp6WM1rS`), confirmed the production domain `https://www.onlifit.in` serves the correct app (nav, assets, routing all verified live).
+- Ran a live smoke test against production — see §9 for what it found (not fully resolved).
 
-Then the user paused everything to have this documentation written before any migration is applied or further code is written.
+### 4f. UX patch round 1 (`5ace2e9`)
+1. **Homepage search field leak fixed** — clicking an autocomplete suggestion was inserting Material Symbols icon ligature text into the search box (e.g. `"monitor_weightWeight Loss"`) because the click handler read the whole button's `innerText`. Now reads a dedicated `data-value` attribute.
+2. **Homepage goal selector removed** from the search dropdown entirely (kept the existing, already-correct "Popular Fitness Goals" chip row as the sole goal selector) — this also eliminated the bug above at its source.
+3. **Join Us branding — investigated, not changed.** No stale/old logo exists anywhere in `join-us.html`, its nav, or `footer-component.js` — every branding instance already matches the current text wordmark. No defect found; nothing was fabricated to "fix."
+4. **Trainer onboarding Training Area grid** — equal-height cells (`min-h-[52px]`), properly responsive column count (1/2/3 instead of jumping straight to 2 on mobile).
+5. **Step navigation buttons** (Back/Next, all step pairs) — `flex-1` instead of `justify-between` so both buttons are equal width regardless of text length.
+6. **Pricing step** — currency symbol clearance fixed (`pl-8`→`pl-9`), "Pricing Tips" box removed, field spacing increased.
+7. **Mandatory WhatsApp Number field added** to onboarding Step 5, wired into the saved profile (`whatsapp_number` — an existing column, no schema change).
 
-## 4. Current Project Architecture
+### 4g. Payment-gated trainer onboarding — new feature, new registrations only (`43d0c27`)
+**New flow:** Signup → Complete profile (Steps 1–5, unchanged) → **Profile Review** (new Step 6, trainer-facing only, explicitly not admin approval) → **Choose Plan** (new Step 7, Pro/Elite only, no Free tier) → Razorpay Checkout (existing, unmodified `purchaseSubscription()`) → on success: profile activated → dashboard + marketplace visible.
 
-- **Stack:** Static HTML pages (no build step, no framework) + vanilla JS + Supabase (Postgres + Auth + Storage) + Razorpay (subscriptions only, currently) + Clerk (fallback/legacy auth path referenced in `auth.js`, not the primary flow).
-- **`auth.js`** is the shared library loaded on every page: `getCurrentUser()`, `requireAuth()`, `getTrainers()`/`getTrainerById()`, `renderAuthNav()`, the shared trainer-card renderer (`renderPremiumTrainerCardHTML` + helpers), badge/verification logic (`normalizeTrainerBadges`), and now `compareTrainersForRanking()`/`scoreTrainerForRanking()`.
-- **`supabase-client.js`** initializes `window.supabaseClient`/`window.supabase` with a hardcoded (intentionally public) anon key — must be `<script src>`'d before `auth.js` on every page, or `getCurrentUser()` silently falls through to a broken Clerk-fallback path (this exact bug was found and fixed on `pricing.html` this arc — worth spot-checking other pages if odd auth warnings appear).
-- **`footer-component.js`** auto-injects a footer into any page's `<footer>` element unless `data-hide-global-footer="true"` is set on `<body>`. Two pages currently opt out (`onlifit.html`, `client-dashboard.html`); other pages with no `<footer>` element get a safe auto-generated one instead — not a bug for those.
-- **`styles.css` is a stale, hand-patched compiled Tailwind snapshot from 2026-04-17, NOT a live build.** No `@tailwindcss/cli` in this environment, no network access to install it. Every new Tailwind class used in HTML that wasn't in use back then silently does nothing until manually hand-patched in. **This has caused multiple real, confirmed production bugs this arc** (the trainers.html grid duplicate-rule bug, the trainer-profile.html sticky/hidden-class bugs, the pricing.html scale bug). The fix pattern is well-established now: derive the compiled rule format from an existing similar rule in the same file, append it, verify via `document.styleSheets` in a real browser — never trust plain string-matching in a shell command due to backslash-escaping issues. **Fixing this properly (a real build pipeline) remains unscoped infrastructure debt.**
-- **Two separate, duplicated trainer-settings UIs exist**: `settings.html` (standalone page) and `bookings.html`'s embedded Settings tab (the trainer's actual dashboard). Both were kept in sync for the `location` field fix this arc, but this duplication is itself technical debt — any future settings field needs to be added to both, or the duplication should be resolved (shared component, or retire one of the two).
-- **`bookings.html` is the trainer's dashboard** (page title: "Trainer Dashboard") — not a separate `trainer-dashboard.html` file. `client-dashboard.html` is the client's dashboard.
+- **No migration.** Reused the existing `onboarding_completed` boolean as the draft/active flag instead of adding a column.
+- **Existing trainers provably unaffected** — verified directly against production data before writing code: 7 of 9 trainer rows already had `onboarding_completed = true` (the real, populated profiles); the 2 with `false` had zero real data (never actually live). The new marketplace-visibility filter changes nothing for any real trainer.
+- **Draft persistence & resume:** `submitTrainerProfile()` now saves with `onboarding_completed: false` (draft) instead of `true`. If a trainer abandons checkout, the page's own `onload` handler detects `onboarding_completed === false && bio` (proof the form was already submitted) and jumps straight to the Choose Plan step on next login — no new column, no polling.
+- **Marketplace gating:** added `.eq('onboarding_completed', true)` to `getTrainers()` and `searchTrainers()` in `auth.js` (the same two functions fixed in §4c). `getTrainerById()` (direct profile-by-id view) was deliberately left unchanged — different concern from search visibility.
+- **Admin approval, KYC, certificates, Razorpay, subscription activation logic are all unmodified** — the only new write is a single client-side `onboarding_completed: true` update after the existing payment flow reports success.
+- **Known pre-existing constraint, not introduced here:** `create-subscription-order.js` already requires `profile.email_verified` before creating an order. This now gates every new trainer's *first* payment, not just plan upgrades as before. Not changed, per instruction to leave subscription logic untouched — surfaced with a clear error message already, but worth knowing.
 
-## 5. Homepage (`onlifit.html`) Status
+### 4h. UX patch round 2 (`50c65e9`)
+1. **Settings → Training Mode** — replaced default browser radio circles with custom cards (equal height, accent border+background on selection, animated dot, hover lift). **Hand-written CSS, not new Tailwind utility classes** — see §5's `styles.css` warning, this was a deliberate choice to avoid the exact bug class that's hit this project repeatedly. Underlying `<input type="radio">` name/value/onchange are unchanged, so all existing read logic (`:checked` lookups) keeps working.
+2. **Bookings page search bar** — fixed icon/placeholder overlap on mobile. Same root cause and fix pattern as an earlier homepage fix: `mobile-optimizations.css`'s blanket `input[type="text"] { padding: 12px 16px }` under 768px was collapsing the icon clearance back down. Scoped override added for `#bookings-search`.
+3. **Bookings page polish** — smoother filter-tab hover transitions, richer container shadow, per-row hover highlight, status-colored badges (presentational only, no status values changed), redesigned empty state.
+4. **Homepage testimonial dots** — live-inspected production (found the dots container currently empty, and the styling depending entirely on Tailwind utility classes that may not be compiled — the likely actual cause of the "oversized black indicator" report). Replaced with fully hand-written CSS: 6px dots, active dot expands to a 16px pill. Auto-slide and native touch-swipe (CSS scroll-snap) were already present and untouched.
 
-Fully redesigned (V3) and further polished this arc (search icon overlap fixed, red dot fixed). This is the **design-system reference** for the rest of the site — other pages should match its logo/nav/spacing/colors, not diverge. No outstanding known bugs on the homepage itself. The "How Onlifit Works" section (interactivity/animation polish) and testimonials count/carousel improvements were requested in the polish sprint but **not done** — explicitly deferred due to time, not because they're low priority.
+## 5. Current Project Architecture
 
-## 6. `trainers.html` Status
+- **Stack:** Static HTML pages (no build step, no framework) + vanilla JS + Supabase (Postgres + Auth + Storage) + Razorpay (subscriptions + Boost) + Clerk (legacy/fallback auth, not primary).
+- **`auth.js`** is the shared library: `getCurrentUser()`, `requireAuth()`, `getTrainers()`/`searchTrainers()`/`getTrainerById()` (the only three trainer-fetch paths in the codebase — confirmed by repo-wide search), `renderAuthNav()`, `compareTrainersForRanking()`/`scoreTrainerForRanking()`. `getTrainers()`/`searchTrainers()` now filter on `onboarding_completed = true` (§4g); `getTrainerById()` does not.
+- **`supabase-client.js`** hardcodes the Supabase project URL and anon/publishable key directly (intentional — anon keys are meant to be public, and there's no build step to inject env vars into the browser anyway). **There is no staging/production environment separation in code** — any deploy of this codebase talks to the same live database unless this file is manually swapped.
+- **`styles.css` is still a stale hand-patched Tailwind snapshot, not a live build.** This caused/nearly-caused at least two more bugs found this session (the testimonial dots, and was the reason the Training Mode radio cards were deliberately hand-written in plain CSS instead of new Tailwind classes). **This remains unscoped infrastructure debt** — every new page of UI work should assume new Tailwind classes silently do nothing until verified live.
+- **`bookings.html` is the trainer's dashboard** — not a separate file. `client-dashboard.html` is the client's dashboard.
+- **Storage buckets** (verified live): `avatars` (public), `blog-images` (public), `trainer_certifications` (public), `trainer-documents` (private, correctly RLS'd, this is where KYC/certificates actually land), `ticket_attachments` (private), `'Trainers Kyc'` (private, **zero RLS policies, functionally dead** — every upload against it fails and silently falls through to `trainer-documents`; recommend removing it from `trainer-onboarding.html`'s upload fallback list, not yet done — see §10).
 
-Fully redesigned. Goal chips now match the homepage vocabulary (10 terms + All) and are backed by real onboarding tags (the 6-tag gap was closed this arc). Price/rating filters, Onlifit Black toggle, trust strip, and the "Most Experienced" sort bug are all fixed and verified. Desktop grid CSS bug fixed. No known outstanding bugs.
+## 6. Ranking Algorithm — implemented and now actually wired up
 
-## 7. `trainer-profile.html` Status
+`compareTrainersForRanking()`/`scoreTrainerForRanking()` in `auth.js`: quality signals (rating/reviews/completion/activity/experience) cap at 71 of ~100 points; paid signals (verified badge, active Boost, subscription tier) cap at 26; a dormant response-rate bucket caps at 3. As of `ea9637e`, the trainer objects fed into this function actually contain `boost_expires_at` and `subscription_plan` — before that fix, both were always `undefined` in every real search result, silently zeroing out the entire paid-signals bucket. This is now fixed and reaches both `trainers.html` and the homepage.
 
-Fully redesigned. Primary CTA bug fixed and verified live against production data (both the multi-plan-select and single-plan-auto-open paths). Sticky mobile CTA bar added. Two real CSS bugs (`lg:sticky`, `lg:hidden`) fixed. Modal accessibility added. Reviews empty state now trust-building instead of a dead end. No known outstanding bugs.
+## 7. Payments
 
-## 8. Navigation Fixes (site-wide)
+- **Subscriptions (Pro/Elite):** working, real, unchanged this session except one call site addition (§4g) and one `notes.type` tag added for observability (§4a webhook branching).
+- **Boost:** fully built this session (§4a). Purchase flow verified via live RPC testing against synthetic data; not yet verified via a real Razorpay test transaction (no test credentials in this environment at any point).
+- **Shared webhook** (`api/razorpay-subscription-webhook.js`) handles both, routing by table lookup on the order id — not by trusting `notes.type` propagation (Razorpay doesn't guarantee that survives onto the payment entity a webhook delivers).
+- **`RAZORPAY_WEBHOOK_SECRET` is still not documented in `.env.example`** — flagged repeatedly this session, never fixed (out of scope each time it came up — it's a deployment-config item, not a code change). Confirm it's actually set correctly in the Vercel production environment.
 
-Centralized fix in `renderAuthNav()` (see §3b) resolved mobile overflow on every page using it. Individually verified per-page since: `client-dashboard.html`'s entire nav (and everything else on the page) was actually dead due to the syntax errors in §3e — now fixed and the anonymous-redirect path verified live. `pricing.html`'s missing hamburger fixed. No other known nav bugs, but **not every page has been individually re-verified live this session** — see §14.
+## 8. Trainer Onboarding & Verification
 
-## 9. Ranking Algorithm — IMPLEMENTED (not just proposed)
+- **New registrations** go through the payment-gated flow (§4g): Complete profile → Profile Review → Choose Plan (Pro/Elite only) → Checkout → activation.
+- **Existing trainers** are completely unaffected (verified against live data).
+- KYC and certificate documents now correctly viewable by admins via signed URLs (§4d).
+- Verification lifecycle (`pending`/`under_review`/`verified`/`rejected`) is admin-only, enforced by a DB trigger, not just RLS (a real gap — RLS alone would have let a trainer edit their own verification fields — closed this session, in the Boost-feature migration batch).
+- **7 orphaned onboarding fields** carried over from before this session, still unresolved: `training_approach`, `kyc_id_type`, `kyc_id_number`, `teaching_style`, `training_focus`, `profile_live` write to columns that don't exist and are silently dropped (the 7th, `response_time`, was fixed in an earlier session). Needs a product decision — not touched this session, not part of any commit above.
 
-`compareTrainersForRanking()` in `auth.js` was rewritten as a weighted point score (max ~100), not a strict tier ladder — a strict ladder would let a boosted 1-star trainer outrank a non-boosted 5-star trainer, directly violating "paid features should never completely override quality." Full breakdown (also documented inline in the code):
+## 9. Known Issues Still Remaining
 
-**Quality signals — 71 pts max (attainable by every trainer, paid or not):**
-- Rating: 0–25 (`rating/5 * 25`)
-- Review count: 0–15, log-scaled (`log10(reviews+1) * 7`, capped at 15)
-- Profile completion: 0–15 (`profile_completion_score/100 * 15`)
-- Recent activity: 0–10 (full marks within 7 days, decays to 0 by 90+ days inactive)
-- Experience: 0–6 (years parsed from the free-text `experience` field, capped at 10+ years)
+1. **CONFIRMED THIS SESSION: Vercel production does NOT yet serve the Phase 2 build**, and by extension its status for the prior 3 commits (`5ace2e9`, `43d0c27`, `50c65e9`) remains unconfirmed too — see §0 and §9a. This is the first thing to check next session, now with direct evidence instead of just suspicion.
+2. **UNRESOLVED: live production search showed "0 trainers found"** on both `trainers.html` and the homepage during a smoke test, with a recurring `Supabase trainers query took >2.5s. Returning cached/empty and continuing fetch in background.` console warning on every page load. This was found *before* the `onboarding_completed` filter (§4g) was added to the same query functions — that later change was verified safe against a snapshot of production data at the time, but the combination (pre-existing slow-query symptom + a new filter on the same query) has **not been re-verified live**. This is the highest-priority thing to re-test once deployment status (#1) is confirmed.
+3. **`RAZORPAY_WEBHOOK_SECRET` undocumented in `.env.example`**, unresolved across multiple mentions this session (§7).
+4. **No staging/production Supabase separation** — documented as an architectural fact in `DEPLOYMENT_GUIDE.md`, not something to "fix" without a product decision to provision a second Supabase project.
+5. **`'Trainers Kyc'` storage bucket is dead** (zero RLS policies, every upload silently fails and falls through) — recommended removing it from `trainer-onboarding.html`'s upload candidate list; not done, awaiting explicit go-ahead (this was raised and the user chose not to action it in the same turn KYC was fixed).
+6. **7 orphaned onboarding fields** (§8) — pre-existing, still unresolved.
+7. **No visible "Boosted" badge** on trainer cards in search results — Boost affects ranking position but nothing on the card itself signals why, to either the client or the paying trainer beyond their own dashboard. Flagged as a product gap in the RC audit, not fixed.
+8. **Full end-to-end payment testing never performed** — no real or test Razorpay transaction was completed at any point this session (no credentials available). Boost and the new payment-gated onboarding checkout are both verified at the code/RPC level, not via an actual completed payment.
+9. **RESOLVED this session:** the 5 deployment/ops documents are now committed as part of `v1.2.0-lead-crm-foundation` (§15).
+10. **No authenticated human walkthrough has ever been performed** in this environment — signup, Google OAuth consent, onboarding completion, admin login — all carried over as an open item from every prior session too. Still the single biggest gap between "verified by an AI reading code and database state" and "actually confirmed working for a real user." **This session's Phase 2 smoke test (§9a) is the same class of gap, applied to the new enquiry flow specifically.**
+11. **NEW this session — append-only trigger blocks cascade deletes.** Discovered live during the Phase 2 smoke test (§9a): `client_enquiry_events`'s `BEFORE UPDATE OR DELETE` trigger (added in the Phase 2 migration to guarantee immutable history) also blocks the `ON DELETE CASCADE` fired when a parent `client_enquiries` row is deleted, because the cascade issues a real `DELETE` against the child table that the trigger rejects — aborting the whole transaction. Practical effect: **a `client_enquiries` row can never be deleted once it has any event row**, which is true of virtually every enquiry (every one gets a `created` event immediately). Not a defect in the sense of anything being broken today — nothing in the app currently deletes enquiry rows — but it needs a decision before it becomes one: either (a) accept this as intentional (enquiries are permanent CRM records, deletion should never be a supported operation, only status changes), or (b) add a narrow, explicit "hard delete" path (e.g. a SECURITY DEFINER admin-only function that temporarily disables the trigger, the same manual technique used to clean up this session's test row) for legitimate cases like GDPR erasure requests. Not decided or fixed this session — flagged for the next product/architecture conversation.
 
-**Paid/status signals — 26 pts max:**
-- Verified trainer: +8 flat (`verification_status === 'approved'`)
-- Active boost: +10 flat — **dormant today**, reads `t.boost_expires_at` which doesn't exist as a column yet; always contributes 0 until migration #1 in `DATABASE_MIGRATION_PLAN.md` lands, then activates automatically with no further code change
-- Subscription tier: free=0, pro=+4, elite=+8
+## 9a. Phase 2 Smoke Test (this session)
 
-**Dormant — 3 pts max:**
-- Response rate: 0–3 — **dormant today**, no `response_rate` column exists; same auto-activation pattern
+Performed after implementation and the stabilization fix pass, before commit/tag/push, per explicit instruction. Split cleanly into what's verifiable from this environment and what isn't, rather than claiming end-to-end coverage that wasn't actually possible.
 
-Verified with concrete test scenarios (not just theory): a 5-star trainer with 120 reviews scores ~71; a 1-star trainer who is verified, boosted, AND on Elite scores ~47 — quality wins decisively. Among two *similar-quality* trainers, boost + Pro does give a real edge (tested: 65.7 vs 78.4) — so paid features aren't purely cosmetic either. This is genuinely done and committed (`2401f0a`), not a proposal — no further ranking work needed unless the weights themselves need retuning after real usage data exists.
+**Database layer — fully verified, passed:**
+- ✓ Created a real enquiry via `try_create_client_enquiry()` against production Supabase with all new capture fields populated — row stored correctly, including `source = 'marketplace'` and `priority` defaulting to `'medium'`.
+- ✓ Exactly one `created` timeline event was written, with correct `meta` (`source`, `plan_type`).
+- ✓ Called the RPC again with the **same idempotency key** — confirmed it returned `idempotent_replay: true` with the **same** `enquiry_id`, and did **not** create a second row or a second event (duplicate submission correctly deduplicated at the database layer).
+- ✓ Directly attempted to `UPDATE` an event row — confirmed the append-only trigger raised and blocked it (verified by re-reading the row afterward: `event_type` was still `created`, not the tampered value).
+- ✓ Cleaned up the test row after — which is how the cascade-delete/append-only-trigger conflict in Known Issues item 11 was actually discovered, live, not theorized.
 
-## 10. Search Taxonomy — PROPOSED ONLY, not built
+**Frontend/UI layer — blocked by an unresolved deployment gap, not by anything wrong with the code:**
+- ✗ **Could not verify against live production** — navigated to `https://www.onlifit.in/trainer-profile.html` with a real trainer id and confirmed via direct DOM inspection (`#booking-date` present, `#enquiry-name` absent) that **production is still serving the old pre-Phase-2 booking modal**. This is the same Vercel-deployment-confirmation gap called out in every prior handoff (§0, §11) — it isn't something this session could resolve (no Vercel credentials in this environment, consistent with every prior session).
+- ✓ Confirmed the *current* live page loads with zero console errors, real trainer data, and a correct mobile layout at 390px — a clean baseline to compare against once the new build actually deploys.
+- ✓ Separately verified the new code itself (not live, but the actual file contents that will deploy): full inline-script syntax check passed; exhaustive grep confirmed zero dead element references anywhere in the file; interactive testing against an isolated extraction of the real markup+script confirmed chip selection, mode toggle, optional-panel expand, real-time validation (including the ARIA/highlight fixes from the stabilization pass), and correct layout at 320px/390px viewport widths. This is the same verification method used and disclosed in the Phase 2 code review and fix-pass reports.
+- ✗ **Not tested:** an actual authenticated logged-in submit → WhatsApp-opens → lead-appears-in-database round trip through the real browser UI. This requires either a live deployment or real user credentials in this environment, neither of which exists here. The database-layer test above exercises the identical RPC call the UI makes, which is the strongest available substitute, but it is not the same as a real click-through.
 
-See `DATABASE_MIGRATION_PLAN.md` for the full migration list. Summary: Goals/Training Mode/Specializations/Location already have real columns and don't need new ones. Three new facets need new columns per the user's explicit design decision: `services text[]`, `languages text[]`, `target_audience text[]`, plus `availability jsonb` (days + time-of-day shape, not full calendar slots). None of these migrations have been applied. Once applied, every one of these pages needs updating and must stay synchronized: `trainer-onboarding.html` (capture), `settings.html` + `bookings.html` settings tab (edit after onboarding — remember, two duplicated UIs), `trainers.html` (filter UI), `onlifit.html` (if these become homepage filter facets too — not yet decided), `trainer-profile.html` (display), and the shared trainer-card renderer in `auth.js` (display on cards).
+**Conclusion:** the Phase 2 database and event system are proven correct against live production data. The Phase 2 frontend code is proven correct in isolation but **has not yet been exercised as a live user-facing feature**, because production has not yet deployed it. This is a deployment-pipeline gap, not a code-quality gap — see §0 for the required next step.
 
-## 11. Boost System — PROPOSED ONLY, not built
+## 10. Files Modified This Session (31 files)
 
-See `DATABASE_MIGRATION_PLAN.md`. Summary: `profiles.boost_expires_at` (denormalized fast-read, mirrors the existing `subscription_expires_at` pattern) + a new `boost_purchases` table (payment audit trail, mirrors the existing `subscription_payments` table pattern). Ranking algorithm already reads `boost_expires_at` defensively and will activate automatically once the column exists — no ranking code changes needed when this ships. Still needed: `api/create-boost-order.js`, `api/verify-boost-payment.js`, a webhook (extend the existing Razorpay subscription webhook or add a new one), re-enabling the "Buy Boost" buttons on `pricing.html` (currently disabled "Coming Soon"), and a `bookings.html` dashboard section showing active boost + remaining time + automatic expiry.
+```
+DATABASE_MIGRATION_PLAN.md          IMPLEMENTATION_ROADMAP.md           MIGRATION_HISTORY.md
+PROJECT_HANDOFF.md                  admin-dashboard.html                api/_analytics.js
+api/create-boost-order.js           api/create-subscription-order.js    api/razorpay-subscription-webhook.js
+api/verify-boost-payment.js         auth.js                             blog-post.html
+bookings.html                       boost-payments.js                   onlifit.html
+pricing.html                        trainer-onboarding.html             trainer.html
+supabase/migrations/ (11 new files, listed in MIGRATION_HISTORY.md)
+```
+Plus 5 new, uncommitted docs: `DEPLOYMENT_CHECKLIST.md`, `DEPLOYMENT_GUIDE.md`, `OPERATIONS_RUNBOOK.md`, `RELEASE_NOTES_v1.md`, `SMOKE_TEST_CHECKLIST.md`.
 
-## 12. Payment Architecture (existing, real, working)
+## 11. Deployment Access Notes
 
-Razorpay subscription payments (Pro/Elite plans) have real backend code in this repo: `api/create-subscription-order.js`, `api/verify-subscription-payment.js`, `api/razorpay-subscription-webhook.js`, backed by the `subscription_payments` and `subscriptions` tables (both real, confirmed via live schema query). This is a working precedent to follow for Boost payments — same shape, new table/columns. **Boost has zero backend wiring today** — see §11.
+- **Vercel:** CLI installed (`v51.0.0`), project already linked (`.vercel/project.json`: `projectName: "onlifit"`, `orgId: team_LWqZD7IDZfWL6HbvWp6WM1rS`), but **no valid authentication token exists in this environment** — `vercel login` requires an interactive browser/device-code flow this assistant cannot complete. Same limitation applies every session unless the user authenticates the CLI themselves in this same environment/shell.
+- **GitHub:** push succeeded this session after initial hangs — Git Credential Manager was trying to open an interactive prompt; forcing non-interactive mode surfaced the real (now resolved) auth issue. Push is confirmed working as of `50c65e9`.
+- **Supabase:** MCP tool access is live and working throughout — used extensively for migrations, RLS verification, and live data checks.
 
-## 13. Blog CMS Status
+## 12. Deployment Documentation (written in the prior session; committed as of `v1.2.0-lead-crm-foundation`, see §15)
 
-**Admin CRUD is already fully functional** — `admin-dashboard.html` has real create/edit/delete/publish/unpublish wiring against a real `blog_posts` table (confirmed via code, not a mockup). `blog_posts` already has `slug`, `title`, `category` (singular), `image`, `description`, `content`, `read_time`, `is_published`. **Missing, per the user's explicit ask:** SEO fields (`meta_title`/`meta_description`) and a way to link related trainers for the "Find Trainer" CTA (`related_trainer_ids`) — see migration #7 in `DATABASE_MIGRATION_PLAN.md`. Not yet live-tested as an actual logged-in admin (no credentials available in this environment) — code inspection only.
+- `DEPLOYMENT_CHECKLIST.md` — pre-deploy verification checklist (env vars, Supabase/Razorpay/Vercel config, storage permissions).
+- `DEPLOYMENT_GUIDE.md` — step-by-step deploy process, rollback procedure, common issues.
+- `OPERATIONS_RUNBOOK.md` — monitoring, payment reconciliation, incident response, support workflow.
+- `RELEASE_NOTES_v1.md` — features, architecture decisions, breaking changes, known limitations.
+- `SMOKE_TEST_CHECKLIST.md` — the exact checklist used for the live production smoke test in §9.
 
-## 14. Support Ticket Architecture (mostly exists already)
+## 13. Production Readiness
 
-`support_tickets` (subject, category, priority, status: open/in_progress/resolved/closed, assigned_to) + `ticket_messages` (threaded replies, `is_internal` flag for admin-only notes, `attachments` jsonb) + `ticket_attachments` — all real, all already exist, confirmed via live schema query. `support.html` already POSTs to a real `/api/create-ticket` endpoint (rate-limited: 3 tickets per 15 minutes). **What's actually missing:** a floating widget UI (currently just a standalone form page, no bubble/launcher on other pages), and admin-side reply/resolve/close UI in `admin-dashboard.html` (not yet built or verified). AI chat layer explicitly deferred by the user — build ticket flow only, add AI later once a provider is chosen.
+- **Code/data layer:** thoroughly audited this session — one confirmed BLOCKER (ranking) and one confirmed BLOCKER (KYC/certificate viewing) were found through direct evidence (not assumption) and fixed, each independently re-verified afterward.
+- **Live deployment:** confirmed reachable and serving a correct build at `https://www.onlifit.in`, but **not confirmed to be the latest commit** (§0), and the one thing that was smoke-tested live (search) **failed** and was never re-verified (§9, item 2).
+- **Overall:** do not consider this "launched and healthy" until §0 and §9 item 2 are both resolved. Everything else — payments, auth, admin, Boost — is verified at the code/database level to a high degree of confidence but has never been exercised by an actual authenticated human in this environment.
 
-## 15. Storage Buckets & Upload Pipeline
+## 14. Recommended Next Session Order
 
-Covered in an earlier QA session (not re-verified this session): avatar upload (`uploadAvatar(userId, file)` in `auth.js`) writes to a path scoped by the user's own id (`${userId}/${userId}-${timestamp}.ext`) — no cross-user collision risk found. `deleteAvatar()` existed but was never called before a re-upload (old files accumulated) — **fixed**, now called before every new upload. Broken/missing `avatar_url` is handled consistently everywhere it's rendered (checks for an `http` prefix, falls back to initials). Certificate upload/verification flow (`certifications` table + `certificate_urls` jsonb on `profiles`, marked deprecated in favor of the `certifications` table) was not deeply re-audited this arc.
+1. Confirm actual Vercel deployment state (dashboard or authenticated CLI) — this session found production is **still serving the pre-Phase-2 build** (§0), so this is now more urgent than before, not less.
+2. Once a current deployment is confirmed, re-run the search smoke test (`trainers.html`, homepage) — "0 trainers found" (§9) has never been re-verified against a build that's actually confirmed current.
+3. Re-run §9a (this session's Phase 2 smoke test) end-to-end against the live UI once deployment is confirmed — this session could only verify the new enquiry flow at the database/RPC layer plus static/isolated-harness UI testing, not a real authenticated click-through in production (see §9a for exactly what was and wasn't covered).
+4. Complete the rest of `SMOKE_TEST_CHECKLIST.md` (auth, onboarding, payments) with real or test credentials if available.
+5. Decide on the 5 previously-uncommitted deployment docs — now committed as of `v1.2.0-lead-crm-foundation` (§15), so this is resolved, not open.
+6. Raise the `'Trainers Kyc'` dead-bucket cleanup and the 7 orphaned onboarding fields as their own scoped decisions, per standing recommendation.
+7. **Next milestone: Phase 3 — Trainer Lead Dashboard.** Build the trainer-facing Leads view (KPI cards, search/filter, lead cards, detail drawer with timeline/notes/status/follow-up) as a new route inside `bookings.html`'s existing SPA router, per the architecture agreed in §15. Do not start this until items 1–3 above are resolved — there is limited value in building on top of a foundation that hasn't been confirmed live.
 
-## 16. Authentication Flow
+## 15. Phase 2 — Lead Management / Trainer CRM Foundation (this session)
 
-Session persistence is correctly configured (`persistSession`/`autoRefreshToken`/`detectSessionInUrl` all `true` in `supabase-client.js`). `logout()` correctly calls `signOut()` and clears app storage keys. Protected-route guards were live-verified this arc for: `client-dashboard.html`, `bookings.html`, `settings.html`, `my-trainers.html`, `billing.html` (all → `login.html`), `admin-dashboard.html` (→ `admin-login.html`) — all correctly redirect anonymous users, zero console errors. Admin auth is real (queries `profiles.role === 'admin'` against the live session, not a client-side-only flag). **Not verified this arc:** an actual authenticated login/signup/onboarding-completion round trip — no test credentials available, and creating an account/entering credentials is outside what this assistant will do unilaterally. Cross-user data isolation was verified by code inspection (every write scoped by the authenticated user's own id) but **not by a live two-account test** — attempted read/write probes against production tables for security testing were correctly blocked by the environment's safety classifier.
+**Goal:** lay the database + enquiry-capture foundation for a full trainer CRM (tagged `v1.2.0-lead-crm-foundation`), without disturbing the existing, working enquiry pipeline (`client_enquiries`, `try_create_client_enquiry()`, `api/create-lead.js`, duplicate/idempotency/cap protection). Explicitly scoped to stop before building the trainer-facing dashboard itself (Phase 3).
 
-## 17. Dashboard Status
+### 15a. Database migration applied to production
+Two migrations applied directly via Supabase MCP (both idempotent, both additive — no destructive changes, no data rewrites):
+- `supabase/migrations/20260721110428_phase2_lead_management_crm.sql` — extends `client_enquiries` with 11 new nullable capture/CRM columns (`client_name`, `phone_number`, `fitness_goal`, `training_mode`, `location`, `budget`, `preferred_time`, `message`, `follow_up_date`, `updated_at`, `priority`), adds `idx_client_enquiries_trainer_status` and a partial index on `follow_up_date` (ready for a future reminder job with no further schema change), adds RLS SELECT policies (trainer sees own rows, admin sees all — the table previously had **zero** read policies, RPC-only), creates the new append-only `client_enquiry_events` table (timeline + notes history unified — a note is just an event of type `note_added`) with a hard `BEFORE UPDATE OR DELETE` trigger blocking mutation for every role including `service_role`, and extends `try_create_client_enquiry()` with the new capture fields as trailing optional params (backward compatible) plus a new ownership-checked `update_client_enquiry()` RPC that writes a timeline event for every effective field change.
+- `supabase/migrations/20260721110515_phase2_drop_stale_enquiry_rpc_overload.sql` — cleanup migration. `CREATE OR REPLACE FUNCTION` with a different parameter list creates a Postgres **overload**, not a replacement; the first migration left both the old 5-arg and new 14-arg `try_create_client_enquiry` live simultaneously, with the old one silently bypassing all new logic. Caught via the Supabase security advisor and dropped.
+- Ran `get_advisors` (security) after both migrations — no new findings introduced.
 
-- **`bookings.html`** (trainer dashboard): functional, has its own settings tab (see the duplication note in §4). Will need a new section for active Boost status once that's built.
-- **`client-dashboard.html`**: was **completely broken** until this arc (see §3e) — now fixed and verified live (anonymous redirect works; full logged-in flow not live-tested, no credentials).
-- **`admin-dashboard.html`**: functional, auth-gated correctly, blog CRUD works, now also correctly gates data queries behind a confirmed admin check (§3e fix). Will need a new ticket-management section (view/reply/resolve/close) once the support widget is built.
+### 15b. Enhanced enquiry flow deployed (code, pending Vercel confirmation — see §0)
+- `trainer-profile.html`: the old date/time booking modal replaced with a premium enquiry form — 5 required fields (Name, WhatsApp Number, Fitness Goal via chips, Training Mode via toggle, Location) + a collapsible optional section (Budget, Preferred Training Time via chips, Notes). Real-time validation, ARIA-complete custom controls (`aria-pressed` on chips/toggle, `aria-invalid`/`aria-describedby` on all 5 required fields), smart prefill from the logged-in user's profile, submit → success modal → auto-open WhatsApp with a visible fallback hint if the popup is blocked, 15s request timeout with a clear message.
+- `api/create-lead.js`: passes the new capture fields into the extended RPC, corrected `source` from `'whatsapp'` (contact channel) to `'marketplace'` (acquisition origin — the column now means what the CRM's future `source` values, e.g. `qr_code`/`referral`, will need it to mean), logs a `whatsapp_link_generated` timeline event.
+- **Duplicate/idempotency/cap protection, the RPC's core dup-window logic, and the API response shape are all byte-for-byte unchanged** from before this session.
 
-## 18. Known Technical Debt
+### 15c. Event system active
+`client_enquiry_events` is live and being written to by real code paths: `created` (on every new enquiry, from `try_create_client_enquiry`), `whatsapp_link_generated` (from `api/create-lead.js`), and `status_changed`/`priority_changed`/`follow_up_scheduled`/`note_added` (from `update_client_enquiry`, not yet called by any UI — ready for Phase 3). No AI features built on top of this yet, per instruction — the schema (generic `event_type` + `meta jsonb`) was deliberately kept open-ended so Phase 3+/AI features (lead scoring, follow-up suggestions, weekly summaries) are additive, not another migration.
 
-- `styles.css` stale hand-patched Tailwind build — see §4. Root cause of at least 5 confirmed bugs this arc.
-- Two duplicated trainer-settings UIs (`settings.html` vs `bookings.html`'s tab) — see §4.
-- 7 onboarding form fields write to columns that don't exist (`training_approach`, `kyc_id_type`, `kyc_id_number`, `response_time`, `teaching_style`, `training_focus`, `profile_live`) — silently dropped every time via a schema-fallback retry loop, not hard failures. One (`session_mode`→`training_mode`) was fixed this arc because the real column already existed; **these seven still need a decision** (add columns, or remove the form fields) — not part of the current migration proposal, should be raised separately.
-- No dedicated 404 page exists anywhere in the site.
-- `messages.html` is confirmed fully dead code (zero inbound links, feature deprecated per code comments) — left in place, not deleted, pending an explicit decision to remove it.
-- The `hover:scale-105` / `hover:translate-y-[-8px]` Tailwind utilities referenced in the design system docs appear to reference CSS custom properties that are never actually *set* anywhere in `styles.css` — found by accident, only the one concrete instance blocking the pricing-card fix was patched in isolation; this may mean these two hover micro-interactions have silently done nothing sitewide for some time. Flagged, not fixed — needs a dedicated pass with real visual verification.
+### 15d. CRM foundation complete
+Database and capture-flow layer are done. Nothing trainer-facing exists yet — no Leads dashboard, no way for a trainer to see, search, filter, or act on a lead beyond the existing (unchanged) new-enquiry notification. That's Phase 3.
 
-## 19. Files Changed But Not Pushed
-
-All 10 files listed in §2 — full diff detail already in the individual commit messages (`git log` / `git show <hash>` for any of them). Nothing is staged or uncommitted; everything is committed locally, just not pushed to `origin/main`.
-
-## 20. Launch Blockers
-
-**None that are within a single session's authority to fix and are currently unfixed.** The most severe bug found this entire arc (`client-dashboard.html`'s dead script) is fixed and verified. What remains before a confident public launch:
-1. **A real human walkthrough** of signup → onboarding → dashboard for both trainer and client roles — every verification this arc has been code-inspection plus anonymous-path live testing; no authenticated round trip has been tested by an actual person or with real credentials.
-2. **RLS policy confirmation directly in the Supabase dashboard** — inferred as likely-correct from code (every write is scoped by the authenticated user's id) but never empirically probed (probing was correctly blocked by this environment's safety guardrails).
-3. **The 7 orphaned onboarding fields** (§18) — not a launch-blocking crash, but real, ongoing silent data loss for any trainer filling those fields today.
-4. **The migration plan in `DATABASE_MIGRATION_PLAN.md`** needs explicit approval before any of it is applied — Boost, taxonomy, and blog SEO features are currently proposals only.
-
-## 21. Recommended Implementation Order
-
-See `IMPLEMENTATION_ROADMAP.md` for the detailed phase-by-phase plan. Short version: (1) get migration approval → apply migrations, (2) Boost payment flow end-to-end, (3) taxonomy sync across the 6 affected pages, (4) support ticket widget + admin reply UI (no AI), (5) blog CMS SEO/related-trainer fields, (6) the still-deferred polish items (How Onlifit Works animation, testimonials expansion, Join Us page, full 10-breakpoint QA sweep).
+### 15e. Known intentional limitations
+- **No focus trap inside the modal** — confirmed pre-existing from before Phase 2, not a regression; not fixed this session (out of scope for a stabilization pass).
+- **Phone validation is lenient** (`digits.length >= 10` after stripping non-digits) — matches the leniency level of every other phone field in this codebase; will reject some legitimate short international numbers entered without a country code. A deliberate consistency choice, not an oversight.
+- **`whatsapp_link_generated` can fire more than once per enquiry row** — every resubmission within the 30-day duplicate window logs a fresh event against the same (reused) `enquiry_id`, since only true idempotent replays are excluded. Treated as correct semantics (each resubmission is a real new handoff moment) rather than a bug — flagged for confirmation if it's ever relied on for precise per-enquiry analytics.
+- **No pre-submission funnel tracking** (`form_opened`) — the event architecture is enquiry-row-scoped by design (`enquiry_id` is a required FK), so there's no event to attach before a row exists. Deliberately not solved with a parallel tracking system; would need its own scoped schema addition (e.g. a nullable session id) if ever wanted.
+- **`'Trainers Kyc'` dead storage bucket and the 7 orphaned onboarding fields** — pre-existing from before Phase 2, still unresolved, still awaiting their own scoped decisions (unchanged from prior handoffs).
+- **Vercel deployment confirmation** — see §0. This is the most significant open item: everything in §15a–15d above is verified at the code/database level (migrations applied and confirmed live in Supabase; code syntax-checked and interactively verified via isolated harness testing) but **not yet confirmed exercised by a real user against a live, current deployment** — see §9a for exactly what this session's smoke test could and couldn't cover.

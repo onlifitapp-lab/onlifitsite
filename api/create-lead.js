@@ -15,7 +15,11 @@ export default async function handler(req, res) {
     const clientId = auth.userId;
 
     // 2. VALIDATE INPUT
-    const { trainerId, planType, details, idempotencyKey } = req.body || {};
+    const {
+        trainerId, planType, idempotencyKey,
+        clientName, phoneNumber, fitnessGoal, trainingMode, location,
+        budget, preferredTime, message
+    } = req.body || {};
     if (!trainerId || !planType) {
         return res.status(400).json({ error: 'trainerId and planType are required' });
     }
@@ -59,14 +63,25 @@ export default async function handler(req, res) {
             // Non-fatal — price stays 0
         }
 
-        // 6. CREATE ENQUIRY — atomic, idempotent, duplicate-protected, cap-enforced
+        // 6. CREATE ENQUIRY — atomic, idempotent, duplicate-protected, cap-enforced.
+        // source is 'marketplace' (acquisition origin), not the contact
+        // channel — every enquiry today originates from browsing the
+        // marketplace, even though the handoff itself happens on WhatsApp.
         const { data: enquiryResult, error: enquiryErr } = await supabase
             .rpc('try_create_client_enquiry', {
                 p_trainer_id: trainerId,
                 p_client_id: clientId,
                 p_plan_type: planType,
-                p_source: 'whatsapp',
-                p_idempotency_key: resolvedIdempotencyKey
+                p_source: 'marketplace',
+                p_idempotency_key: resolvedIdempotencyKey,
+                p_client_name: clientName || null,
+                p_phone_number: phoneNumber || null,
+                p_fitness_goal: fitnessGoal || null,
+                p_training_mode: trainingMode || null,
+                p_location: location || null,
+                p_budget: budget || null,
+                p_preferred_time: preferredTime || null,
+                p_message: message || null
             });
 
         if (enquiryErr) {
@@ -88,12 +103,12 @@ export default async function handler(req, res) {
         // so a re-contacted or retried request doesn't spam the trainer again)
         if (!enquiryResult.idempotent_replay && !enquiryResult.duplicate) {
             try {
-                const clientName = auth.profile?.name || 'A client';
+                const notifyingClientName = clientName || auth.profile?.name || 'A client';
                 await supabase.from('notifications').insert([{
                     user_id: trainerId,
                     type: 'booking',
                     title: 'New Enquiry Received!',
-                    message: `${clientName} is interested in your ${planLabel} plan. Open WhatsApp to connect.`,
+                    message: `${notifyingClientName} is interested in your ${planLabel} plan. Open WhatsApp to connect.`,
                     read: false
                 }]);
             } catch (e) {
@@ -110,6 +125,22 @@ export default async function handler(req, res) {
         const whatsappUrl = trainerPhone
             ? `https://wa.me/${trainerPhone}?text=${waMessage}`
             : null;
+
+        // Log the moment the WhatsApp handoff link was generated (reusing
+        // the Phase 1 event architecture — not a new tracking system). Best
+        // effort: never block or fail the response over this.
+        if (whatsappUrl && !enquiryResult.idempotent_replay) {
+            try {
+                await supabase.from('client_enquiry_events').insert([{
+                    enquiry_id: enquiryResult.enquiry_id,
+                    event_type: 'whatsapp_link_generated',
+                    meta: { plan_type: planType },
+                    actor_id: clientId
+                }]);
+            } catch (e) {
+                console.warn('whatsapp_link_generated event insert failed:', e?.message);
+            }
+        }
 
         return res.status(201).json({
             success: true,

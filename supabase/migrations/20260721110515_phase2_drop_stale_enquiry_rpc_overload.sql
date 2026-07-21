@@ -1,0 +1,12 @@
+-- ============================================================================
+-- PHASE 2 — cleanup: drop stale try_create_client_enquiry overload
+-- ============================================================================
+-- CREATE OR REPLACE FUNCTION with an expanded parameter list creates a new
+-- overload in Postgres rather than replacing the original — the immediately
+-- preceding migration (20260721110428) left both the original 5-arg
+-- try_create_client_enquiry and the new 14-arg version live simultaneously.
+-- Dropping the stale 5-arg overload here so there is exactly one function:
+-- api/create-lead.js will be updated in Phase 2 to call the 14-arg version
+-- (all new params optional/DEFAULT NULL, so this remains a backward
+-- compatible call shape for the existing 5 arguments).
+DROP FUNCTION IF EXISTS try_create_client_enquiry(UUID, UUID, TEXT, TEXT, TEXT);
