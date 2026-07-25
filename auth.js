@@ -1560,6 +1560,55 @@ async function getBookingsForUser(userId) {
     return data || [];
 }
 
+// ─── LEAD MANAGEMENT (CRM) ─────────────────────────────────────────────────
+// Thin wrappers over the client_enquiries / client_enquiry_events tables and
+// their RPCs (all live since the Phase 2 migration). RLS already scopes
+// SELECTs to the calling trainer; these helpers add no extra filtering logic
+// beyond what the tables/RPCs already enforce.
+
+async function getTrainerLeads(trainerId) {
+    if (!trainerId) return [];
+    const { data, error } = await supabaseClient
+        .from('client_enquiries')
+        .select('*')
+        .eq('trainer_id', trainerId)
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.warn('getTrainerLeads failed:', error.message);
+        return [];
+    }
+    return data || [];
+}
+
+async function getLeadEvents(enquiryId) {
+    if (!enquiryId) return [];
+    const { data, error } = await supabaseClient
+        .from('client_enquiry_events')
+        .select('*')
+        .eq('enquiry_id', enquiryId)
+        .order('created_at', { ascending: false });
+    if (error) {
+        console.warn('getLeadEvents failed:', error.message);
+        return [];
+    }
+    return data || [];
+}
+
+async function updateLead({ enquiryId, status, priority, followUpDate, note }) {
+    const { data, error } = await supabaseClient.rpc('update_client_enquiry', {
+        p_enquiry_id: enquiryId,
+        p_status: status || null,
+        p_priority: priority || null,
+        p_follow_up_date: followUpDate || null,
+        p_note: note || null
+    });
+    if (error) {
+        console.warn('updateLead failed:', error.message);
+        return { success: false, error: error.message };
+    }
+    return data || { success: false };
+}
+
 // ─── NOTIFICATIONS & MESSAGES ─────────────────────────────────────────────────
 
 let _messageReadColumn = null;
