@@ -247,10 +247,17 @@
 <span>Dashboard</span>
 </a>
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/bookings">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">event_note</span>
+<span>Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/leads">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">group</span>
 <span>Leads</span>
 </a>
-    <!-- Messages removed from sidebar -->
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/messages">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">chat</span>
+<span>Messages</span>
+</a>
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">settings</span>
 <span>Settings</span>
@@ -2362,7 +2369,7 @@ class DashboardRouter {
             route = hashRoute || 'dashboard';
         }
 
-        const supported = new Set(['dashboard', 'bookings', 'settings', 'earnings']);
+        const supported = new Set(['dashboard', 'bookings', 'leads', 'messages', 'settings', 'earnings']);
         if (!supported.has(route)) route = 'dashboard';
 
         return route;
