@@ -254,10 +254,10 @@
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">group</span>
 <span>Leads</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/messages">
-<span class="material-symbols-outlined text-[20px] leading-none shrink-0">chat</span>
-<span>Messages</span>
-</a>
+    <!-- Messages intentionally not linked: window.ENABLE_PLATFORM_MESSAGING is never set anywhere in
+         this codebase (always falsy), and the bookings list already has a "Message button removed
+         (platform chat deprecated)" comment. The view/route still exist but re-linking it would
+         surface an empty, non-functional inbox. Not touched by Phase 3. -->
 <a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">settings</span>
 <span>Settings</span>
@@ -2531,7 +2531,7 @@ class DashboardRouter {
             route = hashRoute || 'dashboard';
         }
 
-        const supported = new Set(['dashboard', 'bookings', 'leads', 'messages', 'settings', 'earnings']);
+        const supported = new Set(['dashboard', 'bookings', 'leads', 'settings', 'earnings']);
         if (!supported.has(route)) route = 'dashboard';
 
         return route;
