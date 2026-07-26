@@ -554,6 +554,7 @@
                 <h3 id="lead-drawer-name" class="text-xl font-black font-headline"></h3>
                 <p id="lead-drawer-meta" class="text-sm text-on-surface-variant mt-1"></p>
                 <div id="lead-drawer-badges" class="flex flex-wrap gap-2 mt-3"></div>
+                <p id="lead-drawer-filter-notice" class="hidden mt-3 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">This lead no longer matches the current filter.</p>
             </div>
 
             <div id="lead-drawer-info" class="bg-surface-container-low rounded-xl p-4 text-sm space-y-2"></div>
@@ -570,32 +571,32 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="leadDrawerSetStatus('contacted')" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">Mark Contacted</button>
-                <button type="button" onclick="leadDrawerSetStatus('converted')" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">Mark Converted</button>
-                <button type="button" onclick="leadDrawerSetStatus('closed')" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">Mark Closed</button>
+            <div id="lead-drawer-status-actions" class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="leadDrawerSetStatus('contacted', this)" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed">Mark Contacted</button>
+                <button type="button" onclick="leadDrawerSetStatus('converted', this)" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed">Mark Converted</button>
+                <button type="button" onclick="leadDrawerSetStatus('closed', this)" class="py-2.5 rounded-xl border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed">Mark Closed</button>
             </div>
 
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Priority</label>
-                    <select id="lead-drawer-priority" onchange="leadDrawerUpdatePriority(this.value)" class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <label for="lead-drawer-priority" class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Priority</label>
+                    <select id="lead-drawer-priority" onchange="leadDrawerUpdatePriority(this.value, this)" class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-60">
                         <option value="high">High</option>
                         <option value="medium">Medium</option>
                         <option value="low">Low</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Follow-up Date</label>
-                    <input id="lead-drawer-followup" type="date" onchange="leadDrawerUpdateFollowup(this.value)" class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                    <label for="lead-drawer-followup" class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Follow-up Date</label>
+                    <input id="lead-drawer-followup" type="date" onchange="leadDrawerUpdateFollowup(this.value, this)" class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-60" />
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Add a Note</label>
+                <label for="lead-drawer-note-input" class="block text-xs font-black uppercase tracking-widest text-on-surface-variant mb-1.5">Add a Note</label>
                 <div class="flex gap-2">
-                    <textarea id="lead-drawer-note-input" rows="2" placeholder="Internal note — not visible to the client" class="flex-1 px-3 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm resize-none focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
-                    <button type="button" onclick="leadDrawerAddNote()" class="px-4 rounded-xl bg-primary text-on-primary text-xs font-bold hover:opacity-90 transition-all shrink-0">Add</button>
+                    <textarea id="lead-drawer-note-input" rows="2" placeholder="Internal note — not visible to the client" class="flex-1 px-3 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl text-sm resize-none focus:ring-1 focus:ring-primary focus:border-primary disabled:opacity-60"></textarea>
+                    <button type="button" id="lead-drawer-note-submit" onclick="leadDrawerAddNote()" class="px-4 rounded-xl bg-primary text-on-primary text-xs font-bold hover:opacity-90 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">Add</button>
                 </div>
             </div>
 
@@ -1722,7 +1723,7 @@
             : '';
 
         return `
-            <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-surface-container-lowest transition-colors duration-150 cursor-pointer" onclick="openLeadDrawer('${lead.id}')">
+            <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-surface-container-lowest transition-colors duration-150 cursor-pointer" onclick="openLeadDrawer('${lead.id}', this)">
                 <div class="flex items-center gap-4 min-w-0">
                     <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-black text-primary shrink-0">${escapeHtml(initial)}</div>
                     <div class="min-w-0">
@@ -1744,7 +1745,7 @@
                     <button type="button" onclick="leadWhatsappFromCard('${lead.id}')" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary text-on-primary hover:opacity-90 transition-all" aria-label="Open WhatsApp">
                         <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span>
                     </button>
-                    <button type="button" onclick="openLeadDrawer('${lead.id}')" class="inline-flex items-center h-9 px-3 rounded-full border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">
+                    <button type="button" onclick="openLeadDrawer('${lead.id}', this)" class="inline-flex items-center h-9 px-3 rounded-full border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">
                         View
                     </button>
                 </div>
@@ -1858,18 +1859,34 @@
         if (url) window.open(url, '_blank');
     }
 
-    async function openLeadDrawer(id) {
+    let lastFocusedBeforeLeadDrawer = null;
+
+    async function openLeadDrawer(id, triggerEl) {
         const lead = findLead(id);
         if (!lead) return;
 
+        const wasOpen = !document.getElementById('lead-drawer')?.classList.contains('hidden');
         activeLeadDrawerId = id;
         if (!leadDrawerOrderedIds.includes(id)) leadDrawerOrderedIds = [id];
+
+        // Only capture the "return focus here" target on the transition from
+        // closed -> open. Navigating between leads while already open (Prev/
+        // Next, or re-opening the same lead) must not overwrite the original
+        // trigger (e.g. the card's "View" button) with an element that only
+        // exists while the drawer itself is open.
+        if (!wasOpen) {
+            lastFocusedBeforeLeadDrawer = triggerEl || document.activeElement;
+        }
 
         document.getElementById('lead-drawer-overlay')?.classList.remove('hidden');
         document.getElementById('lead-drawer')?.classList.remove('hidden');
 
         renderLeadDrawerContent(lead);
         updateLeadDrawerNavState();
+
+        // Move focus into the drawer for keyboard/screen-reader users, same
+        // pattern as the Phase 2 enquiry modal.
+        document.getElementById('lead-drawer')?.querySelector('button[aria-label="Close"]')?.focus();
 
         await renderLeadDrawerTimeline(id);
     }
@@ -1878,20 +1895,36 @@
         document.getElementById('lead-drawer-overlay')?.classList.add('hidden');
         document.getElementById('lead-drawer')?.classList.add('hidden');
         activeLeadDrawerId = null;
+        if (lastFocusedBeforeLeadDrawer) {
+            lastFocusedBeforeLeadDrawer.focus();
+            lastFocusedBeforeLeadDrawer = null;
+        }
     }
 
+    // Option A (chosen over auto-advancing to the next matching lead): if the
+    // active lead no longer matches the current filters after an update, we
+    // keep the drawer open on it — the trainer just acted on it and closing
+    // or silently jumping away would be more surprising than useful — but
+    // make that state visible and disable Prev/Next rather than let them
+    // compute a stale/incorrect position.
     function updateLeadDrawerNavState() {
         const idx = leadDrawerOrderedIds.indexOf(activeLeadDrawerId);
+        const stillMatchesFilter = idx >= 0;
+
         const prevBtn = document.getElementById('lead-drawer-prev');
         const nextBtn = document.getElementById('lead-drawer-next');
         const pos = document.getElementById('lead-drawer-position');
-        if (prevBtn) prevBtn.disabled = idx <= 0;
-        if (nextBtn) nextBtn.disabled = idx < 0 || idx >= leadDrawerOrderedIds.length - 1;
-        if (pos) pos.textContent = idx >= 0 ? `${idx + 1} of ${leadDrawerOrderedIds.length}` : '';
+        const notice = document.getElementById('lead-drawer-filter-notice');
+
+        if (notice) notice.classList.toggle('hidden', stillMatchesFilter);
+        if (prevBtn) prevBtn.disabled = !stillMatchesFilter || idx <= 0;
+        if (nextBtn) nextBtn.disabled = !stillMatchesFilter || idx >= leadDrawerOrderedIds.length - 1;
+        if (pos) pos.textContent = stillMatchesFilter ? `${idx + 1} of ${leadDrawerOrderedIds.length}` : '';
     }
 
     function navigateLeadDrawer(delta) {
         const idx = leadDrawerOrderedIds.indexOf(activeLeadDrawerId);
+        if (idx < 0) return; // current lead fell out of the filtered view — Prev/Next are disabled in this state anyway
         const nextIdx = idx + delta;
         if (nextIdx < 0 || nextIdx >= leadDrawerOrderedIds.length) return;
         void openLeadDrawer(leadDrawerOrderedIds[nextIdx]);
@@ -2007,62 +2040,110 @@
         }
     }
 
-    async function leadDrawerSetStatus(newStatus) {
+    async function leadDrawerSetStatus(newStatus, triggerBtn) {
         const id = activeLeadDrawerId;
         const lead = findLead(id);
         if (!lead) return;
         const prevStatus = String(lead.status || 'new').toLowerCase();
         if (prevStatus === newStatus) return;
 
-        const result = await updateLead({ enquiryId: id, status: newStatus });
-        if (!result?.success) { alert('Could not update status. Please try again.'); return; }
+        // All three status buttons act on the same field — disable the whole
+        // group during the request, not just the one clicked, so a second
+        // click on a *different* status button can't race the first.
+        const statusButtons = document.querySelectorAll('#lead-drawer-status-actions button');
+        if (triggerBtn && triggerBtn.disabled) return;
+        statusButtons.forEach(b => { b.disabled = true; });
+        const originalLabel = triggerBtn ? triggerBtn.textContent : null;
+        if (triggerBtn) triggerBtn.innerHTML = '<span class="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true"></span>';
 
-        patchLeadLocally(id, { status: newStatus }, { event_type: 'status_changed', meta: { from: prevStatus, to: newStatus } });
-        renderLeadDrawerContent(findLead(id));
-        await renderLeadDrawerTimeline(id);
-        renderLeadsView();
+        try {
+            const result = await updateLead({ enquiryId: id, status: newStatus });
+            if (!result?.success) { alert('Could not update status. Please try again.'); return; }
+
+            patchLeadLocally(id, { status: newStatus }, { event_type: 'status_changed', meta: { from: prevStatus, to: newStatus } });
+            renderLeadDrawerContent(findLead(id));
+            await renderLeadDrawerTimeline(id);
+            renderLeadsView();
+            updateLeadDrawerNavState();
+        } finally {
+            statusButtons.forEach(b => { b.disabled = false; });
+            if (triggerBtn && originalLabel !== null) triggerBtn.textContent = originalLabel;
+        }
     }
 
-    async function leadDrawerUpdatePriority(newPriority) {
+    async function leadDrawerUpdatePriority(newPriority, selectEl) {
         const id = activeLeadDrawerId;
         const lead = findLead(id);
         if (!lead) return;
         const prevPriority = String(lead.priority || 'medium').toLowerCase();
         if (prevPriority === newPriority) return;
+        if (selectEl && selectEl.disabled) return;
 
-        const result = await updateLead({ enquiryId: id, priority: newPriority });
-        if (!result?.success) { alert('Could not update priority. Please try again.'); return; }
+        if (selectEl) selectEl.disabled = true;
+        try {
+            const result = await updateLead({ enquiryId: id, priority: newPriority });
+            if (!result?.success) {
+                alert('Could not update priority. Please try again.');
+                if (selectEl) selectEl.value = prevPriority;
+                return;
+            }
 
-        patchLeadLocally(id, { priority: newPriority }, { event_type: 'priority_changed', meta: { from: prevPriority, to: newPriority } });
-        renderLeadDrawerContent(findLead(id));
-        await renderLeadDrawerTimeline(id);
-        renderLeadsView();
+            patchLeadLocally(id, { priority: newPriority }, { event_type: 'priority_changed', meta: { from: prevPriority, to: newPriority } });
+            renderLeadDrawerContent(findLead(id));
+            await renderLeadDrawerTimeline(id);
+            renderLeadsView();
+            updateLeadDrawerNavState();
+        } finally {
+            if (selectEl) selectEl.disabled = false;
+        }
     }
 
-    async function leadDrawerUpdateFollowup(dateValue) {
+    async function leadDrawerUpdateFollowup(dateValue, inputEl) {
         const id = activeLeadDrawerId;
+        const lead = findLead(id);
         if (!id || !dateValue) return;
+        if (inputEl && inputEl.disabled) return;
+        const prevFollowUp = lead?.follow_up_date || '';
 
-        const result = await updateLead({ enquiryId: id, followUpDate: dateValue });
-        if (!result?.success) { alert('Could not schedule follow-up. Please try again.'); return; }
+        if (inputEl) inputEl.disabled = true;
+        try {
+            const result = await updateLead({ enquiryId: id, followUpDate: dateValue });
+            if (!result?.success) {
+                alert('Could not schedule follow-up. Please try again.');
+                if (inputEl) inputEl.value = prevFollowUp;
+                return;
+            }
 
-        patchLeadLocally(id, { follow_up_date: dateValue }, { event_type: 'follow_up_scheduled', meta: { date: dateValue } });
-        await renderLeadDrawerTimeline(id);
-        renderLeadsView();
+            patchLeadLocally(id, { follow_up_date: dateValue }, { event_type: 'follow_up_scheduled', meta: { date: dateValue } });
+            await renderLeadDrawerTimeline(id);
+            renderLeadsView();
+            updateLeadDrawerNavState();
+        } finally {
+            if (inputEl) inputEl.disabled = false;
+        }
     }
 
     async function leadDrawerAddNote() {
         const id = activeLeadDrawerId;
         const input = document.getElementById('lead-drawer-note-input');
+        const submitBtn = document.getElementById('lead-drawer-note-submit');
         const text = String(input?.value || '').trim();
         if (!id || !text) return;
+        if (submitBtn && submitBtn.disabled) return;
 
-        const result = await updateLead({ enquiryId: id, note: text });
-        if (!result?.success) { alert('Could not save note. Please try again.'); return; }
+        if (input) input.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+            const result = await updateLead({ enquiryId: id, note: text });
+            if (!result?.success) { alert('Could not save note. Please try again.'); return; }
 
-        if (input) input.value = '';
-        patchLeadLocally(id, {}, { event_type: 'note_added', meta: { text } });
-        await renderLeadDrawerTimeline(id);
+            if (input) input.value = '';
+            patchLeadLocally(id, {}, { event_type: 'note_added', meta: { text } });
+            await renderLeadDrawerTimeline(id);
+        } finally {
+            if (input) input.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
+        }
     }
 
     function leadDrawerOpenWhatsapp() {
