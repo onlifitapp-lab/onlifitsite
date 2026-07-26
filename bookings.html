@@ -1143,6 +1143,15 @@
     let activeBookingsFilter = 'all';
     const trainerClientsById = new Map();
 
+    // Leads (CRM) state
+    let trainerLeads = [];
+    let leadsLoaded = false;
+    let activeLeadStatusFilter = 'all';
+    let activeLeadPriorityFilter = 'all';
+    const leadTimelineCache = new Map(); // enquiry id -> events array, newest first
+    let activeLeadDrawerId = null;
+    let leadDrawerOrderedIds = []; // current filtered/search view order, for prev/next
+
     // Messages state
     let contactsLastMessages = {};
     let activeChatContactId = null;
@@ -1611,6 +1620,497 @@
             search.dataset.bound = '1';
             search.addEventListener('input', () => void renderBookingsList());
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // LEADS (CRM) — Phase 3
+    // ─────────────────────────────────────────────────────────────────────
+
+    const LEAD_STATUS_COLORS = {
+        new: 'bg-blue-100 text-blue-800',
+        contacted: 'bg-amber-100 text-amber-800',
+        converted: 'bg-green-100 text-green-800',
+        closed: 'bg-surface-container-low text-on-surface-variant'
+    };
+
+    const LEAD_PRIORITY_COLORS = {
+        high: 'bg-red-100 text-red-700',
+        medium: 'bg-amber-100 text-amber-800',
+        low: 'bg-surface-container-low text-on-surface-variant'
+    };
+
+    const LEAD_EVENT_META = {
+        created: { icon: 'bolt', label: 'Lead Created' },
+        status_changed: { icon: 'sync_alt', label: 'Status Changed' },
+        priority_changed: { icon: 'flag', label: 'Priority Changed' },
+        follow_up_scheduled: { icon: 'event', label: 'Follow-up Scheduled' },
+        note_added: { icon: 'sticky_note_2', label: 'Note Added' },
+        whatsapp_link_generated: { icon: 'chat', label: 'WhatsApp Link Generated' }
+    };
+
+    function formatLeadDate(value, opts) {
+        if (!value) return '—';
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return '—';
+        return d.toLocaleDateString('en-US', opts || { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatLeadDateTime(value) {
+        if (!value) return '—';
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return '—';
+        return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    async function loadTrainerLeads() {
+        trainerLeads = await getTrainerLeads(trainerUser?.id);
+        leadsLoaded = true;
+        return trainerLeads;
+    }
+
+    function computeLeadKpis(leads) {
+        const total = leads.length;
+        const byStatus = { new: 0, contacted: 0, converted: 0, closed: 0 };
+        leads.forEach(l => {
+            const s = String(l.status || 'new').toLowerCase();
+            if (byStatus[s] !== undefined) byStatus[s]++;
+        });
+        const active = byStatus.new + byStatus.contacted;
+        const conversionRate = total > 0 ? Math.round((byStatus.converted / total) * 100) : 0;
+        return { total, ...byStatus, active, conversionRate };
+    }
+
+    function getFilteredLeads() {
+        const q = String(document.getElementById('leads-search')?.value || '').trim().toLowerCase();
+
+        return (trainerLeads || []).filter(l => {
+            if (!l) return false;
+
+            const status = String(l.status || 'new').toLowerCase();
+            if (activeLeadStatusFilter !== 'all' && status !== activeLeadStatusFilter) return false;
+
+            const priority = String(l.priority || 'medium').toLowerCase();
+            if (activeLeadPriorityFilter !== 'all' && priority !== activeLeadPriorityFilter) return false;
+
+            if (!q) return true;
+            const hay = [l.client_name, l.location, l.fitness_goal].filter(Boolean).join(' ').toLowerCase();
+            return hay.includes(q);
+        });
+    }
+
+    function renderLeadKpis() {
+        const k = computeLeadKpis(trainerLeads || []);
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('leads-kpi-total', k.total);
+        set('leads-kpi-new', k.new);
+        set('leads-kpi-contacted', k.contacted);
+        set('leads-kpi-converted', k.converted);
+        set('leads-kpi-active', k.active);
+        set('leads-kpi-conversion', k.conversionRate + '%');
+    }
+
+    function renderLeadCard(lead) {
+        const status = String(lead.status || 'new').toLowerCase();
+        const priority = String(lead.priority || 'medium').toLowerCase();
+        const statusClass = LEAD_STATUS_COLORS[status] || LEAD_STATUS_COLORS.new;
+        const priorityClass = LEAD_PRIORITY_COLORS[priority] || LEAD_PRIORITY_COLORS.medium;
+        const name = lead.client_name || 'Unnamed lead';
+        const initial = (name || 'L').charAt(0).toUpperCase();
+
+        const followUp = lead.follow_up_date
+            ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800"><span class="material-symbols-outlined text-[14px]" aria-hidden="true">event</span>${escapeHtml(formatLeadDate(lead.follow_up_date))}</span>`
+            : '';
+
+        return `
+            <div class="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:bg-surface-container-lowest transition-colors duration-150 cursor-pointer" onclick="openLeadDrawer('${lead.id}')">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-black text-primary shrink-0">${escapeHtml(initial)}</div>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-on-surface truncate">${escapeHtml(name)}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${priorityClass}">${escapeHtml(priority)}</span>
+                        </div>
+                        <div class="text-xs text-on-surface-variant mt-1 truncate">
+                            ${escapeHtml(lead.fitness_goal || 'No goal set')} • ${escapeHtml(lead.location || 'No location')} • ${escapeHtml(lead.training_mode || '—')}
+                        </div>
+                        <div class="flex items-center gap-3 mt-1.5">
+                            <span class="text-[11px] text-on-surface-variant">${escapeHtml(formatLeadDate(lead.created_at))}</span>
+                            ${followUp}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0" onclick="event.stopPropagation()">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${statusClass}">${escapeHtml(status)}</span>
+                    <button type="button" onclick="leadWhatsappFromCard('${lead.id}')" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-primary text-on-primary hover:opacity-90 transition-all" aria-label="Open WhatsApp">
+                        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span>
+                    </button>
+                    <button type="button" onclick="openLeadDrawer('${lead.id}')" class="inline-flex items-center h-9 px-3 rounded-full border border-outline-variant/30 hover:border-primary hover:text-primary transition-all text-xs font-bold">
+                        View
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderLeadsView() {
+        const list = document.getElementById('leads-list');
+        const empty = document.getElementById('leads-empty');
+        const summary = document.getElementById('leads-summary');
+        if (!list || !empty || !summary) return;
+
+        renderLeadKpis();
+
+        const filtered = getFilteredLeads();
+        leadDrawerOrderedIds = filtered.map(l => l.id);
+
+        summary.textContent = `Showing ${filtered.length} of ${(trainerLeads || []).length} leads`;
+
+        if (!filtered.length) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+        empty.classList.add('hidden');
+
+        list.innerHTML = filtered.map(renderLeadCard).join('');
+    }
+
+    function setupLeadsUI() {
+        const statusFilters = document.getElementById('leads-status-filters');
+        if (statusFilters && !statusFilters.dataset.bound) {
+            statusFilters.dataset.bound = '1';
+            statusFilters.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-status-filter]');
+                if (!btn) return;
+
+                activeLeadStatusFilter = btn.dataset.statusFilter;
+                statusFilters.querySelectorAll('button[data-status-filter]').forEach(b => {
+                    const on = b.dataset.statusFilter === activeLeadStatusFilter;
+                    b.classList.toggle('bg-primary-container', on);
+                    b.classList.toggle('text-primary', on);
+                    b.classList.toggle('bg-surface-container-low', !on);
+                    b.classList.toggle('text-on-surface-variant', !on);
+                });
+
+                renderLeadsView();
+            });
+        }
+
+        const priorityFilters = document.getElementById('leads-priority-filters');
+        if (priorityFilters && !priorityFilters.dataset.bound) {
+            priorityFilters.dataset.bound = '1';
+            priorityFilters.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-priority-filter]');
+                if (!btn) return;
+
+                activeLeadPriorityFilter = btn.dataset.priorityFilter;
+                priorityFilters.querySelectorAll('button[data-priority-filter]').forEach(b => {
+                    const on = b.dataset.priorityFilter === activeLeadPriorityFilter;
+                    b.classList.toggle('bg-primary-container', on);
+                    b.classList.toggle('text-primary', on);
+                    b.classList.toggle('bg-surface-container-low', !on);
+                    b.classList.toggle('text-on-surface-variant', !on);
+                });
+
+                renderLeadsView();
+            });
+        }
+
+        const search = document.getElementById('leads-search');
+        if (search && !search.dataset.bound) {
+            search.dataset.bound = '1';
+            let debounceTimer = null;
+            search.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => renderLeadsView(), 150);
+            });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const drawer = document.getElementById('lead-drawer');
+            if (!drawer || drawer.classList.contains('hidden')) return;
+
+            if (e.key === 'Escape') { closeLeadDrawer(); return; }
+
+            // Don't hijack arrow keys while the trainer is typing in the note box.
+            if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) return;
+
+            if (e.key === 'ArrowLeft') navigateLeadDrawer(-1);
+            if (e.key === 'ArrowRight') navigateLeadDrawer(1);
+        });
+    }
+
+    function findLead(id) {
+        return (trainerLeads || []).find(l => String(l.id) === String(id)) || null;
+    }
+
+    function leadWhatsappUrl(lead) {
+        if (!lead) return null;
+        const phone = String(lead.phone_number || '').replace(/\D/g, '');
+        if (!phone) return null;
+        const msg = encodeURIComponent(`Hi ${lead.client_name || 'there'}, following up on your enquiry via Onlifit.`);
+        return `https://wa.me/${phone}?text=${msg}`;
+    }
+
+    function leadWhatsappFromCard(id) {
+        const lead = findLead(id);
+        const url = leadWhatsappUrl(lead);
+        if (url) window.open(url, '_blank');
+    }
+
+    async function openLeadDrawer(id) {
+        const lead = findLead(id);
+        if (!lead) return;
+
+        activeLeadDrawerId = id;
+        if (!leadDrawerOrderedIds.includes(id)) leadDrawerOrderedIds = [id];
+
+        document.getElementById('lead-drawer-overlay')?.classList.remove('hidden');
+        document.getElementById('lead-drawer')?.classList.remove('hidden');
+
+        renderLeadDrawerContent(lead);
+        updateLeadDrawerNavState();
+
+        await renderLeadDrawerTimeline(id);
+    }
+
+    function closeLeadDrawer() {
+        document.getElementById('lead-drawer-overlay')?.classList.add('hidden');
+        document.getElementById('lead-drawer')?.classList.add('hidden');
+        activeLeadDrawerId = null;
+    }
+
+    function updateLeadDrawerNavState() {
+        const idx = leadDrawerOrderedIds.indexOf(activeLeadDrawerId);
+        const prevBtn = document.getElementById('lead-drawer-prev');
+        const nextBtn = document.getElementById('lead-drawer-next');
+        const pos = document.getElementById('lead-drawer-position');
+        if (prevBtn) prevBtn.disabled = idx <= 0;
+        if (nextBtn) nextBtn.disabled = idx < 0 || idx >= leadDrawerOrderedIds.length - 1;
+        if (pos) pos.textContent = idx >= 0 ? `${idx + 1} of ${leadDrawerOrderedIds.length}` : '';
+    }
+
+    function navigateLeadDrawer(delta) {
+        const idx = leadDrawerOrderedIds.indexOf(activeLeadDrawerId);
+        const nextIdx = idx + delta;
+        if (nextIdx < 0 || nextIdx >= leadDrawerOrderedIds.length) return;
+        void openLeadDrawer(leadDrawerOrderedIds[nextIdx]);
+    }
+
+    function renderLeadDrawerContent(lead) {
+        const status = String(lead.status || 'new').toLowerCase();
+        const priority = String(lead.priority || 'medium').toLowerCase();
+
+        const nameEl = document.getElementById('lead-drawer-name');
+        if (nameEl) nameEl.textContent = lead.client_name || 'Unnamed lead';
+
+        const metaEl = document.getElementById('lead-drawer-meta');
+        if (metaEl) metaEl.textContent = `Enquired ${formatLeadDateTime(lead.created_at)}`;
+
+        const badgesEl = document.getElementById('lead-drawer-badges');
+        if (badgesEl) {
+            badgesEl.innerHTML = `
+                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${LEAD_STATUS_COLORS[status] || LEAD_STATUS_COLORS.new}">${escapeHtml(status)}</span>
+                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${LEAD_PRIORITY_COLORS[priority] || LEAD_PRIORITY_COLORS.medium}">${escapeHtml(priority)} priority</span>
+            `;
+        }
+
+        const infoEl = document.getElementById('lead-drawer-info');
+        if (infoEl) {
+            const rows = [
+                ['Phone', lead.phone_number || '—'],
+                ['Goal', lead.fitness_goal || '—'],
+                ['Location', lead.location || '—'],
+                ['Mode', lead.training_mode || '—'],
+                ['Budget', lead.budget || '—'],
+                ['Preferred Time', lead.preferred_time || '—'],
+                ['Notes from client', lead.message || '—']
+            ];
+            infoEl.innerHTML = rows.map(([label, value]) => `
+                <div class="flex justify-between gap-3">
+                    <span class="text-on-surface-variant">${escapeHtml(label)}</span>
+                    <span class="font-semibold text-right">${escapeHtml(value)}</span>
+                </div>
+            `).join('');
+        }
+
+        const priorityEl = document.getElementById('lead-drawer-priority');
+        if (priorityEl) priorityEl.value = priority;
+
+        const followupEl = document.getElementById('lead-drawer-followup');
+        if (followupEl) followupEl.value = lead.follow_up_date || '';
+
+        const noteInput = document.getElementById('lead-drawer-note-input');
+        if (noteInput) noteInput.value = '';
+    }
+
+    async function renderLeadDrawerTimeline(id) {
+        const timelineEl = document.getElementById('lead-drawer-timeline');
+        if (!timelineEl) return;
+
+        let events = leadTimelineCache.get(id);
+        if (!events) {
+            timelineEl.innerHTML = '<div class="text-sm text-on-surface-variant">Loading…</div>';
+            events = await getLeadEvents(id);
+            leadTimelineCache.set(id, events);
+        }
+
+        // Guard against a slow fetch resolving after the trainer has already
+        // navigated to a different lead.
+        if (activeLeadDrawerId !== id) return;
+
+        if (!events.length) {
+            timelineEl.innerHTML = '<div class="text-sm text-on-surface-variant">No activity yet.</div>';
+            return;
+        }
+
+        timelineEl.innerHTML = events.map(ev => {
+            const meta = LEAD_EVENT_META[ev.event_type] || { icon: 'circle', label: ev.event_type };
+            let detail = '';
+            if (ev.event_type === 'status_changed' && ev.meta) {
+                detail = `${escapeHtml(ev.meta.from || '—')} → ${escapeHtml(ev.meta.to || '—')}`;
+            } else if (ev.event_type === 'priority_changed' && ev.meta) {
+                detail = `${escapeHtml(ev.meta.from || '—')} → ${escapeHtml(ev.meta.to || '—')}`;
+            } else if (ev.event_type === 'follow_up_scheduled' && ev.meta?.date) {
+                detail = escapeHtml(formatLeadDate(ev.meta.date));
+            } else if (ev.event_type === 'note_added' && ev.meta?.text) {
+                detail = escapeHtml(ev.meta.text);
+            }
+
+            return `
+                <div class="flex gap-3">
+                    <div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[16px] text-on-surface-variant" aria-hidden="true">${meta.icon}</span>
+                    </div>
+                    <div class="min-w-0 pb-1">
+                        <div class="text-sm font-bold">${escapeHtml(meta.label)}</div>
+                        ${detail ? `<div class="text-xs text-on-surface-variant mt-0.5">${detail}</div>` : ''}
+                        <div class="text-[11px] text-on-surface-variant/70 mt-0.5">${escapeHtml(formatLeadDateTime(ev.created_at))}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Applies a successful update_client_enquiry() result to local state
+    // (trainerLeads + leadTimelineCache) without re-fetching either, per the
+    // "avoid unnecessary database reads" requirement. Only a genuinely new
+    // event type not covered by the current drawer interactions would need
+    // a real re-fetch, so this stays a plain, honest cache patch.
+    function patchLeadLocally(id, patch, syntheticEvent) {
+        const lead = findLead(id);
+        if (lead) Object.assign(lead, patch, { updated_at: new Date().toISOString() });
+
+        if (syntheticEvent) {
+            const existing = leadTimelineCache.get(id) || [];
+            leadTimelineCache.set(id, [{ ...syntheticEvent, id: 'local-' + Date.now(), enquiry_id: id, created_at: new Date().toISOString() }, ...existing]);
+        }
+    }
+
+    async function leadDrawerSetStatus(newStatus) {
+        const id = activeLeadDrawerId;
+        const lead = findLead(id);
+        if (!lead) return;
+        const prevStatus = String(lead.status || 'new').toLowerCase();
+        if (prevStatus === newStatus) return;
+
+        const result = await updateLead({ enquiryId: id, status: newStatus });
+        if (!result?.success) { alert('Could not update status. Please try again.'); return; }
+
+        patchLeadLocally(id, { status: newStatus }, { event_type: 'status_changed', meta: { from: prevStatus, to: newStatus } });
+        renderLeadDrawerContent(findLead(id));
+        await renderLeadDrawerTimeline(id);
+        renderLeadsView();
+    }
+
+    async function leadDrawerUpdatePriority(newPriority) {
+        const id = activeLeadDrawerId;
+        const lead = findLead(id);
+        if (!lead) return;
+        const prevPriority = String(lead.priority || 'medium').toLowerCase();
+        if (prevPriority === newPriority) return;
+
+        const result = await updateLead({ enquiryId: id, priority: newPriority });
+        if (!result?.success) { alert('Could not update priority. Please try again.'); return; }
+
+        patchLeadLocally(id, { priority: newPriority }, { event_type: 'priority_changed', meta: { from: prevPriority, to: newPriority } });
+        renderLeadDrawerContent(findLead(id));
+        await renderLeadDrawerTimeline(id);
+        renderLeadsView();
+    }
+
+    async function leadDrawerUpdateFollowup(dateValue) {
+        const id = activeLeadDrawerId;
+        if (!id || !dateValue) return;
+
+        const result = await updateLead({ enquiryId: id, followUpDate: dateValue });
+        if (!result?.success) { alert('Could not schedule follow-up. Please try again.'); return; }
+
+        patchLeadLocally(id, { follow_up_date: dateValue }, { event_type: 'follow_up_scheduled', meta: { date: dateValue } });
+        await renderLeadDrawerTimeline(id);
+        renderLeadsView();
+    }
+
+    async function leadDrawerAddNote() {
+        const id = activeLeadDrawerId;
+        const input = document.getElementById('lead-drawer-note-input');
+        const text = String(input?.value || '').trim();
+        if (!id || !text) return;
+
+        const result = await updateLead({ enquiryId: id, note: text });
+        if (!result?.success) { alert('Could not save note. Please try again.'); return; }
+
+        if (input) input.value = '';
+        patchLeadLocally(id, {}, { event_type: 'note_added', meta: { text } });
+        await renderLeadDrawerTimeline(id);
+    }
+
+    function leadDrawerOpenWhatsapp() {
+        const lead = findLead(activeLeadDrawerId);
+        const url = leadWhatsappUrl(lead);
+        if (url) window.open(url, '_blank');
+    }
+
+    function leadDrawerCopyPhone() {
+        const lead = findLead(activeLeadDrawerId);
+        if (!lead?.phone_number) return;
+        copyTextToClipboard(lead.phone_number);
+    }
+
+    function leadDrawerCopyDetails() {
+        const lead = findLead(activeLeadDrawerId);
+        if (!lead) return;
+        const lines = [
+            `Name: ${lead.client_name || '—'}`,
+            `Phone: ${lead.phone_number || '—'}`,
+            `Goal: ${lead.fitness_goal || '—'}`,
+            `Location: ${lead.location || '—'}`,
+            `Mode: ${lead.training_mode || '—'}`,
+            `Budget: ${lead.budget || '—'}`,
+            `Preferred Time: ${lead.preferred_time || '—'}`,
+            `Status: ${lead.status || '—'}`
+        ];
+        copyTextToClipboard(lines.join('\n'));
+    }
+
+    function copyTextToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+        } else {
+            fallbackCopyText(text);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) { /* best effort */ }
+        document.body.removeChild(ta);
     }
 
     function setupMessagesUI() {
@@ -2376,6 +2876,11 @@
             await renderBookingsList();
         }
 
+        if (route === 'leads') {
+            if (!leadsLoaded) await loadTrainerLeads();
+            renderLeadsView();
+        }
+
         if (route === 'messages') {
             await renderContacts();
 
@@ -2431,6 +2936,7 @@
             }
 
             setupBookingsUI();
+            setupLeadsUI();
             if (window.ENABLE_PLATFORM_MESSAGING) {
                 setupMessagesUI();
             } else {
