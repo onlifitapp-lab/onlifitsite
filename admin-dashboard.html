@@ -710,6 +710,7 @@
 
         th.sortable { cursor: pointer; user-select: none; }
         th.sortable:hover { color: #333; }
+        th.sortable:focus-visible { outline: 2px solid #000; outline-offset: -2px; }
         th.sortable .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.5; }
         th.sortable.sort-active .sort-arrow { opacity: 1; }
 
@@ -5343,8 +5344,12 @@
         }
 
         function populateAdminLeadFilterOptions() {
+            // Trainer FILTER dropdown stays leads-derived on purpose — it's
+            // filtering the leads table, so only trainers who actually have
+            // a lead in it are meaningful options. This is intentionally
+            // separate from the reassignment dropdown below, which needs
+            // every trainer regardless of whether they have leads yet.
             const trainerSelect = document.getElementById('al-filter-trainer');
-            const reassignSelect = document.getElementById('al-drawer-reassign');
             if (trainerSelect && trainerSelect.options.length <= 1) {
                 [...adminTrainersById.values()]
                     .filter(t => t.role === 'trainer')
@@ -5353,8 +5358,7 @@
                         const opt = document.createElement('option');
                         opt.value = t.id;
                         opt.textContent = t.name || 'Unnamed trainer';
-                        trainerSelect.appendChild(opt.cloneNode(true));
-                        if (reassignSelect) reassignSelect.appendChild(opt);
+                        trainerSelect.appendChild(opt);
                     });
             }
 
@@ -5368,6 +5372,48 @@
                     goalSelect.appendChild(opt);
                 });
             }
+        }
+
+        // Reassignment dropdown must offer every active trainer, not just
+        // ones who already have a lead (that was the Must Fix — the old
+        // code sourced this from adminTrainersById, which only ever
+        // contains trainers already referenced in adminLeadsCache). Fetched
+        // once per admin session, independent of the leads-derived cache
+        // used everywhere else (KPIs, filters, badges — all unchanged).
+        let allActiveTrainersLoaded = false;
+        let allActiveTrainersCache = [];
+
+        async function ensureAllActiveTrainersLoaded() {
+            if (allActiveTrainersLoaded) return allActiveTrainersCache;
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, name, role, account_status, verification_status, subscription_plan, subscription_status')
+                .eq('role', 'trainer');
+
+            if (error) {
+                console.error('Error loading trainer list for reassignment:', error);
+                return allActiveTrainersCache;
+            }
+
+            allActiveTrainersCache = (data || [])
+                .filter(t => String(t.account_status || 'active').toLowerCase() === 'active')
+                .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            allActiveTrainersLoaded = true;
+            return allActiveTrainersCache;
+        }
+
+        function populateReassignDropdown() {
+            const reassignSelect = document.getElementById('al-drawer-reassign');
+            if (!reassignSelect || reassignSelect.dataset.populated) return;
+            reassignSelect.dataset.populated = '1';
+
+            allActiveTrainersCache.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name || 'Unnamed trainer';
+                reassignSelect.appendChild(opt);
+            });
         }
 
         function computeAdminLeadKpis(leads) {
@@ -5494,6 +5540,24 @@
             return `<span class="sort-arrow">${alSortDir === 'asc' ? '&#9652;' : '&#9662;'}</span>`;
         }
 
+        function ariaSortValue(field) {
+            if (alSortField !== field) return 'none';
+            return alSortDir === 'asc' ? 'ascending' : 'descending';
+        }
+
+        function sortableThAttrs(field, label) {
+            const active = alSortField === field ? 'sort-active' : '';
+            return `class="sortable ${active}" tabindex="0" role="button" aria-sort="${ariaSortValue(field)}" `
+                + `onclick="setAdminLeadSort('${field}')" onkeydown="handleSortHeaderKeydown(event, '${field}')" `
+                + `aria-label="Sort by ${label}"`;
+        }
+
+        function handleSortHeaderKeydown(event, field) {
+            if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'Spacebar') return;
+            event.preventDefault(); // Space must not scroll the page
+            setAdminLeadSort(field);
+        }
+
         function renderAdminLeadsView() {
             const wrap = document.getElementById('al-table-wrap');
             const summary = document.getElementById('al-summary');
@@ -5540,15 +5604,15 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="sortable ${alSortField === 'created_at' ? 'sort-active' : ''}" onclick="setAdminLeadSort('created_at')">Created${sortArrow('created_at')}</th>
+                            <th ${sortableThAttrs('created_at', 'Created')}>Created${sortArrow('created_at')}</th>
                             <th>Client</th>
                             <th>Phone</th>
-                            <th class="sortable ${alSortField === 'trainer' ? 'sort-active' : ''}" onclick="setAdminLeadSort('trainer')">Trainer${sortArrow('trainer')}</th>
+                            <th ${sortableThAttrs('trainer', 'Trainer')}>Trainer${sortArrow('trainer')}</th>
                             <th>Goal</th>
                             <th>Location</th>
                             <th>Mode</th>
-                            <th class="sortable ${alSortField === 'priority' ? 'sort-active' : ''}" onclick="setAdminLeadSort('priority')">Priority${sortArrow('priority')}</th>
-                            <th class="sortable ${alSortField === 'status' ? 'sort-active' : ''}" onclick="setAdminLeadSort('status')">Status${sortArrow('status')}</th>
+                            <th ${sortableThAttrs('priority', 'Priority')}>Priority${sortArrow('priority')}</th>
+                            <th ${sortableThAttrs('status', 'Status')}>Status${sortArrow('status')}</th>
                             <th>Follow-up</th>
                             <th>Actions</th>
                         </tr>
@@ -5566,6 +5630,12 @@
                 alSortDir = field === 'created_at' ? 'desc' : 'asc';
             }
             renderAdminLeadsView();
+
+            // renderAdminLeadsView() rebuilds the whole <thead> via
+            // innerHTML, which destroys the <th> the keyboard/mouse user
+            // just activated. Re-focus its replacement so keyboard users
+            // aren't dropped back to <body> after every sort.
+            document.querySelector(`#al-table-wrap th[onclick*="setAdminLeadSort('${field}')"]`)?.focus();
         }
 
         function clearAdminLeadFilters() {
@@ -5649,6 +5719,9 @@
 
             overlay?.classList.add('active');
             drawer?.classList.add('active');
+
+            await ensureAllActiveTrainersLoaded();
+            populateReassignDropdown();
 
             renderAdminLeadDrawerContent(lead);
             updateAdminLeadDrawerNavState();
@@ -5932,6 +6005,17 @@
                     if (selectEl) selectEl.value = prevTrainerId;
                     return;
                 }
+                // The leads-derived adminTrainersById cache only ever contains
+                // trainers who already had a lead — that's the exact gap the
+                // reassignment dropdown fix addresses. If the new trainer isn't
+                // in it yet, the table/badge would show "Unknown"/"Unassigned"
+                // despite a successful reassignment. Sync it from the
+                // already-fetched allActiveTrainersCache instead of a new query.
+                if (!adminTrainersById.has(newTrainerId)) {
+                    const newTrainerProfile = allActiveTrainersCache.find(t => t.id === newTrainerId);
+                    if (newTrainerProfile) adminTrainersById.set(newTrainerId, newTrainerProfile);
+                }
+
                 patchAdminLeadLocally(id, { trainer_id: newTrainerId }, { event_type: 'trainer_reassigned', meta: { from: prevTrainerId, to: newTrainerId } });
                 renderAdminLeadDrawerContent(findAdminLead(id));
                 await renderAdminLeadDrawerTimeline(id);
