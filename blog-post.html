@@ -185,6 +185,10 @@
             .from('profiles')
             .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, session_mode, specialty, bio, plans, tags, has_black_status')
             .eq('role', 'trainer')
+            .eq('onboarding_completed', true)
+            .gt('subscription_expires_at', new Date().toISOString())
+            .eq('verification_status', 'verified')
+            .eq('account_status', 'active')
             .ilike('specialty', `%${category}%`)
             .order('rating', { ascending: false })
             .limit(3);
@@ -196,6 +200,10 @@
             .from('profiles')
             .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, session_mode, specialty, bio, plans, tags, has_black_status')
             .eq('role', 'trainer')
+            .eq('onboarding_completed', true)
+            .gt('subscription_expires_at', new Date().toISOString())
+            .eq('verification_status', 'verified')
+            .eq('account_status', 'active')
             .order('rating', { ascending: false })
             .limit(3);
           trainers = fallbackTrainers || [];

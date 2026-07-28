@@ -2549,14 +2549,16 @@
 
         async function rejectKYC(trainerId) {
             if (!ensureAdminAction()) return;
-            if (!confirm('Reject this trainer\'s KYC documents?')) return;
+            const reason = prompt('Reason for rejecting KYC documents (shown to the trainer):');
+            if (reason === null) return;
 
             try {
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ 
+                    .update({
                         kyc_verified: false,
                         verification_status: 'rejected',
+                        verification_rejected_reason: reason || 'KYC documents rejected',
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', trainerId);
@@ -2620,14 +2622,16 @@
 
         async function rejectCertificates(trainerId) {
             if (!ensureAdminAction()) return;
-            if (!confirm('Reject certificates for this trainer?')) return;
+            const reason = prompt('Reason for rejecting certificates (shown to the trainer):');
+            if (reason === null) return;
 
             try {
                 const { error } = await supabase
                     .from('profiles')
-                    .update({ 
+                    .update({
                         certificates_verified: false,
                         verification_status: 'rejected',
+                        verification_rejected_reason: reason || 'Certificates rejected',
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', trainerId);
@@ -2660,6 +2664,7 @@
                         .update({
                             verification_status: 'verified',
                             verification_verified_at: new Date().toISOString(),
+                            verification_rejected_reason: null,
                             updated_at: new Date().toISOString()
                         })
                         .eq('id', trainerId);

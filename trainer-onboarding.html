@@ -274,6 +274,12 @@
                     <p class="text-on-surface-variant">Upload your credentials and complete KYC</p>
                 </div>
 
+                <div id="resubmission-reason-banner" class="hidden mb-6 p-4 bg-red-50 border-2 border-red-300 rounded-xl text-sm text-red-900">
+                    <p class="font-bold mb-1">Verification was rejected</p>
+                    <p id="resubmission-reason-text"></p>
+                    <p class="mt-1">Upload corrected documents below and resubmit for review.</p>
+                </div>
+
                 <div class="space-y-6">
                     <!-- KYC VERIFICATION (MANDATORY) -->
                     <div class="p-6 bg-red-50 border-2 border-red-200 rounded-xl">
@@ -402,11 +408,11 @@
                 </div>
 
                 <div class="mt-8 flex gap-4">
-                    <button type="button" onclick="prevStep(3)"
+                    <button type="button" id="step3-back-btn" onclick="prevStep(3)"
                             class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
                         ← Back
                     </button>
-                    <button type="button" onclick="validateAndNextStep3()"
+                    <button type="button" id="step3-next-btn" onclick="validateAndNextStep3()"
                             class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
                         Next Step →
                     </button>
@@ -827,6 +833,146 @@
             throw new Error('Profile update failed due to repeated schema mismatches.');
         }
 
+        // Shown instead of the normal onboarding flow when a previously
+        // onboarded+paid trainer was rejected on verification. Reuses the
+        // existing step-3 (KYC + certifications) markup and upload helpers —
+        // the trainer only needs to redo this one step, not the whole form.
+        function showResubmissionFlow(user) {
+            document.getElementById('step-1').classList.remove('step-active');
+            document.getElementById('step-1').classList.add('step-hidden');
+
+            const step3 = document.getElementById('step-3');
+            step3.classList.remove('step-hidden');
+            step3.classList.add('step-active');
+            currentStep = 3;
+
+            const reasonBanner = document.getElementById('resubmission-reason-banner');
+            const reasonText = document.getElementById('resubmission-reason-text');
+            if (user.verification_rejected_reason) {
+                reasonText.textContent = user.verification_rejected_reason;
+                reasonBanner.classList.remove('hidden');
+            }
+
+            // No earlier step to go back to in resubmission mode.
+            document.getElementById('step3-back-btn').classList.add('hidden');
+            const nextBtn = document.getElementById('step3-next-btn');
+            nextBtn.textContent = 'Resubmit for Verification';
+            nextBtn.setAttribute('onclick', 'resubmitVerificationDocuments()');
+
+            // Response time isn't part of the verification resubmission.
+            const responseTimeField = document.getElementById('response_time')?.closest('div');
+            if (responseTimeField) responseTimeField.classList.add('hidden');
+        }
+
+        // Shared upload routine for KYC front/back + any filled-in certificate
+        // rows. Used by both the main onboarding submit and the post-rejection
+        // resubmission flow so the upload logic exists in exactly one place.
+        // `onProgress(label)` is called before each upload so the caller can
+        // reflect progress on its own button/spinner.
+        async function uploadKycAndCertificateFiles(user, kycFront, kycBack, onProgress) {
+            let kycFrontUrl = null;
+            let kycBackUrl = null;
+
+            if (kycFront) {
+                onProgress('Uploading ID Front... ⏳');
+                const frontExt = kycFront.name.split('.').pop();
+                const frontResult = await uploadToStorage(kycFront, user.id, 'kyc', `id_front.${frontExt}`);
+                if (!frontResult.success) throw new Error(`ID front upload failed: ${frontResult.error}`);
+                kycFrontUrl = frontResult.url;
+            }
+
+            if (kycBack) {
+                onProgress('Uploading ID Back... ⏳');
+                const backExt = kycBack.name.split('.').pop();
+                const backResult = await uploadToStorage(kycBack, user.id, 'kyc', `id_back.${backExt}`);
+                if (!backResult.success) throw new Error(`ID back upload failed: ${backResult.error}`);
+                kycBackUrl = backResult.url;
+            }
+
+            const certificateData = [];
+            for (let i = 1; i <= certificationCount; i++) {
+                const certDiv = document.getElementById(`cert-${i}`);
+                if (!certDiv) continue;
+                const fileInput = document.getElementById(`cert-file-${i}`);
+                const nameInput = document.getElementById(`cert-name-${i}`);
+                if (fileInput.files[0] && nameInput.value) {
+                    onProgress(`Uploading Certificate ${i}... ⏳`);
+                    const file = fileInput.files[0];
+                    const ext = file.name.split('.').pop();
+                    const sanitizedName = nameInput.value.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+                    const certResult = await uploadToStorage(file, user.id, 'certificates', `${sanitizedName}.${ext}`);
+                    if (certResult.success) {
+                        certificateData.push({ name: nameInput.value, url: certResult.url, verified: false });
+                    }
+                }
+            }
+
+            return { kycFrontUrl, kycBackUrl, certificateData };
+        }
+
+        // Re-upload KYC/certification documents after a rejection and put the
+        // trainer back into the admin verification queue. Reuses
+        // uploadKycAndCertificateFiles() and updateProfileWithSchemaFallback()
+        // — only the payload differs from the main onboarding submit.
+        async function resubmitVerificationDocuments() {
+            const nextBtn = document.getElementById('step3-next-btn');
+            const originalLabel = nextBtn.textContent;
+
+            const kycFront = document.getElementById('kyc_front').files[0];
+            const kycBack = document.getElementById('kyc_back').files[0];
+            if (!kycFront) { alert('Please upload the front of your ID'); return; }
+            if (!kycBack) { alert('Please upload the back of your ID'); return; }
+
+            for (let i = 1; i <= certificationCount; i++) {
+                const certDiv = document.getElementById(`cert-${i}`);
+                if (!certDiv) continue;
+                const fileInput = document.getElementById(`cert-file-${i}`);
+                const nameInput = document.getElementById(`cert-name-${i}`);
+                if (nameInput.value && !fileInput.files[0]) {
+                    alert(`Please upload file for certification "${nameInput.value}"`);
+                    return;
+                }
+            }
+
+            nextBtn.disabled = true;
+
+            try {
+                const user = await getCurrentUser();
+                if (!user) { window.location.href = 'login.html'; return; }
+
+                const { kycFrontUrl, kycBackUrl, certificateData } = await uploadKycAndCertificateFiles(
+                    user, kycFront, kycBack, (label) => { nextBtn.textContent = label; }
+                );
+
+                nextBtn.textContent = 'Submitting for Review... ⏳';
+
+                const idType = document.getElementById('id_type')?.value;
+                const idNumber = document.getElementById('id_number')?.value;
+
+                const resubmitPayload = {
+                    kyc_front_url: kycFrontUrl,
+                    kyc_back_url: kycBackUrl,
+                    kyc_verified: false,
+                    certificates_verified: false,
+                    verification_status: 'pending',
+                    verification_submitted_at: new Date().toISOString()
+                };
+                if (idType) resubmitPayload.kyc_id_type = idType;
+                if (idNumber) resubmitPayload.kyc_id_number = idNumber;
+                if (certificateData.length > 0) resubmitPayload.certificate_urls = certificateData;
+
+                await updateProfileWithSchemaFallback(user.id, resubmitPayload);
+
+                alert('Documents resubmitted. Our team will review within 24 hours.');
+                window.location.replace(getTrainerDashboardHref());
+            } catch (error) {
+                console.error('Error resubmitting verification documents:', error);
+                alert('Error resubmitting documents: ' + error.message);
+                nextBtn.disabled = false;
+                nextBtn.textContent = originalLabel;
+            }
+        }
+
         // Main submit function - called when "Create Profile & Go Live" is clicked
         async function submitTrainerProfile() {
             console.log('=== SUBMIT TRAINER PROFILE TRIGGERED ===');
@@ -869,58 +1015,15 @@
                     throw new Error(`Profile photo upload failed: ${avatarResult.error}`);
                 }
 
-                // Upload KYC documents
+                // Upload KYC documents + certificates (shared with the
+                // post-rejection resubmission flow — see
+                // uploadKycAndCertificateFiles()).
                 const kycFront = document.getElementById('kyc_front').files[0];
                 const kycBack = document.getElementById('kyc_back').files[0];
-                
-                let kycFrontUrl = null;
-                let kycBackUrl = null;
-                
-                if (kycFront) {
-                    submitBtn.innerHTML = 'Uploading KYC Front... ⏳';
-                    const frontExt = kycFront.name.split('.').pop();
-                    const frontResult = await uploadToStorage(kycFront, user.id, 'kyc', `id_front.${frontExt}`);
-                    if (!frontResult.success) {
-                        throw new Error(`KYC Front upload failed: ${frontResult.error}`);
-                    }
-                    kycFrontUrl = frontResult.url;
-                }
-                
-                if (kycBack) {
-                    submitBtn.innerHTML = 'Uploading KYC Back... ⏳';
-                    const backExt = kycBack.name.split('.').pop();
-                    const backResult = await uploadToStorage(kycBack, user.id, 'kyc', `id_back.${backExt}`);
-                    if (!backResult.success) {
-                        throw new Error(`KYC Back upload failed: ${backResult.error}`);
-                    }
-                    kycBackUrl = backResult.url;
-                }
-                
-                // Upload certificates and collect data
-                const certificateData = [];
-                for (let i = 1; i <= certificationCount; i++) {
-                    const certDiv = document.getElementById(`cert-${i}`);
-                    if (!certDiv) continue;
-                    
-                    const fileInput = document.getElementById(`cert-file-${i}`);
-                    const nameInput = document.getElementById(`cert-name-${i}`);
-                    
-                    if (fileInput.files[0] && nameInput.value) {
-                        submitBtn.innerHTML = `Uploading Certificate ${i}... ⏳`;
-                        const file = fileInput.files[0];
-                        const ext = file.name.split('.').pop();
-                        const sanitizedName = nameInput.value.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-                        const certResult = await uploadToStorage(file, user.id, 'certificates', `${sanitizedName}.${ext}`);
-                        
-                        if (certResult.success) {
-                            certificateData.push({
-                                name: nameInput.value,
-                                url: certResult.url,
-                                verified: false
-                            });
-                        }
-                    }
-                }
+
+                const { kycFrontUrl, kycBackUrl, certificateData } = await uploadKycAndCertificateFiles(
+                    user, kycFront, kycBack, (label) => { submitBtn.innerHTML = label; }
+                );
 
                 submitBtn.innerHTML = 'Creating Your Profile... ⏳';
 
@@ -1218,9 +1321,13 @@
                 
                 console.log('✅ User verified as trainer');
                 
-                // If onboarding is done, route based on approval status.
+                // If onboarding is done, route based on verification status.
                 if (user.onboarding_completed) {
-                    // UPDATED: No more approval waiting - send directly to dashboard
+                    if ((user.verification_status || '').toLowerCase() === 'rejected') {
+                        console.log('Trainer verification was rejected; showing document resubmission flow.');
+                        showResubmissionFlow(user);
+                        return;
+                    }
                     console.log('Trainer already has completed onboarding, redirecting to dashboard');
                     window.location.replace(getTrainerDashboardHref());
                     return;

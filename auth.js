@@ -287,6 +287,34 @@ function initAppLayoutSync() {
 
 initAppLayoutSync();
 
+// Single source of truth for marketplace discoverability. A trainer only
+// appears in search/discovery when ALL four conditions hold. Every
+// discovery query (getTrainers, searchTrainers, and any HTML fallback
+// query) must apply this same filter chain — do not duplicate the
+// condition list inline elsewhere.
+//
+// Subscription gating deliberately checks subscription_expires_at > now()
+// rather than subscription_status = 'active'. subscription_status is only
+// ever refreshed by sync_subscription_expiry(), which is called lazily from
+// create-subscription-order.js for one trainer at a time (whoever is
+// currently buying/renewing) -- a trainer who never revisits the purchase
+// flow after their plan lapses would keep a stale 'active' status forever.
+// subscription_expires_at, by contrast, is written once at payment time
+// (activate_subscription_payment()) and never needs re-syncing: comparing
+// it against the current time at query time is always correct, with no
+// scheduled job required. This also naturally excludes trainers who never
+// subscribed (expires_at IS NULL --> NULL > x is not true in SQL) and
+// trainers in their post-expiry grace period (expires_at is already in the
+// past), matching the existing "must be active, not grace_period" rule.
+function applyDiscoverabilityFilter(query) {
+    return query
+        .eq('role', 'trainer')
+        .eq('onboarding_completed', true)
+        .gt('subscription_expires_at', new Date().toISOString())
+        .eq('verification_status', 'verified')
+        .eq('account_status', 'active');
+}
+
 function getDashboardPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
     if (normalized === 'admin') return 'admin-dashboard.html';
@@ -1153,11 +1181,9 @@ async function getTrainers(options = {}) {
             ];
 
             for (const selectStr of candidates) {
-                const res = await supabaseClient
-                    .from('profiles')
-                    .select(selectStr)
-                    .eq('role', 'trainer')
-                    .eq('onboarding_completed', true);
+                const res = await applyDiscoverabilityFilter(
+                    supabaseClient.from('profiles').select(selectStr)
+                );
 
                 if (!res?.error) return res;
 
@@ -1172,11 +1198,11 @@ async function getTrainers(options = {}) {
             }
 
             // Shouldn't happen, but keep a safe fallback.
-            return await supabaseClient
-                .from('profiles')
-                .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-                .eq('role', 'trainer')
-                .eq('onboarding_completed', true);
+            return await applyDiscoverabilityFilter(
+                supabaseClient
+                    .from('profiles')
+                    .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
+            );
         })();
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
@@ -1469,11 +1495,9 @@ async function searchTrainers(query, location, mode) {
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
     const buildQuery = (selectStr) => {
-        let q = supabaseClient
-            .from('profiles')
-            .select(selectStr)
-            .eq('role', 'trainer')
-            .eq('onboarding_completed', true);
+        let q = applyDiscoverabilityFilter(
+            supabaseClient.from('profiles').select(selectStr)
+        );
 
         if (safeQuery) {
             q = q.or(`name.ilike.%${safeQuery}%,specialty.ilike.%${safeQuery}%,bio.ilike.%${safeQuery}%`);

@@ -1052,6 +1052,10 @@
                         .from('profiles')
                         .select('id, name, avatar_url, tags, rating, review_count, location, city, state, training_mode, plans')
                         .eq('role', 'trainer')
+                        .eq('onboarding_completed', true)
+                        .gt('subscription_expires_at', new Date().toISOString())
+                        .eq('verification_status', 'verified')
+                        .eq('account_status', 'active')
                         .neq('id', trainer.id)
                         .limit(24);
                     if (error) throw error;

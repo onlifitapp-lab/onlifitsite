@@ -392,11 +392,20 @@ function listenForTrainerUpdates() {
                     return;
                 }
 
-                // Fallback direct DB fetch (legacy)
+                // Fallback direct DB fetch (legacy). Must mirror the same
+                // discoverability rule as getTrainers()/searchTrainers() in
+                // auth.js: only onboarded, actively subscribed (checked via
+                // subscription_expires_at, not the lazily-synced
+                // subscription_status -- see applyDiscoverabilityFilter() in
+                // auth.js), admin-verified, active-account trainers are shown.
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('id, name, avatar_url, rating, review_count, location, city, state, training_mode, specialty, bio, plans, tags')
                     .eq('role', 'trainer')
+                    .eq('onboarding_completed', true)
+                    .gt('subscription_expires_at', new Date().toISOString())
+                    .eq('verification_status', 'verified')
+                    .eq('account_status', 'active')
                     .order('rating', { ascending: false });
 
                 if (error) throw error;
