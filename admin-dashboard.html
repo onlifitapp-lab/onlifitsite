@@ -1748,6 +1748,7 @@
                 else if (tabId === 'clients') loadClients();
                 else if (tabId === 'revenue') loadRevenue();
                 else if (tabId === 'bookings') loadBookings();
+                else if (tabId === 'leads') loadAdminLeads();
                 else if (tabId === 'plans') loadPlansData();
                 else if (tabId === 'blogs') loadBlogsAdmin();
                 else if (tabId === 'support') loadSupportTickets();
@@ -5273,6 +5274,744 @@
                 await supabase.auth.signOut();
             } catch (_) {}
             window.location.href = 'admin-login.html';
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        // ADMIN LEADS (Phase 4)
+        //
+        // Reuses the existing client_enquiries / client_enquiry_events
+        // tables and the update_client_enquiry() RPC directly via the
+        // `supabase` client already in scope on this page (auth.js is not
+        // loaded here — this file's own convention throughout is inline
+        // supabase.from()/rpc() calls, so this follows that rather than
+        // introducing a new dependency). No parallel API, no new tables.
+        // ─────────────────────────────────────────────────────────────────
+
+        let adminLeadsLoaded = false;
+        let adminLeadsCache = [];
+        const adminTrainersById = new Map(); // trainer_id -> profile row
+        const alTimelineCache = new Map();   // enquiry id -> events array
+
+        let alStatusFilter = 'all';
+        let alPriorityFilter = 'all';
+        let alModeFilter = 'all';
+        let alTrainerFilter = 'all';
+        let alGoalFilter = 'all';
+        let alSortField = 'created_at';
+        let alSortDir = 'desc';
+
+        let alActiveDrawerId = null;
+        let alDrawerOrderedIds = [];
+        let alLastFocusedBeforeDrawer = null;
+
+        async function loadAdminLeads() {
+            if (adminLeadsLoaded) {
+                renderAdminLeadsView();
+                return;
+            }
+
+            try {
+                const { data: leads, error } = await supabase
+                    .from('client_enquiries')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                adminLeadsCache = leads || [];
+
+                const trainerIds = [...new Set(adminLeadsCache.map(l => l.trainer_id).filter(Boolean))];
+                if (trainerIds.length) {
+                    const { data: trainers, error: trainerErr } = await supabase
+                        .from('profiles')
+                        .select('id, name, role, verification_status, account_status, subscription_plan, subscription_status')
+                        .in('id', trainerIds);
+                    if (trainerErr) throw trainerErr;
+                    (trainers || []).forEach(t => adminTrainersById.set(t.id, t));
+                }
+
+                adminLeadsLoaded = true;
+                populateAdminLeadFilterOptions();
+                setupAdminLeadsUI();
+                renderAdminLeadsView();
+            } catch (error) {
+                console.error('Error loading admin leads:', error);
+                document.getElementById('al-table-wrap').innerHTML = `
+                    <div class="error-state"><p>Could not load leads</p><p>${escapeHtml(error.message || 'Please try again.')}</p></div>
+                `;
+            }
+        }
+
+        function populateAdminLeadFilterOptions() {
+            const trainerSelect = document.getElementById('al-filter-trainer');
+            const reassignSelect = document.getElementById('al-drawer-reassign');
+            if (trainerSelect && trainerSelect.options.length <= 1) {
+                [...adminTrainersById.values()]
+                    .filter(t => t.role === 'trainer')
+                    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')))
+                    .forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.id;
+                        opt.textContent = t.name || 'Unnamed trainer';
+                        trainerSelect.appendChild(opt.cloneNode(true));
+                        if (reassignSelect) reassignSelect.appendChild(opt);
+                    });
+            }
+
+            const goalSelect = document.getElementById('al-filter-goal');
+            if (goalSelect && goalSelect.options.length <= 1) {
+                const goals = [...new Set(adminLeadsCache.map(l => l.fitness_goal).filter(Boolean))].sort();
+                goals.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g;
+                    opt.textContent = g;
+                    goalSelect.appendChild(opt);
+                });
+            }
+        }
+
+        function computeAdminLeadKpis(leads) {
+            const total = leads.length;
+            const byStatus = { new: 0, contacted: 0, converted: 0, closed: 0 };
+            leads.forEach(l => {
+                const s = String(l.status || 'new').toLowerCase();
+                if (byStatus[s] !== undefined) byStatus[s]++;
+            });
+            const conversionRate = total > 0 ? Math.round((byStatus.converted / total) * 100) : 0;
+
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+            let today = 0, week = 0, month = 0;
+            leads.forEach(l => {
+                const created = l.created_at ? new Date(l.created_at) : null;
+                if (!created || Number.isNaN(created.getTime())) return;
+                if (created >= startOfToday) today++;
+                if (created >= sevenDaysAgo) week++;
+                if (created >= thirtyDaysAgo) month++;
+            });
+
+            return { total, ...byStatus, conversionRate, today, week, month };
+        }
+
+        function assignmentStateFor(lead) {
+            if (!lead.trainer_id) return { label: 'Unassigned', cls: 'badge-assign-unassigned' };
+            const trainer = adminTrainersById.get(lead.trainer_id);
+            if (!trainer) return { label: 'Unassigned', cls: 'badge-assign-unassigned' };
+            if (String(trainer.account_status || 'active').toLowerCase() !== 'active') {
+                return { label: 'Trainer Disabled', cls: 'badge-assign-disabled' };
+            }
+            if (String(trainer.subscription_status || '').toLowerCase() === 'expired') {
+                return { label: 'Subscription Expired', cls: 'badge-assign-expired' };
+            }
+            return { label: 'Assigned', cls: 'badge-assign-assigned' };
+        }
+
+        function getFilteredAdminLeads() {
+            const q = String(document.getElementById('al-search')?.value || '').trim().toLowerCase();
+            const dateFrom = document.getElementById('al-filter-date-from')?.value || '';
+            const dateTo = document.getElementById('al-filter-date-to')?.value || '';
+
+            let result = adminLeadsCache.filter(l => {
+                if (!l) return false;
+
+                const status = String(l.status || 'new').toLowerCase();
+                if (alStatusFilter !== 'all' && status !== alStatusFilter) return false;
+
+                const priority = String(l.priority || 'medium').toLowerCase();
+                if (alPriorityFilter !== 'all' && priority !== alPriorityFilter) return false;
+
+                if (alModeFilter !== 'all' && l.training_mode !== alModeFilter) return false;
+                if (alTrainerFilter !== 'all' && l.trainer_id !== alTrainerFilter) return false;
+                if (alGoalFilter !== 'all' && l.fitness_goal !== alGoalFilter) return false;
+
+                if (dateFrom && (!l.created_at || l.created_at < dateFrom)) return false;
+                if (dateTo && (!l.created_at || l.created_at.slice(0, 10) > dateTo)) return false;
+
+                if (q) {
+                    const trainer = adminTrainersById.get(l.trainer_id);
+                    const hay = [l.client_name, l.phone_number, trainer?.name, l.fitness_goal, l.location]
+                        .filter(Boolean).join(' ').toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+
+                return true;
+            });
+
+            result.sort((a, b) => {
+                let av, bv;
+                if (alSortField === 'priority') {
+                    const order = { high: 0, medium: 1, low: 2 };
+                    av = order[String(a.priority || 'medium').toLowerCase()] ?? 1;
+                    bv = order[String(b.priority || 'medium').toLowerCase()] ?? 1;
+                } else if (alSortField === 'status') {
+                    av = String(a.status || 'new'); bv = String(b.status || 'new');
+                } else if (alSortField === 'trainer') {
+                    av = adminTrainersById.get(a.trainer_id)?.name || ''; bv = adminTrainersById.get(b.trainer_id)?.name || '';
+                } else {
+                    av = a.created_at || ''; bv = b.created_at || '';
+                }
+                if (av < bv) return alSortDir === 'asc' ? -1 : 1;
+                if (av > bv) return alSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            return result;
+        }
+
+        function renderAdminLeadKpis() {
+            const k = computeAdminLeadKpis(adminLeadsCache);
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            set('al-kpi-total', k.total);
+            set('al-kpi-new', k.new);
+            set('al-kpi-contacted', k.contacted);
+            set('al-kpi-converted', k.converted);
+            set('al-kpi-closed', k.closed);
+            set('al-kpi-conversion', k.conversionRate + '%');
+            set('al-kpi-today', k.today);
+            set('al-kpi-week', k.week);
+            set('al-kpi-month', k.month);
+        }
+
+        function formatAdminLeadDate(value) {
+            if (!value) return '—';
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatAdminLeadDateTime(value) {
+            if (!value) return '—';
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return '—';
+            return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        }
+
+        function sortArrow(field) {
+            if (alSortField !== field) return '<span class="sort-arrow">&#9662;</span>';
+            return `<span class="sort-arrow">${alSortDir === 'asc' ? '&#9652;' : '&#9662;'}</span>`;
+        }
+
+        function renderAdminLeadsView() {
+            const wrap = document.getElementById('al-table-wrap');
+            const summary = document.getElementById('al-summary');
+            if (!wrap || !summary) return;
+
+            renderAdminLeadKpis();
+
+            const filtered = getFilteredAdminLeads();
+            alDrawerOrderedIds = filtered.map(l => l.id);
+
+            summary.textContent = `Showing ${filtered.length} of ${adminLeadsCache.length} leads`;
+
+            if (!filtered.length) {
+                wrap.innerHTML = `<div class="empty-state"><p>No leads found</p><p>Try adjusting your filters, or check back once clients start contacting trainers.</p></div>`;
+                return;
+            }
+
+            const rows = filtered.map(lead => {
+                const trainer = adminTrainersById.get(lead.trainer_id);
+                const assign = assignmentStateFor(lead);
+                const status = String(lead.status || 'new').toLowerCase();
+                const priority = String(lead.priority || 'medium').toLowerCase();
+
+                return `
+                    <tr style="cursor:pointer;" onclick="openAdminLeadDrawer('${lead.id}', this)">
+                        <td>${escapeHtml(formatAdminLeadDate(lead.created_at))}</td>
+                        <td>${escapeHtml(lead.client_name || 'Unnamed')}</td>
+                        <td>${escapeHtml(lead.phone_number || '—')}</td>
+                        <td>${escapeHtml(trainer?.name || 'Unknown')}<br><span class="badge ${assign.cls}" style="margin-top:4px;">${escapeHtml(assign.label)}</span></td>
+                        <td>${escapeHtml(lead.fitness_goal || '—')}</td>
+                        <td>${escapeHtml(lead.location || '—')}</td>
+                        <td>${escapeHtml(lead.training_mode || '—')}</td>
+                        <td><span class="badge badge-priority-${escapeHtml(priority)}">${escapeHtml(priority)}</span></td>
+                        <td><span class="badge badge-status-${escapeHtml(status)}">${escapeHtml(status)}</span></td>
+                        <td>${escapeHtml(formatAdminLeadDate(lead.follow_up_date))}</td>
+                        <td onclick="event.stopPropagation()">
+                            <button class="btn btn-secondary" style="padding:6px 12px; font-size:12px;" onclick="openAdminLeadDrawer('${lead.id}', this)">View</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            wrap.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="sortable ${alSortField === 'created_at' ? 'sort-active' : ''}" onclick="setAdminLeadSort('created_at')">Created${sortArrow('created_at')}</th>
+                            <th>Client</th>
+                            <th>Phone</th>
+                            <th class="sortable ${alSortField === 'trainer' ? 'sort-active' : ''}" onclick="setAdminLeadSort('trainer')">Trainer${sortArrow('trainer')}</th>
+                            <th>Goal</th>
+                            <th>Location</th>
+                            <th>Mode</th>
+                            <th class="sortable ${alSortField === 'priority' ? 'sort-active' : ''}" onclick="setAdminLeadSort('priority')">Priority${sortArrow('priority')}</th>
+                            <th class="sortable ${alSortField === 'status' ? 'sort-active' : ''}" onclick="setAdminLeadSort('status')">Status${sortArrow('status')}</th>
+                            <th>Follow-up</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+        }
+
+        function setAdminLeadSort(field) {
+            if (alSortField === field) {
+                alSortDir = alSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                alSortField = field;
+                alSortDir = field === 'created_at' ? 'desc' : 'asc';
+            }
+            renderAdminLeadsView();
+        }
+
+        function clearAdminLeadFilters() {
+            alStatusFilter = 'all'; alPriorityFilter = 'all'; alModeFilter = 'all';
+            alTrainerFilter = 'all'; alGoalFilter = 'all';
+            ['al-filter-status', 'al-filter-priority', 'al-filter-mode', 'al-filter-trainer', 'al-filter-goal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = 'all';
+            });
+            const search = document.getElementById('al-search');
+            if (search) search.value = '';
+            const from = document.getElementById('al-filter-date-from');
+            const to = document.getElementById('al-filter-date-to');
+            if (from) from.value = '';
+            if (to) to.value = '';
+            renderAdminLeadsView();
+        }
+
+        function setupAdminLeadsUI() {
+            const bindFilter = (id, setter) => {
+                const el = document.getElementById(id);
+                if (el && !el.dataset.bound) {
+                    el.dataset.bound = '1';
+                    el.addEventListener('change', () => { setter(el.value); renderAdminLeadsView(); });
+                }
+            };
+            bindFilter('al-filter-status', v => alStatusFilter = v);
+            bindFilter('al-filter-priority', v => alPriorityFilter = v);
+            bindFilter('al-filter-mode', v => alModeFilter = v);
+            bindFilter('al-filter-trainer', v => alTrainerFilter = v);
+            bindFilter('al-filter-goal', v => alGoalFilter = v);
+            bindFilter('al-filter-date-from', () => {});
+            bindFilter('al-filter-date-to', () => {});
+
+            const search = document.getElementById('al-search');
+            if (search && !search.dataset.bound) {
+                search.dataset.bound = '1';
+                let t = null;
+                search.addEventListener('input', () => {
+                    clearTimeout(t);
+                    t = setTimeout(() => renderAdminLeadsView(), 150);
+                });
+            }
+
+            if (!document.body.dataset.alKeydownBound) {
+                document.body.dataset.alKeydownBound = '1';
+                document.addEventListener('keydown', (e) => {
+                    const drawer = document.getElementById('al-drawer');
+                    if (!drawer || !drawer.classList.contains('active')) return;
+                    if (e.key === 'Escape') { closeAdminLeadDrawer(); return; }
+                    if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+                    if (e.key === 'ArrowLeft') navigateAdminLeadDrawer(-1);
+                    if (e.key === 'ArrowRight') navigateAdminLeadDrawer(1);
+                });
+            }
+        }
+
+        function findAdminLead(id) {
+            return adminLeadsCache.find(l => String(l.id) === String(id)) || null;
+        }
+
+        function alWhatsappUrl(lead) {
+            if (!lead) return null;
+            const phone = String(lead.phone_number || '').replace(/\D/g, '');
+            if (!phone) return null;
+            const msg = encodeURIComponent(`Hi ${lead.client_name || 'there'}, following up on your enquiry via Onlifit.`);
+            return `https://wa.me/${phone}?text=${msg}`;
+        }
+
+        async function openAdminLeadDrawer(id, triggerEl) {
+            const lead = findAdminLead(id);
+            if (!lead) return;
+
+            const overlay = document.getElementById('al-drawer-overlay');
+            const drawer = document.getElementById('al-drawer');
+            const wasOpen = drawer && drawer.classList.contains('active');
+
+            alActiveDrawerId = id;
+            if (!alDrawerOrderedIds.includes(id)) alDrawerOrderedIds = [id];
+            if (!wasOpen) alLastFocusedBeforeDrawer = triggerEl || document.activeElement;
+
+            overlay?.classList.add('active');
+            drawer?.classList.add('active');
+
+            renderAdminLeadDrawerContent(lead);
+            updateAdminLeadDrawerNavState();
+
+            drawer?.querySelector('button[aria-label="Close"]')?.focus();
+
+            await renderAdminLeadDrawerTimeline(id);
+        }
+
+        function closeAdminLeadDrawer() {
+            document.getElementById('al-drawer-overlay')?.classList.remove('active');
+            document.getElementById('al-drawer')?.classList.remove('active');
+            alActiveDrawerId = null;
+            if (alLastFocusedBeforeDrawer) {
+                alLastFocusedBeforeDrawer.focus();
+                alLastFocusedBeforeDrawer = null;
+            }
+        }
+
+        function updateAdminLeadDrawerNavState() {
+            const idx = alDrawerOrderedIds.indexOf(alActiveDrawerId);
+            const stillMatches = idx >= 0;
+            const prevBtn = document.getElementById('al-drawer-prev');
+            const nextBtn = document.getElementById('al-drawer-next');
+            const pos = document.getElementById('al-drawer-position');
+            const notice = document.getElementById('al-drawer-filter-notice');
+
+            if (notice) notice.classList.toggle('active', !stillMatches);
+            if (prevBtn) prevBtn.disabled = !stillMatches || idx <= 0;
+            if (nextBtn) nextBtn.disabled = !stillMatches || idx >= alDrawerOrderedIds.length - 1;
+            if (pos) pos.textContent = stillMatches ? `${idx + 1} of ${alDrawerOrderedIds.length}` : '';
+        }
+
+        function navigateAdminLeadDrawer(delta) {
+            const idx = alDrawerOrderedIds.indexOf(alActiveDrawerId);
+            if (idx < 0) return;
+            const nextIdx = idx + delta;
+            if (nextIdx < 0 || nextIdx >= alDrawerOrderedIds.length) return;
+            void openAdminLeadDrawer(alDrawerOrderedIds[nextIdx]);
+        }
+
+        function renderAdminLeadDrawerContent(lead) {
+            const status = String(lead.status || 'new').toLowerCase();
+            const priority = String(lead.priority || 'medium').toLowerCase();
+            const trainer = adminTrainersById.get(lead.trainer_id);
+            const assign = assignmentStateFor(lead);
+
+            const nameEl = document.getElementById('al-drawer-name');
+            if (nameEl) nameEl.textContent = lead.client_name || 'Unnamed lead';
+
+            const metaEl = document.getElementById('al-drawer-meta');
+            if (metaEl) metaEl.textContent = `Enquired ${formatAdminLeadDateTime(lead.created_at)} · Source: ${lead.source || 'marketplace'}`;
+
+            const badgesEl = document.getElementById('al-drawer-badges');
+            if (badgesEl) {
+                badgesEl.innerHTML = `
+                    <span class="badge badge-status-${escapeHtml(status)}">${escapeHtml(status)}</span>
+                    <span class="badge badge-priority-${escapeHtml(priority)}">${escapeHtml(priority)} priority</span>
+                    <span class="badge ${assign.cls}">${escapeHtml(assign.label)}</span>
+                `;
+            }
+
+            const infoEl = document.getElementById('al-drawer-info');
+            if (infoEl) {
+                const rows = [
+                    ['Phone', lead.phone_number || '—'],
+                    ['Goal', lead.fitness_goal || '—'],
+                    ['Location', lead.location || '—'],
+                    ['Mode', lead.training_mode || '—'],
+                    ['Budget', lead.budget || '—'],
+                    ['Preferred Time', lead.preferred_time || '—'],
+                    ['Notes from client', lead.message || '—'],
+                    ['Enquiry ID', lead.id]
+                ];
+                infoEl.innerHTML = rows.map(([label, value]) => `
+                    <div class="lead-drawer-info-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>
+                `).join('');
+            }
+
+            const trainerRowsEl = document.getElementById('al-drawer-trainer-rows');
+            if (trainerRowsEl) {
+                const rows = [
+                    ['Name', trainer?.name || 'Unknown'],
+                    ['Verification', trainer?.verification_status || '—'],
+                    ['Account Status', trainer?.account_status || 'active'],
+                    ['Subscription Plan', trainer?.subscription_plan || 'free'],
+                    ['Subscription Status', trainer?.subscription_status || 'none']
+                ];
+                trainerRowsEl.innerHTML = rows.map(([label, value]) => `
+                    <div class="lead-drawer-info-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value)}</span></div>
+                `).join('');
+            }
+
+            const priorityEl = document.getElementById('al-drawer-priority');
+            if (priorityEl) priorityEl.value = priority;
+
+            const followupEl = document.getElementById('al-drawer-followup');
+            if (followupEl) followupEl.value = lead.follow_up_date || '';
+
+            const reassignEl = document.getElementById('al-drawer-reassign');
+            if (reassignEl) reassignEl.value = lead.trainer_id || '';
+
+            const noteInput = document.getElementById('al-drawer-note-input');
+            if (noteInput) noteInput.value = '';
+        }
+
+        async function renderAdminLeadDrawerTimeline(id) {
+            const timelineEl = document.getElementById('al-drawer-timeline');
+            if (!timelineEl) return;
+
+            let events = alTimelineCache.get(id);
+            if (!events) {
+                timelineEl.innerHTML = '<div style="font-size:13px; color:#999;">Loading…</div>';
+                const { data, error } = await supabase
+                    .from('client_enquiry_events')
+                    .select('*')
+                    .eq('enquiry_id', id)
+                    .order('created_at', { ascending: false });
+                events = error ? [] : (data || []);
+                alTimelineCache.set(id, events);
+            }
+
+            if (alActiveDrawerId !== id) return;
+
+            if (!events.length) {
+                timelineEl.innerHTML = '<div style="font-size:13px; color:#999;">No activity yet.</div>';
+                return;
+            }
+
+            const EVENT_META = {
+                created: { icon: '&#9889;', label: 'Lead Created' },
+                status_changed: { icon: '&#8646;', label: 'Status Changed' },
+                priority_changed: { icon: '&#9873;', label: 'Priority Changed' },
+                follow_up_scheduled: { icon: '&#128197;', label: 'Follow-up Scheduled' },
+                note_added: { icon: '&#128221;', label: 'Note Added' },
+                whatsapp_link_generated: { icon: '&#128172;', label: 'WhatsApp Link Generated' },
+                trainer_reassigned: { icon: '&#128101;', label: 'Trainer Reassigned' }
+            };
+
+            timelineEl.innerHTML = events.map(ev => {
+                const meta = EVENT_META[ev.event_type] || { icon: '&#8226;', label: ev.event_type };
+                let detail = '';
+                if ((ev.event_type === 'status_changed' || ev.event_type === 'priority_changed') && ev.meta) {
+                    detail = `${escapeHtml(ev.meta.from || '—')} &rarr; ${escapeHtml(ev.meta.to || '—')}`;
+                } else if (ev.event_type === 'trainer_reassigned' && ev.meta) {
+                    const fromName = adminTrainersById.get(ev.meta.from)?.name || ev.meta.from || '—';
+                    const toName = adminTrainersById.get(ev.meta.to)?.name || ev.meta.to || '—';
+                    detail = `${escapeHtml(fromName)} &rarr; ${escapeHtml(toName)}`;
+                } else if (ev.event_type === 'follow_up_scheduled' && ev.meta?.date) {
+                    detail = escapeHtml(formatAdminLeadDate(ev.meta.date));
+                } else if (ev.event_type === 'note_added' && ev.meta?.text) {
+                    detail = escapeHtml(ev.meta.text);
+                }
+
+                return `
+                    <div class="lead-drawer-timeline-item">
+                        <div class="lead-drawer-timeline-icon">${meta.icon}</div>
+                        <div>
+                            <div class="lead-drawer-timeline-title">${escapeHtml(meta.label)}</div>
+                            ${detail ? `<div class="lead-drawer-timeline-detail">${detail}</div>` : ''}
+                            <div class="lead-drawer-timeline-time">${escapeHtml(formatAdminLeadDateTime(ev.created_at))}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function patchAdminLeadLocally(id, patch, syntheticEvent) {
+            const lead = findAdminLead(id);
+            if (lead) Object.assign(lead, patch, { updated_at: new Date().toISOString() });
+
+            if (syntheticEvent) {
+                const existing = alTimelineCache.get(id) || [];
+                alTimelineCache.set(id, [{ ...syntheticEvent, id: 'local-' + Date.now(), enquiry_id: id, created_at: new Date().toISOString() }, ...existing]);
+            }
+        }
+
+        async function callUpdateClientEnquiry(params) {
+            const { data, error } = await supabase.rpc('update_client_enquiry', params);
+            if (error) {
+                console.error('update_client_enquiry failed:', error.message);
+                return { success: false, error: error.message };
+            }
+            return data || { success: false };
+        }
+
+        async function alDrawerSetStatus(newStatus, triggerBtn) {
+            const id = alActiveDrawerId;
+            const lead = findAdminLead(id);
+            if (!lead) return;
+            const prevStatus = String(lead.status || 'new').toLowerCase();
+            if (prevStatus === newStatus) return;
+            if (triggerBtn && triggerBtn.disabled) return;
+
+            const buttons = document.querySelectorAll('#al-drawer-status-actions button');
+            buttons.forEach(b => b.disabled = true);
+            const originalLabel = triggerBtn ? triggerBtn.textContent : null;
+            if (triggerBtn) triggerBtn.textContent = '…';
+
+            try {
+                const result = await callUpdateClientEnquiry({ p_enquiry_id: id, p_status: newStatus });
+                if (!result?.success) { alert('Could not update status. Please try again.'); return; }
+
+                patchAdminLeadLocally(id, { status: newStatus }, { event_type: 'status_changed', meta: { from: prevStatus, to: newStatus } });
+                renderAdminLeadDrawerContent(findAdminLead(id));
+                await renderAdminLeadDrawerTimeline(id);
+                renderAdminLeadsView();
+                updateAdminLeadDrawerNavState();
+            } finally {
+                buttons.forEach(b => b.disabled = false);
+                if (triggerBtn && originalLabel !== null) triggerBtn.textContent = originalLabel;
+            }
+        }
+
+        async function alDrawerUpdatePriority(newPriority, selectEl) {
+            const id = alActiveDrawerId;
+            const lead = findAdminLead(id);
+            if (!lead) return;
+            const prevPriority = String(lead.priority || 'medium').toLowerCase();
+            if (prevPriority === newPriority) return;
+            if (selectEl && selectEl.disabled) return;
+
+            if (selectEl) selectEl.disabled = true;
+            try {
+                const result = await callUpdateClientEnquiry({ p_enquiry_id: id, p_priority: newPriority });
+                if (!result?.success) {
+                    alert('Could not update priority. Please try again.');
+                    if (selectEl) selectEl.value = prevPriority;
+                    return;
+                }
+                patchAdminLeadLocally(id, { priority: newPriority }, { event_type: 'priority_changed', meta: { from: prevPriority, to: newPriority } });
+                renderAdminLeadDrawerContent(findAdminLead(id));
+                await renderAdminLeadDrawerTimeline(id);
+                renderAdminLeadsView();
+                updateAdminLeadDrawerNavState();
+            } finally {
+                if (selectEl) selectEl.disabled = false;
+            }
+        }
+
+        async function alDrawerUpdateFollowup(dateValue, inputEl) {
+            const id = alActiveDrawerId;
+            const lead = findAdminLead(id);
+            if (!id || !dateValue) return;
+            if (inputEl && inputEl.disabled) return;
+            const prevFollowUp = lead?.follow_up_date || '';
+
+            if (inputEl) inputEl.disabled = true;
+            try {
+                const result = await callUpdateClientEnquiry({ p_enquiry_id: id, p_follow_up_date: dateValue });
+                if (!result?.success) {
+                    alert('Could not schedule follow-up. Please try again.');
+                    if (inputEl) inputEl.value = prevFollowUp;
+                    return;
+                }
+                patchAdminLeadLocally(id, { follow_up_date: dateValue }, { event_type: 'follow_up_scheduled', meta: { date: dateValue } });
+                await renderAdminLeadDrawerTimeline(id);
+                renderAdminLeadsView();
+                updateAdminLeadDrawerNavState();
+            } finally {
+                if (inputEl) inputEl.disabled = false;
+            }
+        }
+
+        async function alDrawerReassignTrainer(newTrainerId, selectEl) {
+            const id = alActiveDrawerId;
+            const lead = findAdminLead(id);
+            if (!id || !newTrainerId) return;
+            if (selectEl && selectEl.disabled) return;
+            const prevTrainerId = lead?.trainer_id || '';
+            if (prevTrainerId === newTrainerId) return;
+
+            if (selectEl) selectEl.disabled = true;
+            try {
+                const result = await callUpdateClientEnquiry({ p_enquiry_id: id, p_assigned_trainer_id: newTrainerId });
+                if (!result?.success) {
+                    const msg = result?.error === 'INVALID_TRAINER' || result?.code === 'INVALID_TRAINER'
+                        ? 'That profile is not a trainer.'
+                        : 'Could not reassign this lead. Please try again.';
+                    alert(msg);
+                    if (selectEl) selectEl.value = prevTrainerId;
+                    return;
+                }
+                patchAdminLeadLocally(id, { trainer_id: newTrainerId }, { event_type: 'trainer_reassigned', meta: { from: prevTrainerId, to: newTrainerId } });
+                renderAdminLeadDrawerContent(findAdminLead(id));
+                await renderAdminLeadDrawerTimeline(id);
+                renderAdminLeadsView();
+                updateAdminLeadDrawerNavState();
+            } finally {
+                if (selectEl) selectEl.disabled = false;
+            }
+        }
+
+        async function alDrawerAddNote() {
+            const id = alActiveDrawerId;
+            const input = document.getElementById('al-drawer-note-input');
+            const submitBtn = document.getElementById('al-drawer-note-submit');
+            const text = String(input?.value || '').trim();
+            if (!id || !text) return;
+            if (submitBtn && submitBtn.disabled) return;
+
+            if (input) input.disabled = true;
+            if (submitBtn) submitBtn.disabled = true;
+            try {
+                const result = await callUpdateClientEnquiry({ p_enquiry_id: id, p_note: text });
+                if (!result?.success) { alert('Could not save note. Please try again.'); return; }
+
+                if (input) input.value = '';
+                patchAdminLeadLocally(id, {}, { event_type: 'note_added', meta: { text } });
+                await renderAdminLeadDrawerTimeline(id);
+            } finally {
+                if (input) input.disabled = false;
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        }
+
+        function alDrawerOpenWhatsapp() {
+            const lead = findAdminLead(alActiveDrawerId);
+            const url = alWhatsappUrl(lead);
+            if (url) window.open(url, '_blank');
+        }
+
+        function alDrawerCopyPhone() {
+            const lead = findAdminLead(alActiveDrawerId);
+            if (!lead?.phone_number) return;
+            adminCopyToClipboard(lead.phone_number);
+        }
+
+        function alDrawerCopyDetails() {
+            const lead = findAdminLead(alActiveDrawerId);
+            if (!lead) return;
+            const trainer = adminTrainersById.get(lead.trainer_id);
+            const lines = [
+                `Name: ${lead.client_name || '—'}`,
+                `Phone: ${lead.phone_number || '—'}`,
+                `Trainer: ${trainer?.name || 'Unknown'}`,
+                `Goal: ${lead.fitness_goal || '—'}`,
+                `Location: ${lead.location || '—'}`,
+                `Mode: ${lead.training_mode || '—'}`,
+                `Status: ${lead.status || '—'}`,
+                `Enquiry ID: ${lead.id}`
+            ];
+            adminCopyToClipboard(lines.join('\n'));
+        }
+
+        function adminCopyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => adminFallbackCopyText(text));
+            } else {
+                adminFallbackCopyText(text);
+            }
+        }
+
+        function adminFallbackCopyText(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) { /* best effort */ }
+            document.body.removeChild(ta);
         }
     </script>
 <script src="footer-component.js"></script></body>
