@@ -685,6 +685,137 @@
                 overflow-x: auto;
             }
         }
+
+        /* ── Admin Leads (Phase 4) ─────────────────────────────────────── */
+        .leads-filter-bar {
+            padding: 20px 24px;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .leads-filter-bar select,
+        .leads-filter-bar input[type="date"] {
+            height: 38px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid #E0E0E0;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            background: #FAFAFA;
+            color: #333;
+        }
+        .leads-filter-bar .search-bar { flex: 1 1 220px; margin: 0; }
+
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { color: #333; }
+        th.sortable .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.5; }
+        th.sortable.sort-active .sort-arrow { opacity: 1; }
+
+        .badge-status-new { background: #E7F1FF; color: #1D4ED8; }
+        .badge-status-contacted { background: #FEF3C7; color: #92400E; }
+        .badge-status-converted { background: #D1FAE5; color: #065F46; }
+        .badge-status-closed { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+
+        .badge-priority-high { background: #FDECEC; color: #C0362C; }
+        .badge-priority-medium { background: #FEF3C7; color: #92400E; }
+        .badge-priority-low { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+
+        .badge-assign-assigned { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+        .badge-assign-unassigned { background: #FDECEC; color: #C0362C; }
+        .badge-assign-disabled { background: #FDECEC; color: #C0362C; }
+        .badge-assign-expired { background: #FEF3C7; color: #92400E; }
+
+        /* Admin Lead Drawer — mirrors bookings.html's trainer lead drawer
+           structurally (right-side panel, overlay, same open/close/focus/
+           Prev-Next behavior) but hand-written in this file's plain-CSS
+           convention rather than Tailwind, since admin-dashboard.html has
+           no Tailwind build. See PROJECT_HANDOFF.md Phase 4 notes for why
+           this isn't a literal shared component. */
+        .lead-drawer-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1090;
+        }
+        .lead-drawer-overlay.active { display: block; }
+
+        .lead-drawer-panel {
+            display: none;
+            position: fixed; top: 0; right: 0;
+            width: 100%; max-width: 460px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: -8px 0 30px rgba(0,0,0,0.12);
+            z-index: 1095;
+            overflow-y: auto;
+        }
+        .lead-drawer-panel.active { display: block; }
+
+        .lead-drawer-header {
+            position: sticky; top: 0;
+            background: rgba(255,255,255,0.97);
+            border-bottom: 1px solid #E8E8E8;
+            padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            z-index: 2;
+        }
+        .lead-drawer-nav-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .lead-drawer-nav-btn:hover { background: #F1F1F1; }
+        .lead-drawer-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .lead-drawer-nav-btn:disabled:hover { background: transparent; }
+
+        .lead-drawer-body { padding: 20px; }
+        .lead-drawer-body h3 { font-family: 'Poppins', sans-serif; font-size: 20px; margin-bottom: 4px; }
+        .lead-drawer-info-row {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 8px 0; border-bottom: 1px solid #F1F1F1;
+            font-size: 13px;
+        }
+        .lead-drawer-info-row:last-child { border-bottom: none; }
+        .lead-drawer-info-row span:first-child { color: #777; }
+        .lead-drawer-info-row span:last-child { font-weight: 600; text-align: right; }
+
+        .lead-drawer-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 16px 0; }
+        .lead-drawer-actions button {
+            padding: 10px 6px; border-radius: 10px; border: 1px solid #E0E0E0;
+            background: #FAFAFA; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        .lead-drawer-actions button:hover { border-color: #999; }
+        .lead-drawer-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .lead-drawer-field { margin-bottom: 14px; }
+        .lead-drawer-field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #777; margin-bottom: 6px; }
+        .lead-drawer-field select, .lead-drawer-field input, .lead-drawer-field textarea {
+            width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #E0E0E0; font-size: 13px; font-family: 'Inter', sans-serif;
+        }
+        .lead-drawer-field textarea { resize: vertical; }
+
+        .lead-drawer-notice {
+            display: none;
+            background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+            border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600;
+            margin-top: 10px;
+        }
+        .lead-drawer-notice.active { display: block; }
+
+        .lead-drawer-timeline-item { display: flex; gap: 10px; padding: 8px 0; }
+        .lead-drawer-timeline-icon {
+            width: 28px; height: 28px; border-radius: 50%; background: #F1F1F1;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            font-size: 14px;
+        }
+        .lead-drawer-timeline-title { font-size: 13px; font-weight: 700; }
+        .lead-drawer-timeline-detail { font-size: 12px; color: #666; }
+        .lead-drawer-timeline-time { font-size: 11px; color: #999; }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -727,6 +858,9 @@
                 </div>
                 <div class="nav-item" data-tab="bookings">
                     Bookings
+                </div>
+                <div class="nav-item" data-tab="leads">
+                    Leads
                 </div>
                 <div class="nav-item" data-tab="plans">
                     Plans
@@ -909,6 +1043,100 @@
                         <div class="loading">
                             <div class="spinner"></div>
                             <p>Loading bookings...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leads Tab (Phase 4) -->
+            <div id="leads" class="tab-content">
+                <div class="content-header">
+                    <h2>Lead Management</h2>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 16px;">
+                    <div class="stat-card">
+                        <h3>Total Leads</h3>
+                        <div class="value" id="al-kpi-total">0</div>
+                        <div class="change">Across all trainers</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>New</h3>
+                        <div class="value" id="al-kpi-new">0</div>
+                        <div class="change">Not yet contacted</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Contacted</h3>
+                        <div class="value" id="al-kpi-contacted">0</div>
+                        <div class="change">In progress</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Converted</h3>
+                        <div class="value" id="al-kpi-converted">0</div>
+                        <div class="change">Became clients</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Closed</h3>
+                        <div class="value" id="al-kpi-closed">0</div>
+                        <div class="change">No longer active</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Conversion Rate</h3>
+                        <div class="value" id="al-kpi-conversion">0%</div>
+                        <div class="change">Converted / Total</div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 32px;">
+                    <div class="stat-card">
+                        <h3>Today's Leads</h3>
+                        <div class="value" id="al-kpi-today">0</div>
+                        <div class="change">Since midnight</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Week</h3>
+                        <div class="value" id="al-kpi-week">0</div>
+                        <div class="change">Last 7 days</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month</h3>
+                        <div class="value" id="al-kpi-month">0</div>
+                        <div class="change">Last 30 days</div>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="leads-filter-bar">
+                        <input type="text" class="search-bar" id="al-search" placeholder="Search client, phone, trainer, goal, location…">
+                        <select id="al-filter-trainer"><option value="all">All Trainers</option></select>
+                        <select id="al-filter-status">
+                            <option value="all">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="converted">Converted</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                        <select id="al-filter-priority">
+                            <option value="all">All Priorities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        <select id="al-filter-mode">
+                            <option value="all">All Modes</option>
+                            <option value="Online">Online</option>
+                            <option value="Offline">Offline</option>
+                        </select>
+                        <select id="al-filter-goal"><option value="all">All Goals</option></select>
+                        <input type="date" id="al-filter-date-from" title="From date">
+                        <input type="date" id="al-filter-date-to" title="To date">
+                        <button class="btn btn-secondary" onclick="clearAdminLeadFilters()">Clear Filters</button>
+                    </div>
+                    <div id="al-summary" style="padding: 12px 24px; font-size: 12px; font-weight: 600; color: #777; border-bottom: 1px solid #E8E8E8;"></div>
+                    <div id="al-table-wrap">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading leads...</p>
                         </div>
                     </div>
                 </div>
@@ -1342,6 +1570,77 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeTrainerModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Lead Drawer (Phase 4) — structurally mirrors bookings.html's
+         trainer lead drawer (same open/close/focus/Prev-Next behavior),
+         hand-written in this file's plain-CSS convention. Not a shared
+         component with bookings.html — see PROJECT_HANDOFF.md. -->
+    <div id="al-drawer-overlay" class="lead-drawer-overlay" onclick="closeAdminLeadDrawer()"></div>
+    <div id="al-drawer" class="lead-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="al-drawer-name">
+        <div class="lead-drawer-header">
+            <div style="display:flex; align-items:center; gap:4px;">
+                <button type="button" class="lead-drawer-nav-btn" id="al-drawer-prev" aria-label="Previous lead" onclick="navigateAdminLeadDrawer(-1)">&#8592;</button>
+                <button type="button" class="lead-drawer-nav-btn" id="al-drawer-next" aria-label="Next lead" onclick="navigateAdminLeadDrawer(1)">&#8594;</button>
+                <span id="al-drawer-position" style="font-size:12px; font-weight:700; color:#777; margin-left:4px;"></span>
+            </div>
+            <button type="button" class="lead-drawer-nav-btn" aria-label="Close" onclick="closeAdminLeadDrawer()">&times;</button>
+        </div>
+        <div class="lead-drawer-body">
+            <h3 id="al-drawer-name"></h3>
+            <p id="al-drawer-meta" style="font-size:13px; color:#777; margin-bottom:8px;"></p>
+            <div id="al-drawer-badges" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;"></div>
+            <p id="al-drawer-filter-notice" class="lead-drawer-notice">This lead no longer matches the current filters.</p>
+
+            <div id="al-drawer-info" style="background:#FAFAFA; border-radius:10px; padding:12px 14px; margin-bottom:14px;"></div>
+
+            <div id="al-drawer-trainer-info" style="background:#FAFAFA; border-radius:10px; padding:12px 14px; margin-bottom:14px;">
+                <h4 style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#777; margin-bottom:8px;">Trainer</h4>
+                <div id="al-drawer-trainer-rows"></div>
+            </div>
+
+            <div class="lead-drawer-actions">
+                <button type="button" onclick="alDrawerOpenWhatsapp()">WhatsApp</button>
+                <button type="button" onclick="alDrawerCopyPhone()">Copy Phone</button>
+                <button type="button" onclick="alDrawerCopyDetails()">Copy Details</button>
+            </div>
+            <div class="lead-drawer-actions" id="al-drawer-status-actions">
+                <button type="button" onclick="alDrawerSetStatus('contacted', this)">Mark Contacted</button>
+                <button type="button" onclick="alDrawerSetStatus('converted', this)">Mark Converted</button>
+                <button type="button" onclick="alDrawerSetStatus('closed', this)">Mark Closed</button>
+            </div>
+
+            <div class="lead-drawer-field">
+                <label for="al-drawer-priority">Priority</label>
+                <select id="al-drawer-priority" onchange="alDrawerUpdatePriority(this.value, this)">
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="lead-drawer-field">
+                <label for="al-drawer-followup">Follow-up Date</label>
+                <input id="al-drawer-followup" type="date" onchange="alDrawerUpdateFollowup(this.value, this)">
+            </div>
+            <div class="lead-drawer-field">
+                <label for="al-drawer-reassign">Assigned Trainer</label>
+                <select id="al-drawer-reassign" onchange="alDrawerReassignTrainer(this.value, this)">
+                    <option value="">Select a trainer…</option>
+                </select>
+            </div>
+            <div class="lead-drawer-field">
+                <label for="al-drawer-note-input">Add Internal Note</label>
+                <div style="display:flex; gap:8px;">
+                    <textarea id="al-drawer-note-input" rows="2" placeholder="Internal note — not visible to the client or trainer's client"></textarea>
+                    <button type="button" id="al-drawer-note-submit" class="btn btn-secondary" style="flex-shrink:0;" onclick="alDrawerAddNote()">Add</button>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#777; margin-bottom:10px;">Timeline</h4>
+                <div id="al-drawer-timeline"><div style="font-size:13px; color:#999;">Loading…</div></div>
             </div>
         </div>
     </div>
