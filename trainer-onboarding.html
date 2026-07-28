@@ -19,6 +19,233 @@
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .step-hidden { display: none; }
         .step-active { display: block; }
+
+        /* ==========================================================
+           Onlifit Onboarding — Premium UI Kit (visual only)
+           Scoped to trainer-onboarding.html. No logic, ids, or
+           JS-relied-upon selectors are affected by anything below.
+           ========================================================== */
+
+        /* ---- Checkboxes (training areas + terms agreement) ---- */
+        .ob-select-card {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            min-height: 52px;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #E8E8E8;
+            border-radius: 0.875rem;
+            cursor: pointer;
+            background: #fff;
+            transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+        }
+        .ob-select-card:hover { border-color: #000; background: #FAFAFA; }
+        .ob-select-card:has(.ob-checkbox:checked) {
+            border-color: #000;
+            background: #F5F5F5;
+            box-shadow: 0 0 0 1px #000 inset;
+        }
+        .ob-select-card:has(.ob-checkbox:focus-visible) { box-shadow: 0 0 0 2px #000; }
+
+        input.ob-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            accent-color: #000;
+            color: #000;
+            flex: 0 0 20px;
+            width: 20px;
+            height: 20px;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            border: 2px solid #D0D0D0;
+            border-radius: 6px;
+            background-color: #fff;
+            position: relative;
+            cursor: pointer;
+            transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
+        }
+        input.ob-checkbox:hover { border-color: #000; }
+        input.ob-checkbox:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+        input.ob-checkbox:checked {
+            background-color: #000;
+            border-color: #000;
+            background-image: none;
+        }
+        input.ob-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 44%;
+            width: 5px;
+            height: 9px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        input.ob-checkbox:active { transform: scale(0.9); }
+        .ob-checkbox-label { font-size: 0.875rem; line-height: 1.25rem; color: #000; user-select: none; }
+
+        @media (max-width: 767px) {
+            input.ob-checkbox { width: 20px; height: 20px; accent-color: #000; }
+        }
+        @media (max-width: 640px) {
+            .ob-select-card { min-height: 48px; padding: 0.75rem 0.875rem; }
+            input.ob-checkbox { flex-basis: 22px; width: 22px; height: 22px; }
+        }
+
+        /* ---- Buttons ---- */
+        .ob-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            height: 52px;
+            padding: 0 1.75rem;
+            border-radius: 0.875rem;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            line-height: 1;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease, opacity .15s ease;
+        }
+        .ob-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
+        .ob-btn-primary {
+            background: #000;
+            color: #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 20px -10px rgba(0,0,0,.4);
+        }
+        .ob-btn-primary:hover:not(:disabled) { background: #1a1a1a; box-shadow: 0 10px 24px -8px rgba(0,0,0,.45); transform: translateY(-1px); }
+        .ob-btn-primary:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: 0 4px 10px -6px rgba(0,0,0,.35); }
+        .ob-btn-secondary {
+            background: #fff;
+            color: #000;
+            border: 2px solid #E8E8E8;
+        }
+        .ob-btn-secondary:hover:not(:disabled) { border-color: #000; background: #FAFAFA; }
+        .ob-btn-secondary:active:not(:disabled) { transform: scale(.98); }
+        @media (max-width: 640px) {
+            .ob-btn { height: 48px; padding: 0 1.25rem; font-size: 0.875rem; }
+        }
+
+        /* ---- Currency inputs ---- */
+        .ob-currency-wrap { position: relative; }
+        .ob-currency-symbol {
+            position: absolute;
+            left: 14px;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            color: #666;
+            pointer-events: none;
+            font-weight: 600;
+        }
+        .ob-currency-field { padding-left: 2.75rem !important; }
+
+        /* ---- Plan cards ---- */
+        .ob-plan-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 1.75rem;
+            border-radius: 1.25rem;
+            border: 2px solid #E8E8E8;
+            background: #fff;
+            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+        }
+        .ob-plan-card:hover { box-shadow: 0 12px 30px -14px rgba(0,0,0,.18); transform: translateY(-2px); }
+        .ob-plan-card--featured { border-color: #000; box-shadow: 0 16px 40px -18px rgba(0,0,0,.25); }
+        .ob-plan-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #000;
+            color: #fff;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: .05em;
+            padding: 0.375rem 0.875rem;
+            border-radius: 0 1.125rem 0 1rem;
+        }
+        .ob-plan-name { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 0.8125rem; letter-spacing: .04em; margin-bottom: .875rem; color: #666; text-transform: uppercase; }
+        .ob-plan-price-row { display: flex; align-items: baseline; gap: .375rem; }
+        .ob-plan-price { font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 2.75rem; letter-spacing: -.03em; }
+        .ob-plan-period { font-size: 1rem; color: #666; font-weight: 600; }
+        .ob-plan-note { font-size: 0.75rem; color: #999; margin-top: .375rem; margin-bottom: 1.5rem; }
+        .ob-plan-features { list-style: none; margin: 0 0 1.75rem; padding: 1.25rem 0 0; padding-top: 1.25rem; border-top: 1px solid #EEE; display: flex; flex-direction: column; gap: .75rem; flex: 1; }
+        .ob-plan-features li { display: flex; align-items: flex-start; gap: .625rem; font-size: 0.875rem; line-height: 1.4; color: #333; }
+
+        /* ---- Conversion helpers: value strip + trust/reassurance block ---- */
+        .ob-value-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+        .ob-value-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #000;
+        }
+        .ob-value-chip .material-symbols-outlined { font-size: 18px; color: #000; }
+        .ob-trust-box {
+            margin-top: 2rem;
+            padding: 1.25rem 1.5rem;
+            background: #FAFAFA;
+            border: 1px solid #E8E8E8;
+            border-radius: 1rem;
+        }
+        .ob-trust-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 800;
+            font-size: 0.9375rem;
+            margin-bottom: 0.875rem;
+        }
+        .ob-trust-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.625rem; }
+        .ob-trust-steps li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.8125rem; color: #555; line-height: 1.45; }
+        .ob-trust-steps .ob-trust-num {
+            flex: 0 0 20px;
+            width: 20px;
+            height: 20px;
+            border-radius: 9999px;
+            background: #000;
+            color: #fff;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.0625rem;
+        }
+        @media (max-width: 640px) {
+            .ob-plan-price { font-size: 2.25rem; }
+        }
+        .ob-plan-check {
+            flex: 0 0 18px;
+            width: 18px;
+            height: 18px;
+            border-radius: 9999px;
+            background: #000;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.625rem;
+            margin-top: 0.0625rem;
+        }
+        @media (max-width: 640px) {
+            .ob-plan-card { padding: 1.25rem; }
+            .ob-plan-price { font-size: 1.875rem; }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -50,9 +277,9 @@
         <form id="onboarding-form" class="space-y-8" novalidate>
             
             <!-- STEP 1: Basic Information -->
-            <div id="step-1" class="step-active bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-1" class="step-active bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Let's get to know you</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Let's get to know you</h2>
                     <p class="text-on-surface-variant">Tell us about yourself and your expertise</p>
                 </div>
 
@@ -84,7 +311,7 @@
                                     <span class="text-xs text-on-surface-variant">This photo appears on your public profile</span>
                                 </label>
                                 <div id="profile-photo-meta" class="mt-3 hidden">
-                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
                                         <span class="material-symbols-outlined text-green-600">check_circle</span>
                                         <div class="flex-1">
                                             <p class="text-sm font-semibold text-green-800" id="profile-photo-name"></p>
@@ -139,17 +366,17 @@
                 </div>
 
                 <div class="mt-8 flex justify-end">
-                    <button type="button" onclick="nextStep(1)" 
-                            class="px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                    <button type="button" onclick="nextStep(1)"
+                            class="ob-btn ob-btn-primary">
                         Next Step →
                     </button>
                 </div>
             </div>
 
             <!-- STEP 2: Specialization & Bio -->
-            <div id="step-2" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-2" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Your Expertise</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Your Expertise</h2>
                     <p class="text-on-surface-variant">What do you specialize in?</p>
                 </div>
 
@@ -164,76 +391,76 @@
                     <div>
                         <label class="block text-sm font-bold mb-3">Training Areas (Select all that apply) *</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Personal Trainer" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Personal Trainer" class="ob-checkbox">
                                 <span class="text-sm">Personal Trainer</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Weight Loss" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Weight Loss" class="ob-checkbox">
                                 <span class="text-sm">Weight Loss</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Muscle Gain" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Muscle Gain" class="ob-checkbox">
                                 <span class="text-sm">Muscle Gain</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Yoga" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Yoga" class="ob-checkbox">
                                 <span class="text-sm">Yoga</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Strength Training" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Strength Training" class="ob-checkbox">
                                 <span class="text-sm">Strength Training</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="HIIT" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="HIIT" class="ob-checkbox">
                                 <span class="text-sm">HIIT</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Cross Training" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Cross Training" class="ob-checkbox">
                                 <span class="text-sm">Cross Training</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Postnatal Fitness" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Postnatal Fitness" class="ob-checkbox">
                                 <span class="text-sm">Postnatal Fitness</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Nutrition" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Nutrition" class="ob-checkbox">
                                 <span class="text-sm">Nutrition</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Athletic Performance" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Athletic Performance" class="ob-checkbox">
                                 <span class="text-sm">Athletic Performance</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Flexibility" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Flexibility" class="ob-checkbox">
                                 <span class="text-sm">Flexibility</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Cardio" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Cardio" class="ob-checkbox">
                                 <span class="text-sm">Cardio</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="CrossFit" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="CrossFit" class="ob-checkbox">
                                 <span class="text-sm">CrossFit</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Powerlifting" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Powerlifting" class="ob-checkbox">
                                 <span class="text-sm">Powerlifting</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Calisthenics" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Calisthenics" class="ob-checkbox">
                                 <span class="text-sm">Calisthenics</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Running" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Running" class="ob-checkbox">
                                 <span class="text-sm">Running</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Home Workout" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Home Workout" class="ob-checkbox">
                                 <span class="text-sm">Home Workout</span>
                             </label>
-                            <label class="flex items-center gap-2 p-3 min-h-[52px] border-2 border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors">
-                                <input type="checkbox" name="tags" value="Women's Fitness" class="rounded">
+                            <label class="ob-select-card">
+                                <input type="checkbox" name="tags" value="Women's Fitness" class="ob-checkbox">
                                 <span class="text-sm">Women's Fitness</span>
                             </label>
                         </div>
@@ -257,20 +484,20 @@
 
                 <div class="mt-8 flex gap-4">
                     <button type="button" onclick="prevStep(2)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back
                     </button>
                     <button type="button" onclick="nextStep(2)"
-                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            class="ob-btn ob-btn-primary flex-1">
                         Next Step →
                     </button>
                 </div>
             </div>
 
             <!-- STEP 3: Certifications & KYC -->
-            <div id="step-3" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-3" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Certifications & Verification</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Certifications & Verification</h2>
                     <p class="text-on-surface-variant">Upload your credentials and complete KYC</p>
                 </div>
 
@@ -326,7 +553,7 @@
                                     </label>
                                 </div>
                                 <div id="kyc-front-preview" class="mt-2 hidden">
-                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
                                         <span class="material-symbols-outlined text-green-600">check_circle</span>
                                         <div class="flex-1">
                                             <p class="text-sm font-semibold text-green-800" id="kyc-front-name"></p>
@@ -357,7 +584,7 @@
                                     </label>
                                 </div>
                                 <div id="kyc-back-preview" class="mt-2 hidden">
-                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
                                         <span class="material-symbols-outlined text-green-600">check_circle</span>
                                         <div class="flex-1">
                                             <p class="text-sm font-semibold text-green-800" id="kyc-back-name"></p>
@@ -409,20 +636,20 @@
 
                 <div class="mt-8 flex gap-4">
                     <button type="button" id="step3-back-btn" onclick="prevStep(3)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back
                     </button>
                     <button type="button" id="step3-next-btn" onclick="validateAndNextStep3()"
-                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            class="ob-btn ob-btn-primary flex-1">
                         Next Step →
                     </button>
                 </div>
             </div>
 
             <!-- STEP 4: Pricing -->
-            <div id="step-4" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-4" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Set Your Pricing</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Set Your Pricing</h2>
                     <p class="text-on-surface-variant">How much do you charge for your services?</p>
                 </div>
 
@@ -430,9 +657,9 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Single Session (Per Hour) *</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant leading-none">₹</span>
+                            <span class="ob-currency-symbol">₹</span>
                             <input type="number" id="price_hourly" required min="500" step="100"
-                                   class="w-full pl-9 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   class="ob-currency-field w-full pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="999">
                         </div>
                         <p class="text-xs text-on-surface-variant mt-1">Pay-per-session pricing</p>
@@ -441,9 +668,9 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Package Pricing (10 Sessions)</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant leading-none">₹</span>
+                            <span class="ob-currency-symbol">₹</span>
                             <input type="number" id="price_package" min="0" step="100"
-                                   class="w-full pl-9 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   class="ob-currency-field w-full pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="7999">
                         </div>
                         <p class="text-xs text-on-surface-variant mt-1">Optional: Discounted rate for 10-session package</p>
@@ -452,9 +679,9 @@
                     <div>
                         <label class="block text-sm font-bold mb-2">Monthly Unlimited</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant leading-none">₹</span>
+                            <span class="ob-currency-symbol">₹</span>
                             <input type="number" id="price_monthly" min="0" step="100"
-                                   class="w-full pl-9 pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                   class="ob-currency-field w-full pr-4 py-3 rounded-xl bg-surface border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20"
                                    placeholder="14999">
                         </div>
                         <p class="text-xs text-on-surface-variant mt-1">Optional: Unlimited sessions for 1 month</p>
@@ -463,20 +690,20 @@
 
                 <div class="mt-8 flex gap-4">
                     <button type="button" onclick="prevStep(4)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back
                     </button>
                     <button type="button" onclick="nextStep(4)"
-                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            class="ob-btn ob-btn-primary flex-1">
                         Next Step →
                     </button>
                 </div>
             </div>
 
             <!-- STEP 5: Final Details & Submit -->
-            <div id="step-5" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-5" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Almost Done!</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Almost Done!</h2>
                     <p class="text-on-surface-variant">Add final touches to your profile</p>
                 </div>
 
@@ -511,8 +738,8 @@
                     </div>
 
                     <div class="flex items-start gap-3 p-4 bg-surface border border-outline-variant rounded-xl">
-                        <input type="checkbox" id="terms" required class="mt-1">
-                        <label for="terms" class="text-sm">
+                        <input type="checkbox" id="terms" required class="ob-checkbox mt-0.5">
+                        <label for="terms" class="text-sm ob-checkbox-label">
                             I agree to Onlifit's <a href="terms.html" class="underline">Terms & Conditions</a> and <a href="privacy.html" class="underline">Privacy Policy</a>. I confirm that all information provided is accurate and I have the necessary certifications to provide training services.
                         </label>
                     </div>
@@ -520,11 +747,11 @@
 
                 <div class="mt-8 flex gap-4">
                     <button type="button" onclick="prevStep(5)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back
                     </button>
                     <button type="button" id="submit-btn" onclick="submitTrainerProfile()"
-                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            class="ob-btn ob-btn-primary flex-1">
                         Save &amp; Review →
                     </button>
                 </div>
@@ -534,9 +761,9 @@
                  is NOT an admin approval step -- admin verification of KYC and
                  certificates is a separate, unchanged process that happens
                  after the profile is live) -->
-            <div id="step-6" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
+            <div id="step-6" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
                 <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Review Your Profile</h2>
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Review Your Profile</h2>
                     <p class="text-on-surface-variant">Double-check everything before choosing a plan. You can go back and edit anything.</p>
                 </div>
 
@@ -549,11 +776,11 @@
 
                 <div class="mt-8 flex gap-4">
                     <button type="button" onclick="prevStep(6)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back &amp; Edit
                     </button>
                     <button type="button" onclick="nextStep(6)"
-                            class="flex-1 px-8 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                            class="ob-btn ob-btn-primary flex-1">
                         Looks Good, Choose Plan →
                     </button>
                 </div>
@@ -564,50 +791,81 @@
                  subscription-payments.js, unchanged. The trainer's profile
                  stays a draft, excluded from marketplace search, until payment
                  succeeds -- see chooseTrainerPlan() below.) -->
-            <div id="step-7" class="step-hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant">
-                <div class="mb-6">
-                    <h2 class="text-3xl font-black font-headline mb-2">Choose Your Plan</h2>
-                    <p class="text-on-surface-variant">Pick a plan to activate your profile and go live on Onlifit. You'll see the exact amount at checkout.</p>
+            <div id="step-7" class="step-hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant">
+                <div class="mb-5">
+                    <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Choose Your Plan</h2>
+                    <p class="text-on-surface-variant">You're one step from going live on Onlifit. You'll see the exact amount at checkout.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-6 rounded-2xl border-2 border-outline-variant bg-surface flex flex-col">
-                        <h3 class="font-headline text-xl font-black mb-1">Pro Plan</h3>
-                        <p class="text-sm text-on-surface-variant mb-4">For growing trainers</p>
-                        <ul class="text-sm space-y-2 mb-6 flex-1">
-                            <li>✓ Verified Profile badge</li>
-                            <li>✓ Up to 30 leads/month</li>
-                            <li>✓ WhatsApp lead notifications</li>
-                            <li>✓ Dashboard access with analytics</li>
-                            <li>✓ Higher search ranking</li>
+                <div class="ob-value-strip">
+                    <span class="ob-value-chip">
+                        <span class="material-symbols-outlined">payments</span>
+                        No commission — you keep 100% of what clients pay you
+                    </span>
+                    <span class="ob-value-chip">
+                        <span class="material-symbols-outlined">verified</span>
+                        Verified-trainer badge included
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+                    <div class="ob-plan-card">
+                        <h3 class="ob-plan-name">PRO — for growing trainers</h3>
+                        <div class="ob-plan-price-row">
+                            <span class="ob-plan-price">₹999</span>
+                            <span class="ob-plan-period">/ month</span>
+                        </div>
+                        <p class="ob-plan-note">Billed monthly. Exact amount confirmed at checkout.</p>
+                        <ul class="ob-plan-features">
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Verified Profile badge</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Up to 30 leads/month</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> WhatsApp lead notifications</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Dashboard access with analytics</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Higher search ranking</li>
                         </ul>
                         <button type="button" id="choose-plan-pro-btn" onclick="chooseTrainerPlan('pro')"
-                                class="w-full px-6 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-on-primary transition-colors">
+                                class="ob-btn ob-btn-secondary" style="width:100%;">
                             Choose Pro
                         </button>
                     </div>
-                    <div class="p-6 rounded-2xl border-2 border-primary bg-surface flex flex-col relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">BEST VALUE</div>
-                        <h3 class="font-headline text-xl font-black mb-1">Elite Plan</h3>
-                        <p class="text-sm text-on-surface-variant mb-4">For fitness business owners</p>
-                        <ul class="text-sm space-y-2 mb-6 flex-1">
-                            <li>✓ Everything in Pro</li>
-                            <li>✓ Unlimited leads</li>
-                            <li>✓ Priority ranking (above Pro)</li>
-                            <li>✓ Homepage featured placement</li>
-                            <li>✓ Onlifit Black eligibility</li>
-                            <li>✓ Priority support</li>
+                    <div class="ob-plan-card ob-plan-card--featured">
+                        <div class="ob-plan-badge">BEST VALUE</div>
+                        <h3 class="ob-plan-name">ELITE — for business owners</h3>
+                        <div class="ob-plan-price-row">
+                            <span class="ob-plan-price">₹2,999</span>
+                            <span class="ob-plan-period">/ month</span>
+                        </div>
+                        <p class="ob-plan-note">Billed monthly. Exact amount confirmed at checkout.</p>
+                        <ul class="ob-plan-features">
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Everything in Pro</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Unlimited leads</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Priority ranking (above Pro)</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Homepage featured placement</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Onlifit Black eligibility</li>
+                            <li><span class="ob-plan-check material-symbols-outlined" style="font-size:12px;">check</span> Priority support</li>
                         </ul>
                         <button type="button" id="choose-plan-elite-btn" onclick="chooseTrainerPlan('elite')"
-                                class="w-full px-6 py-3 bg-primary text-on-primary font-bold rounded-xl hover:opacity-90 transition-opacity">
+                                class="ob-btn ob-btn-primary" style="width:100%;">
                             Choose Elite
                         </button>
                     </div>
                 </div>
 
-                <div class="mt-8 flex gap-4">
+                <div class="ob-trust-box">
+                    <h4 class="ob-trust-title">
+                        <span class="material-symbols-outlined" style="font-size:18px;">shield</span>
+                        What happens after you pay
+                    </h4>
+                    <ol class="ob-trust-steps">
+                        <li><span class="ob-trust-num">1</span> Payment is processed securely by Razorpay — Onlifit never sees or stores your card details.</li>
+                        <li><span class="ob-trust-num">2</span> Your KYC and certificates move into admin verification, usually completed within 24 hours.</li>
+                        <li><span class="ob-trust-num">3</span> Once verified, your profile goes live and becomes discoverable to clients searching Onlifit.</li>
+                    </ol>
+                </div>
+
+                <div class="mt-6 flex gap-4">
                     <button type="button" onclick="prevStep(7)"
-                            class="flex-1 px-8 py-3 border-2 border-outline-variant font-bold rounded-xl hover:bg-surface transition-colors">
+                            class="ob-btn ob-btn-secondary flex-1">
                         ← Back to Review
                     </button>
                 </div>
@@ -616,11 +874,11 @@
         </form>
 
         <!-- Success Message -->
-        <div id="success-message" class="hidden bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant text-center">
+        <div id="success-message" class="hidden bg-surface-container-lowest rounded-2xl p-5 sm:p-8 shadow-sm border border-outline-variant text-center">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span class="material-symbols-outlined text-green-600 text-4xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
             </div>
-            <h2 class="text-3xl font-black font-headline mb-2">Trainer profile saved</h2>
+            <h2 class="text-2xl sm:text-3xl font-black font-headline mb-2">Trainer profile saved</h2>
             <p class="text-on-surface-variant mb-2">Your account is now active.</p>
             <p class="text-sm text-on-surface-variant mb-6">You will be sent to your trainer dashboard now.</p>
             <div class="flex flex-col sm:flex-row gap-3 justify-center">
@@ -1467,7 +1725,7 @@
             
             const certDiv = document.createElement('div');
             certDiv.id = `cert-${certificationCount}`;
-            certDiv.className = 'p-4 bg-white border-2 border-blue-200 rounded-lg space-y-3';
+            certDiv.className = 'p-4 bg-white border-2 border-blue-200 rounded-xl space-y-3';
             certDiv.innerHTML = `
                 <div class="flex justify-between items-center">
                     <h4 class="font-bold text-sm">Certification #${certificationCount}</h4>
@@ -1482,7 +1740,7 @@
                     <input type="file" id="cert-file-${certificationCount}" accept="image/*,.pdf"
                            class="hidden" onchange="handleCertUpload(this, ${certificationCount})">
                     <label for="cert-file-${certificationCount}" 
-                           class="w-full px-4 py-4 rounded-lg bg-gray-50 border-2 border-dashed border-gray-300 hover:border-blue-500 cursor-pointer transition-colors flex items-center justify-center gap-2">
+                           class="w-full px-4 py-4 rounded-xl bg-gray-50 border-2 border-dashed border-gray-300 hover:border-blue-500 cursor-pointer transition-colors flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined text-gray-400">upload_file</span>
                         <span class="text-sm font-semibold">Upload Certificate</span>
                     </label>
@@ -1498,7 +1756,7 @@
                 <div>
                     <label class="block text-xs font-bold mb-1">Certification Name</label>
                     <input type="text" id="cert-name-${certificationCount}" 
-                           class="w-full px-3 py-2 rounded-lg bg-gray-100 border border-gray-300 text-sm" 
+                           class="w-full px-3 py-2 rounded-xl bg-gray-100 border border-gray-300 text-sm"
                            placeholder="e.g., ACE Certified Personal Trainer"
                            disabled>
                     <p class="text-xs text-gray-500 mt-1">Upload file first to enable</p>

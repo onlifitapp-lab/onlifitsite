@@ -362,21 +362,20 @@
                             </div>
                         </div>
                         
-                        <!-- Autocomplete Dropdown — goal list removed (was a redundant, buggy
-                             mini-selector duplicating the "Popular Fitness Goals" chip row
-                             below the hero, and the source of icon-ligature text leaking into
-                             the search input). Location suggestions remain, fixed to use a
-                             dedicated data-value instead of the whole button's innerText. -->
-                        <div id="autocomplete-dropdown" class="absolute top-[120%] left-0 w-[calc(100vw-3rem)] md:w-[400px] bg-white rounded-xl shadow-elevated border border-outline-variant/30 overflow-hidden hidden transform transition-all duration-300 opacity-0 translate-y-2 z-50">
-                            <!-- Locations -->
-                            <div class="p-2">
-                                <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 mt-1 px-3">Popular Locations</p>
-                                <ul class="space-y-0.5">
-                                    <li><button type="button" data-value="Hyderabad" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Hyderabad</button></li>
-                                    <li><button type="button" data-value="Kondapur" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Kondapur</button></li>
-                                    <li><button type="button" data-value="Bengaluru" class="w-full text-left px-3 py-2 rounded-lg hover:bg-surface-container-lowest text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">location_on</span> Bengaluru</button></li>
-                                </ul>
-                            </div>
+                        <!-- Autocomplete Dropdown — suggests trainer specialties/services/goals
+                             ONLY (never locations; location is a separate concern handled by
+                             #search-mode / #search-location below). Content is rendered by
+                             renderAutocompleteSuggestions() from the static SPECIALTY_SUGGESTIONS
+                             list, filtered live as the user types. Reuses the same
+                             .autocomplete-item click-to-fill pattern and data-value convention
+                             the dropdown already used for locations, just repointed at the
+                             correct data and re-rendered via event delegation instead of a
+                             one-time querySelectorAll (since items are now generated per keystroke). -->
+                        <div id="autocomplete-dropdown" class="absolute top-[120%] left-0 w-[calc(100vw-3rem)] md:w-[400px] max-h-[60vh] overflow-y-auto bg-white rounded-xl shadow-elevated border border-outline-variant/30 hidden transform transition-all duration-300 opacity-0 translate-y-2 z-50">
+                            <p id="autocomplete-suggestions-label" class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider px-4 pt-3 pb-1 sticky top-0 bg-white">Popular Searches</p>
+                            <ul id="autocomplete-suggestions" class="p-2 pt-1 space-y-0.5">
+                                <!-- Populated by renderAutocompleteSuggestions() -->
+                            </ul>
                         </div>
                     </div>
                     <div class="hero-search-segment hero-search-mode-wrap flex-none min-w-0 flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 relative z-40">
@@ -901,43 +900,105 @@
             }
         });
 
-        // Autocomplete Logic
+        // Autocomplete Logic — specialty/service/goal suggestions ONLY.
+        // Location is a completely separate filter (#search-mode /
+        // #search-location below performSearch() still handles that on its
+        // own); it must never appear in this dropdown.
+        //
+        // This is the same taxonomy trainers pick from in the "Training
+        // Areas" step of trainer-onboarding.html, plus a few of the compound
+        // phrases clients actually type (e.g. "Yoga Trainer", "Weight
+        // Management"), so suggestions here stay consistent with what
+        // trainers are actually tagged with.
+        const SPECIALTY_SUGGESTIONS = [
+            'Personal Trainer', 'Online Personal Trainer', 'Weight Loss', 'Weight Management',
+            'Fat Loss Coach', 'Muscle Gain', 'Bodybuilding', 'Yoga', 'Yoga Trainer',
+            'Yoga for Weight Loss', 'Strength Training', 'Strength Coach', 'Strength & Conditioning',
+            'HIIT', 'Cross Training', 'Functional Training', 'CrossFit', 'Powerlifting',
+            'Calisthenics', 'Sports Conditioning', 'Athletic Performance', 'Flexibility',
+            'Cardio', 'Running', 'Home Workout', "Women's Fitness", 'Postnatal Fitness',
+            'Prenatal Fitness', 'Senior Fitness', 'Nutrition', 'Nutrition Coach'
+        ];
+        const DEFAULT_SUGGESTIONS = ['Personal Trainer', 'Weight Loss', 'Muscle Gain', 'Yoga', 'Strength Training', 'HIIT', 'Nutrition Coach'];
+
         const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
-        
-        searchInput.addEventListener('focus', () => {
+        const autocompleteList = document.getElementById('autocomplete-suggestions');
+        const autocompleteLabel = document.getElementById('autocomplete-suggestions-label');
+
+        function renderAutocompleteSuggestions(query) {
+            const q = (query || '').trim().toLowerCase();
+            const matches = q
+                ? SPECIALTY_SUGGESTIONS.filter(term => term.toLowerCase().includes(q)).slice(0, 8)
+                : DEFAULT_SUGGESTIONS;
+
+            autocompleteLabel.textContent = q ? 'Suggestions' : 'Popular Searches';
+
+            if (matches.length === 0) {
+                autocompleteList.innerHTML = '<li class="px-4 py-3 text-sm text-on-surface-variant">No matching services — press Search to search anyway</li>';
+                return;
+            }
+
+            autocompleteList.innerHTML = matches.map(term => `
+                <li><button type="button" data-value="${escapeHtml(term)}" class="w-full text-left px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-surface-container-lowest active:bg-surface-container-low text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">fitness_center</span> ${escapeHtml(term)}
+                </button></li>
+            `).join('');
+        }
+
+        function openAutocompleteDropdown() {
+            renderAutocompleteSuggestions(searchInput.value);
             autocompleteDropdown.classList.remove('hidden');
             setTimeout(() => {
                 autocompleteDropdown.classList.remove('opacity-0', 'translate-y-2');
             }, 10);
+        }
+
+        function closeAutocompleteDropdown() {
+            autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
+            setTimeout(() => {
+                autocompleteDropdown.classList.add('hidden');
+            }, 300);
+        }
+
+        searchInput.addEventListener('focus', openAutocompleteDropdown);
+
+        // Re-filter suggestions live as the user types (in addition to the
+        // existing dynamic-placeholder hide/show logic above).
+        searchInput.addEventListener('input', (e) => {
+            renderAutocompleteSuggestions(e.target.value);
+            if (autocompleteDropdown.classList.contains('hidden')) {
+                openAutocompleteDropdown();
+            }
+        });
+
+        // Keyboard behavior: Escape closes the dropdown without clearing input.
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeAutocompleteDropdown();
+                searchInput.blur();
+            }
         });
 
         // Handle clicks outside to close dropdown
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target) && !autocompleteDropdown.contains(e.target)) {
-                autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => {
-                    autocompleteDropdown.classList.add('hidden');
-                }, 300);
+                closeAutocompleteDropdown();
             }
         });
 
-        // Handle suggestion clicking
-        document.querySelectorAll('.autocomplete-item').forEach(item => {
-            item.addEventListener('click', () => {
-                // Read the human-readable label from data-value -- item.innerText
-                // previously included the Material Symbols icon's ligature text
-                // (e.g. "monitor_weight") concatenated with the label.
-                const text = item.dataset.value || item.innerText.trim();
-                searchInput.value = text;
-                dynamicPlaceholder.style.display = 'none';
-                autocompleteDropdown.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => {
-                    autocompleteDropdown.classList.add('hidden');
-                }, 300);
-                
-                // Optional: Automatically trigger search
-                // performSearch(); 
-            });
+        // Handle suggestion clicking. Delegated on the dropdown container
+        // (rather than a one-time querySelectorAll) since the list is
+        // re-rendered on every keystroke.
+        autocompleteDropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.autocomplete-item');
+            if (!item) return;
+            const text = item.dataset.value || item.innerText.trim();
+            searchInput.value = text;
+            dynamicPlaceholder.style.display = 'none';
+            closeAutocompleteDropdown();
+
+            // Optional: Automatically trigger search
+            // performSearch();
         });
 
         async function loadHomepageReviews() {
