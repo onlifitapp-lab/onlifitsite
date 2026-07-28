@@ -213,6 +213,30 @@
             scroll-snap-align: start;
         }
 
+        /* Hand-written, same reason as .testimonial-card above: styles.css
+           is a frozen/stale precompiled snapshot, so any Tailwind arbitrary-
+           value width class (w-[78%], w-[30%], sm:w-[22%], md:w-[15%], etc.)
+           that wasn't already present somewhere in the codebase when that
+           snapshot was generated has NO actual CSS behind it -- the class
+           name is applied but does nothing, so the card has no real width,
+           the row never overflows, and it silently fails to horizontally
+           scroll on mobile. Both the "How Onlifit Works" steps and the
+           "Browse by specialty" category pills hit this. */
+        .how-step {
+            flex: 0 0 78%;
+        }
+        .carousel-pill {
+            flex: 0 0 42%;
+        }
+        @media (min-width: 480px) {
+            .how-step { flex: 0 0 46%; }
+            .carousel-pill { flex: 0 0 30%; }
+        }
+        @media (min-width: 768px) {
+            .how-step { flex: 1 1 0%; }
+            .carousel-pill { flex: 0 0 15%; }
+        }
+
         /* Hand-written, not dependent on Tailwind utility classes (styles.css
            is a stale hand-compiled snapshot -- w-2/h-2/rounded-full/
            bg-outline-variant classes used here previously may not be
@@ -263,6 +287,16 @@
             width: 100%;
             aspect-ratio: 6016 / 4016;
         }
+
+        /* Premium subtle dot-grid backdrop for the hero, fading out toward
+           the edges so it reads as depth/texture rather than a busy pattern. */
+        .hero-grid-bg {
+            background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+            background-size: 28px 28px;
+            -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 40%, transparent 90%);
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 40%, transparent 90%);
+        }
+
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -278,66 +312,65 @@
 <body class="bg-surface font-body text-on-surface selection:bg-primary-fixed-dim selection:text-on-primary-fixed" data-hide-global-footer="true">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
-        <div class="flex items-center justify-between px-6 md:px-8 py-4 max-w-screen-2xl mx-auto">
-            <div class="flex items-center gap-8">
-                <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
-                <div class="hidden md:flex gap-6 items-center">
-                    <a href="about.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">About</a>
-                    <a href="pricing.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Pricing</a>
-                    <a href="blog.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Blog</a>
-                    <a href="calculators.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Free Tools</a>
-                    <a href="join-us.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Join Us</a>
+    <nav class="fixed top-0 w-full z-50 px-3 pt-3 md:px-5 md:pt-4">
+        <div class="max-w-6xl mx-auto glass-effect border border-outline-variant/40 rounded-2xl shadow-ambient-medium relative">
+            <div class="flex items-center justify-between px-4 md:px-6 py-3">
+                <div class="flex items-center gap-8">
+                    <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
+                    <div class="hidden md:flex gap-6 items-center">
+                        <a href="about.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">About</a>
+                        <a href="pricing.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Pricing</a>
+                        <a href="blog.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Blog</a>
+                        <a href="calculators.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Free Tools</a>
+                        <a href="join-us.html" class="text-sm font-bold text-on-surface hover:text-primary transition-colors">Join Us</a>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="nav-auth" class="flex items-center gap-2 md:gap-4 hidden sm:flex">
+                        <a href="login.html" class="px-5 py-2 text-sm font-semibold text-on-surface hover:text-primary transition-all">Login</a>
+                        <a href="login.html?tab=signup" class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Sign Up</a>
+                    </div>
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-btn" class="md:hidden p-2 text-on-surface hover:bg-surface-container rounded-full transition-colors">
+                        <span class="material-symbols-outlined text-2xl">menu</span>
+                    </button>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div id="nav-auth" class="flex items-center gap-2 md:gap-4 hidden sm:flex">
-                    <a href="login.html" class="px-5 py-2 text-sm font-semibold text-on-surface hover:text-primary transition-all">Login</a>
-                    <a href="login.html?tab=signup" class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Sign Up</a>
+
+            <!-- Mobile Dropdown Menu -->
+            <div id="mobile-menu" class="hidden md:hidden bg-surface border-t border-outline-variant/30 px-6 py-4 flex flex-col gap-4 rounded-b-2xl absolute w-full left-0 top-full mt-1 shadow-elevated">
+                <a href="about.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">About</a>
+                <a href="pricing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Pricing</a>
+                <a href="blog.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Blog</a>
+                <a href="calculators.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Free Tools</a>
+                <a href="join-us.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Join Us</a>
+
+                <div id="mobile-nav-auth" class="flex flex-col gap-3 mt-2 sm:hidden">
+                    <a href="login.html" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all">Login</a>
+                    <a href="login.html?tab=signup" class="w-full text-center px-6 py-3 text-base font-bold bg-primary text-on-primary rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Sign Up</a>
                 </div>
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-btn" class="md:hidden p-2 text-on-surface hover:bg-surface-container rounded-full transition-colors">
-                    <span class="material-symbols-outlined text-2xl">menu</span>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mobile Dropdown Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-surface border-b border-outline-variant/30 px-6 py-4 flex flex-col gap-4 shadow-elevated absolute w-full left-0 top-full">
-            <a href="about.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">About</a>
-            <a href="pricing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Pricing</a>
-            <a href="blog.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Blog</a>
-            <a href="calculators.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Free Tools</a>
-            <a href="join-us.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Join Us</a>
-            
-            <div id="mobile-nav-auth" class="flex flex-col gap-3 mt-2 sm:hidden">
-                <a href="login.html" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all">Login</a>
-                <a href="login.html?tab=signup" class="w-full text-center px-6 py-3 text-base font-bold bg-primary text-on-primary rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Sign Up</a>
             </div>
         </div>
     </nav>
 
-    <main class="pt-24">
+    <main class="pt-24 md:pt-28">
 
         <!-- Hero Section -->
         <section class="relative px-6 pt-14 pb-16 lg:pt-20 lg:pb-24 overflow-hidden bg-surface">
-            <!-- Decorative background blobbies -->
-            <div class="absolute -top-10 -right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-0"></div>
-            <div class="absolute top-40 -left-20 w-80 h-80 bg-tertiary/10 rounded-full blur-3xl -z-0"></div>
-
+            <div class="hero-grid-bg absolute inset-0 -z-0" aria-hidden="true"></div>
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Left Column: Text Content -->
                     <div class="flex flex-col text-center lg:text-left">
                         <!-- Eyebrow -->
-                        <div class="inline-flex items-center gap-2 self-center lg:self-start mb-5 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10">
+                        <div class="inline-flex items-center gap-2 self-center lg:self-start mb-6 px-4 py-1.5 rounded-full bg-white border border-outline-variant/60 shadow-sm">
                             <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
                             <span class="text-[11px] font-bold uppercase tracking-widest text-on-surface">India's Largest Trainer Network</span>
                         </div>
 
                         <!-- Main Header (H1) -->
                         <h1 class="font-headline text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-5 leading-[1.05] tracking-tight">
-                            Find the perfect trainer today
+                            Find your perfect trainer today
                         </h1>
 
                         <!-- Subtext (H2) -->
@@ -347,7 +380,7 @@
 
                         <!-- Search Bar -->
                         <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-3 text-center lg:text-left">Search verified trainers near you</p>
-                        <div class="hero-search-bar bg-white rounded-2xl shadow-ambient-medium w-full p-2 border border-outline-variant/50 mb-6 transform transition-all hover:shadow-elevated relative z-50 overflow-hidden">
+                        <div class="hero-search-bar bg-white rounded-2xl shadow-elevated w-full p-2 border border-outline-variant/50 mb-6 transform transition-all hover:-translate-y-0.5 relative z-50 overflow-hidden">
                     <div class="hero-search-segment hero-search-input-wrap flex items-center relative">
                         <div class="relative w-full flex items-center">
                             <span class="material-symbols-outlined absolute left-0 text-on-surface-variant pointer-events-none">search</span>
@@ -460,12 +493,13 @@
         <!-- --- Redesigned Homepage Sections (mobile-first, carousels, simplified flows) --- -->
 
         <!-- 2 — Featured Trainers -->
-        <section class="py-12 px-6 border-t border-outline-variant/30">
+        <section class="py-16 lg:py-20 px-6 border-t border-outline-variant/30">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">Handpicked for you</p>
                         <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Featured Trainers</h2>
-                        <p class="text-on-surface-variant text-sm">Top-rated and promoted trainers to help you start fast.</p>
+                        <p class="text-on-surface-variant text-sm mt-1">Top-rated and promoted trainers to help you start fast.</p>
                     </div>
                     <div class="hidden md:flex gap-2">
                         <button class="carousel-arrow prev" data-target="featured-trainers" aria-label="Previous"><span class="material-symbols-outlined">west</span></button>
@@ -483,60 +517,67 @@
         </section>
 
         <!-- 3 — How Onlifit Works -->
-        <section class="py-12 px-6">
-            <div class="max-w-7xl mx-auto text-center mb-6">
-                <h2 class="font-headline text-3xl font-black">How Onlifit Works</h2>
-                <p class="text-on-surface-variant">Find a trainer, choose a plan, and connect on WhatsApp.</p>
+        <section class="py-16 lg:py-20 px-6">
+            <div class="max-w-7xl mx-auto text-center mb-10">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2">The process</p>
+                <h2 class="font-headline text-3xl md:text-4xl font-black">How Onlifit Works</h2>
+                <p class="text-on-surface-variant mt-2">Find a trainer, choose a plan, and connect on WhatsApp.</p>
             </div>
             <div class="max-w-7xl mx-auto">
-                <div class="relative flex items-center justify-center">
-                    <div class="w-full flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory md:overflow-visible">
-                        <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
-                            <div class="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                                <span class="material-symbols-outlined text-primary">search</span>
+                <div class="w-full flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory">
+                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white text-[20px]">search</span>
                             </div>
-                            <h4 class="font-bold">Search</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Search by goal, location or specialty.</p>
+                            <span class="font-headline font-black text-3xl text-on-surface select-none" style="opacity:.12;">01</span>
                         </div>
-                        <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
-                            <div class="w-12 h-12 mx-auto rounded-xl bg-secondary/10 flex items-center justify-center mb-4">
-                                <span class="material-symbols-outlined text-secondary">playlist_add_check</span>
-                            </div>
-                            <h4 class="font-bold">Choose Trainer</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Compare pricing, ratings and reviews.</p>
-                        </div>
-                        <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
-                            <div class="w-12 h-12 mx-auto rounded-xl bg-tertiary/10 flex items-center justify-center mb-4">
-                                <span class="material-symbols-outlined text-tertiary">chat</span>
-                            </div>
-                            <h4 class="font-bold">Contact on WhatsApp</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">Message directly, no middleman.</p>
-                        </div>
-                        <div class="how-step flex-1 bg-white rounded-2xl p-6 text-center border border-outline-variant/30 shadow-sm">
-                            <div class="w-12 h-12 mx-auto rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                                <span class="material-symbols-outlined text-primary">fitness_center</span>
-                            </div>
-                            <h4 class="font-bold">Start Training</h4>
-                            <p class="text-on-surface-variant text-sm mt-2">First session's free, no commitment.</p>
-                        </div>
+                        <h4 class="font-bold">Search</h4>
+                        <p class="text-on-surface-variant text-sm mt-2">Search by goal, location or specialty.</p>
                     </div>
-                    <!-- Connecting line -->
-                    <div class="absolute inset-x-6 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                        <div class="h-0.5 bg-outline-variant/20 w-full rounded"></div>
+                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white text-[20px]">playlist_add_check</span>
+                            </div>
+                            <span class="font-headline font-black text-3xl text-on-surface select-none" style="opacity:.12;">02</span>
+                        </div>
+                        <h4 class="font-bold">Choose Trainer</h4>
+                        <p class="text-on-surface-variant text-sm mt-2">Compare pricing, ratings and reviews.</p>
+                    </div>
+                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white text-[20px]">chat</span>
+                            </div>
+                            <span class="font-headline font-black text-3xl text-on-surface select-none" style="opacity:.12;">03</span>
+                        </div>
+                        <h4 class="font-bold">Contact on WhatsApp</h4>
+                        <p class="text-on-surface-variant text-sm mt-2">Message directly, no middleman.</p>
+                    </div>
+                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white text-[20px]">fitness_center</span>
+                            </div>
+                            <span class="font-headline font-black text-3xl text-on-surface select-none" style="opacity:.12;">04</span>
+                        </div>
+                        <h4 class="font-bold">Start Training</h4>
+                        <p class="text-on-surface-variant text-sm mt-2">First session's free, no commitment.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- 4 — Browse Categories -->
-        <section class="py-10 px-6 bg-surface-container-lowest">
+        <section class="py-14 lg:py-16 px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="font-headline text-xl font-black">Browse by specialty</h3>
                     <p class="text-on-surface-variant text-sm hidden sm:block">Tap a category to search</p>
                 </div>
                 <div id="categories-carousel" class="carousel flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
-                    <button type="button" onclick="onlifitSearchCategory('Yoga')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('Yoga')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary">self_improvement</span>
@@ -544,7 +585,7 @@
                             <span class="text-sm font-bold text-on-surface">Yoga</span>
                         </div>
                     </button>
-                    <button type="button" onclick="onlifitSearchCategory('Weight Loss')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('Weight Loss')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-tertiary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-tertiary">monitor_weight</span>
@@ -552,7 +593,7 @@
                             <span class="text-sm font-bold text-on-surface">Weight Loss</span>
                         </div>
                     </button>
-                    <button type="button" onclick="onlifitSearchCategory('Strength')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('Strength')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-secondary">fitness_center</span>
@@ -560,7 +601,7 @@
                             <span class="text-sm font-bold text-on-surface">Strength</span>
                         </div>
                     </button>
-                    <button type="button" onclick="onlifitSearchCategory('CrossFit')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('CrossFit')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary">sports_gymnastics</span>
@@ -568,7 +609,7 @@
                             <span class="text-sm font-bold text-on-surface">CrossFit</span>
                         </div>
                     </button>
-                    <button type="button" onclick="onlifitSearchCategory('Running')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('Running')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-tertiary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-tertiary">directions_run</span>
@@ -576,7 +617,7 @@
                             <span class="text-sm font-bold text-on-surface">Running</span>
                         </div>
                     </button>
-                    <button type="button" onclick="onlifitSearchCategory('Home Workout')" class="carousel-pill shrink-0 w-[30%] sm:w-[22%] md:w-[15%] snap-start">
+                    <button type="button" onclick="onlifitSearchCategory('Home Workout')" class="carousel-pill snap-start">
                         <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                             <div class="w-11 h-11 rounded-xl bg-secondary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-secondary">home</span>
@@ -621,12 +662,13 @@
         </section>
 
         <!-- 6 — Testimonials -->
-        <section id="reviews-section" class="py-12 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
+        <section id="reviews-section" class="py-16 lg:py-20 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-primary/70 mb-1.5">Real results</p>
                         <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Success Stories</h2>
-                        <p class="text-on-surface-variant text-sm">Real results from real members.</p>
+                        <p class="text-on-surface-variant text-sm mt-1">Real results from real members.</p>
                     </div>
                     <div class="hidden md:flex gap-2">
                         <button onclick="scrollTestimonials(-1)" class="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all" aria-label="Scroll reviews left">
@@ -697,6 +739,7 @@
         <!-- 8 — FAQ -->
         <section class="py-16 px-6 bg-surface">
             <div class="max-w-3xl mx-auto">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2 text-center">Questions &amp; answers</p>
                 <h2 class="font-headline text-2xl md:text-3xl font-black text-center mb-8">Frequently Asked Questions</h2>
                 <div class="space-y-4">
                     <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
