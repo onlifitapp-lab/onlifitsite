@@ -168,7 +168,7 @@
             <button id="sidebar-toggle" class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-white/70 hover:text-primary transition-colors" aria-label="Open menu">
                 <span class="material-symbols-outlined text-[28px]">menu</span>
             </button>
-            <a href="onlifit.html" class="text-2xl md:text-3xl font-black tracking-tighter font-headline font-semibold text-on-surface-variant truncate">Onlifit</a>
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter font-headline font-semibold text-primary">Onlifit</a>
             <div class="hidden md:flex gap-6 items-center">
                 <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
                 <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
@@ -385,6 +385,9 @@
 
 <!-- â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <footer class="app-main--with-sidebar bg-surface-container-low py-8 px-6 md:px-8">
+    <div class="max-w-7xl mx-auto text-center sm:text-left">
+        <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline font-semibold mb-4 block">Onlifit</a>
+    </div>
     <div class="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-between items-center max-w-7xl mx-auto border-t border-outline-variant/20 pt-8 gap-4">
         <p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">© 2024 Onlifit. All rights reserved.</p>
         <div class="flex gap-6">
@@ -813,9 +816,17 @@
     ];
 
     function setRandomQuote() {
+        // The quote widget's markup was removed from this dashboard at some
+        // point; this function was left behind still targeting it. Skip
+        // gracefully if the widget isn't present instead of throwing and
+        // aborting the rest of renderAll().
+        const quoteEl = document.getElementById('motivation-quote');
+        const authorEl = document.getElementById('motivation-author');
+        if (!quoteEl || !authorEl) return;
+
         const q = quotes[Math.floor(Math.random() * quotes.length)];
-        document.getElementById('motivation-quote').textContent = '"' + q.text + '"';
-        document.getElementById('motivation-author').textContent = '- ' + q.author;
+        quoteEl.textContent = '"' + q.text + '"';
+        authorEl.textContent = '- ' + q.author;
     }
 
     // â”€â”€ Reviews Logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

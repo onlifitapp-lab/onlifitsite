@@ -16,11 +16,17 @@
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .btn-primary { background: #FF5A5F; color: white; transition: all 0.2s; box-shadow: 0 4px 14px rgba(255, 90, 95, 0.2); }
-        .btn-primary:hover { outline: 4px solid #FFE8E9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255, 90, 95, 0.3); }
-        
+
+        /* Was hardcoded to the old coral brand color (#FF5A5F), left over
+           from before the site's rebrand to the current black/white design
+           system -- every other page's buttons use bg-primary/text-on-primary
+           (black), so this made support.html's two main CTAs the only red
+           buttons on the site. Matches that token pairing now instead. */
+        .btn-primary { background: var(--md-sys-color-primary, #000); color: #fff; transition: all 0.2s; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
         .file-upload-area { border: 2px dashed #E2E8F0; padding: 2rem; text-align: center; border-radius: 1rem; cursor: pointer; transition: all 0.2s; }
-        .file-upload-area:hover, .file-upload-area.drag-active { border-color: #FF5A5F; background-color: #FFE8E9; }
+        .file-upload-area:hover, .file-upload-area.drag-active { border-color: #000; background-color: #FAFAFA; }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -38,7 +44,7 @@
 <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
     <div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto">
         <div class="flex items-center gap-8">
-            <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-primary font-headline" style="color: #FF5A5F;">Onlifit</a>
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
         </div>
         <div id="nav-auth" class="flex items-center gap-4">
             <a href="login.html" class="btn-primary px-6 py-2 rounded-full font-bold text-sm">Login</a>
