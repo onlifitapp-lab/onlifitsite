@@ -242,15 +242,15 @@
 </div>
 </div>
 <nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0">
-<a class="flex items-center gap-3 px-6 py-2.5 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="/trainer/dashboard">
+<a class="flex items-center gap-3 px-6 py-2.5 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="bookings.html#dashboard">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">dashboard</span>
 <span>Dashboard</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/bookings">
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="bookings.html#bookings">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">event_note</span>
 <span>Bookings</span>
 </a>
-<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/leads">
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="bookings.html#leads">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">group</span>
 <span>Leads</span>
 </a>
@@ -258,13 +258,13 @@
          this codebase (always falsy), and the bookings list already has a "Message button removed
          (platform chat deprecated)" comment. The view/route still exist but re-linking it would
          surface an empty, non-functional inbox. Not touched by Phase 3. -->
-<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="/trainer/settings">
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="bookings.html#settings">
 <span class="material-symbols-outlined text-[20px] leading-none shrink-0">settings</span>
 <span>Settings</span>
 </a>
 </nav>
 <div class="flex-shrink-0 md:px-6 md:mt-auto md:pb-8">
-<a href="/trainer/earnings" class="px-6 md:w-full py-2.5 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all sidebar-link">
+<a href="bookings.html#earnings" class="px-6 md:w-full py-2.5 md:py-3 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-all sidebar-link">
 <span class="material-symbols-outlined text-[18px] leading-none">analytics</span> Insights
 </a>
 </div>
@@ -318,6 +318,14 @@
             <button onclick="handleSubscriptionAction('renew')" id="btn-grace-renew" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors whitespace-nowrap">Renew Now</button>
         </div>
 
+        <div id="free-trial-banner" class="hidden rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-bold" id="free-trial-status-text"></p>
+                <p class="text-xs mt-1" id="free-trial-lead-counter-text"></p>
+            </div>
+            <button onclick="handleSubscriptionAction('upgrade')" id="btn-free-trial-upgrade" class="hidden px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors whitespace-nowrap">Upgrade to Pro</button>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
             <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
                 <div>
@@ -358,7 +366,7 @@
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
                 <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
                     <h3 class="font-headline text-lg font-black">Next Sessions</h3>
-                    <a href="/trainer/bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">View all</a>
+                    <a href="bookings.html#bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">View all</a>
                 </div>
                 <div id="next-sessions-list" class="divide-y divide-outline-variant/20">
                     <div class="p-6" aria-hidden="true">
@@ -793,7 +801,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
             <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
                 <h3 class="font-headline text-lg font-black">Recent Bookings</h3>
-                <a href="/trainer/bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">Open bookings</a>
+                <a href="bookings.html#bookings" class="text-xs font-black uppercase tracking-widest text-primary hover:opacity-80 sidebar-link">Open bookings</a>
             </div>
             <div id="insight-recent-bookings" class="divide-y divide-outline-variant/20"></div>
         </div>
@@ -2699,6 +2707,7 @@
 
         renderSubscriptionCard(trainerUser);
         renderVerificationCard(trainerUser);
+        renderFreeTrialCard(trainerUser);
         renderBoostCard(trainerUser);
 
         const welcome = document.getElementById('welcome-message');
@@ -2787,6 +2796,63 @@
             // pending / under_review
             banner.classList.add('border', 'bg-yellow-50', 'border-yellow-300', 'text-yellow-900');
             textEl.textContent = 'Verification pending — our team typically reviews documents within 24 hours. Your profile will appear in search once verified.';
+        }
+    }
+
+    async function renderFreeTrialCard(user) {
+        const banner = document.getElementById('free-trial-banner');
+        const statusEl = document.getElementById('free-trial-status-text');
+        const counterEl = document.getElementById('free-trial-lead-counter-text');
+        const upgradeBtn = document.getElementById('btn-free-trial-upgrade');
+        if (!banner || !statusEl || !counterEl || !upgradeBtn) return;
+
+        const status = (user?.subscription_status || '').toLowerCase();
+        const expiresAt = user?.free_trial_expires_at ? new Date(user.free_trial_expires_at) : null;
+        const isTrial = status === 'free_trial' && expiresAt && expiresAt.getTime() > Date.now();
+
+        banner.classList.remove('hidden', 'bg-yellow-50', 'border-yellow-300', 'text-yellow-900', 'bg-red-50', 'border-red-300', 'text-red-900', 'border');
+        upgradeBtn.classList.add('hidden');
+
+        if (!isTrial) {
+            banner.classList.add('hidden');
+            return;
+        }
+
+        const daysLeft = Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+
+        let cap = 5;
+        let used = 0;
+        try {
+            const { data: capRow } = await supabaseClient
+                .from('system_settings')
+                .select('value')
+                .eq('key', 'free_trial_monthly_lead_cap')
+                .maybeSingle();
+            if (capRow?.value != null) cap = Number(capRow.value) || 5;
+
+            const monthStart = new Date();
+            monthStart.setDate(1);
+            monthStart.setHours(0, 0, 0, 0);
+
+            const { count } = await supabaseClient
+                .from('client_enquiries')
+                .select('*', { count: 'exact', head: true })
+                .eq('trainer_id', user.id)
+                .gte('created_at', monthStart.toISOString());
+            used = Number(count ?? 0);
+        } catch {
+            // Keep defaults if either lookup fails — banner still renders with the trial-days message.
+        }
+
+        const exhausted = used >= cap;
+
+        banner.classList.add('border', exhausted ? 'bg-red-50' : 'bg-yellow-50', exhausted ? 'border-red-300' : 'border-yellow-300', exhausted ? 'text-red-900' : 'text-yellow-900');
+        statusEl.textContent = `Free Trial — ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
+        counterEl.textContent = `${used}/${cap} leads used this month`;
+
+        if (exhausted) {
+            upgradeBtn.textContent = 'Upgrade to Pro for ₹999/month to get 30 leads';
+            upgradeBtn.classList.remove('hidden');
         }
     }
 
@@ -3129,30 +3195,41 @@ class DashboardRouter {
             this.handleRoute();
         });
 
-        // Intercept clicks on any /trainer/* link to keep SPA navigation in-tab.
+        // Intercept clicks on sidebar links (bookings.html#route, the primary
+        // in-app form) and legacy /trainer/* links (old bookmarks/shared
+        // URLs, kept working for anyone already on this page) to keep SPA
+        // navigation in-tab instead of a full reload.
         document.body.addEventListener('click', (e) => {
             const a = e.target.closest('a[href]');
             if (!a) return;
 
             const href = a.getAttribute('href') || '';
-            if (!href.startsWith('/trainer/')) return;
+            const hashMatch = href.match(/^(?:bookings\.html)?#([a-z]+)$/i);
+            const isLegacyPath = href.startsWith('/trainer/');
+            if (!hashMatch && !isLegacyPath) return;
 
             // Allow new-tab gestures if user explicitly uses them
             if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
             e.preventDefault();
-            history.pushState(null, '', href);
-            this.handleRoute();
+            const route = hashMatch ? hashMatch[1] : href.replace(/^\/trainer\/?/i, '');
+            this.navigate(route);
         });
     }
 
     getRouteFromUrl() {
-        const path = window.location.pathname;
+        // Hash-based routing is primary: bookings.html#leads works whether
+        // Vercel's /trainer/:path* rewrite is healthy or not (it's a plain
+        // fragment on an already-working static file, never a server
+        // request of its own). Fall back to the legacy /trainer/* path only
+        // for anyone landing via an old bookmark/shared link where the
+        // rewrite happens to still resolve.
         const hashRoute = (window.location.hash || '').replace('#', '').split('?')[0];
-        let route = path.replace(/^\/trainer\/?/i, '');
+        const path = window.location.pathname;
+        let route = hashRoute || path.replace(/^\/trainer\/?/i, '');
 
         if (!route || route === 'trainer' || route === 'bookings.html' || route.endsWith('.html')) {
-            route = hashRoute || 'dashboard';
+            route = 'dashboard';
         }
 
         const supported = new Set(['dashboard', 'bookings', 'leads', 'settings', 'earnings']);
@@ -3177,8 +3254,8 @@ class DashboardRouter {
 
         // Update Sidebar Active States
         this.navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === '/trainer/' + route) {
+            const href = link.getAttribute('href') || '';
+            if (href.endsWith('#' + route)) {
                 link.classList.add('bg-primary-container', 'text-primary');
                 link.classList.remove('text-on-surface-variant');
             } else {
@@ -3200,7 +3277,7 @@ class DashboardRouter {
     }
 
     navigate(path) {
-        history.pushState(null, '', '/trainer/' + path);
+        history.pushState(null, '', '#' + path);
         this.handleRoute();
     }
 }

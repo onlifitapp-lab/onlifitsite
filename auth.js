@@ -306,13 +306,21 @@ initAppLayoutSync();
 // subscribed (expires_at IS NULL --> NULL > x is not true in SQL) and
 // trainers in their post-expiry grace period (expires_at is already in the
 // past), matching the existing "must be active, not grace_period" rule.
-function applyDiscoverabilityFilter(query) {
+// limit defaults to 200 -- generous for the marketplace's current size, and
+// crucially bounds worst-case payload/scan cost as the trainer base grows
+// (previously unbounded, contributing to the slow-query/timeout bug -- see
+// the migration adding idx_profiles_trainer_discoverability). If the
+// trainer count grows past this, replace with real cursor/offset pagination
+// rather than raising the number further.
+function applyDiscoverabilityFilter(query, limit = 200) {
+    const nowIso = new Date().toISOString();
     return query
         .eq('role', 'trainer')
         .eq('onboarding_completed', true)
-        .gt('subscription_expires_at', new Date().toISOString())
         .eq('verification_status', 'verified')
-        .eq('account_status', 'active');
+        .eq('account_status', 'active')
+        .or(`subscription_expires_at.gt.${nowIso},free_trial_expires_at.gt.${nowIso}`)
+        .limit(limit);
 }
 
 function getDashboardPathForRole(role) {
@@ -1208,7 +1216,7 @@ async function getTrainers(options = {}) {
         const response = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (response._timeout) {
-            console.warn('Supabase trainers query took >2.5s. Returning cached/empty and continuing fetch in background.');
+            console.warn('Supabase trainers query took >6s. Returning cached/empty and continuing fetch in background.');
             fetchPromise.then(res => {
                 if (res?.data && res.data.length > 0) {
                     const normalized = normalizeTrainerList(res.data);
