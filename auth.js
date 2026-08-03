@@ -323,6 +323,132 @@ function applyDiscoverabilityFilter(query, limit = 200) {
         .limit(limit);
 }
 
+async function getActiveClientSubscription(clientId) {
+    if (!clientId) return null;
+    const { data } = await supabaseClient
+        .from('client_subscriptions')
+        .select('expires_at')
+        .eq('client_id', clientId)
+        .eq('status', 'paid')
+        .gt('expires_at', new Date().toISOString())
+        .order('expires_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    return data || null;
+}
+
+let _cachedClientSubStatus; // undefined = not yet checked; null = checked, no active sub; object = active sub row
+
+async function refreshCachedClientSubscriptionStatus(clientId) {
+    _cachedClientSubStatus = await getActiveClientSubscription(clientId);
+    return _cachedClientSubStatus;
+}
+
+function getCachedClientSubscriptionStatus() {
+    return _cachedClientSubStatus;
+}
+
+let _clientRazorpayCheckoutPromise = null;
+function loadClientRazorpayCheckout() {
+    if (window.Razorpay) return Promise.resolve();
+    if (_clientRazorpayCheckoutPromise) return _clientRazorpayCheckoutPromise;
+    _clientRazorpayCheckoutPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load payment SDK.'));
+        document.head.appendChild(script);
+    });
+    return _clientRazorpayCheckoutPromise;
+}
+
+async function startClientSubscriptionCheckout(options = {}) {
+    const btnId = options.btnId || 'client-sub-pay-btn';
+    const statusId = options.statusId || 'client-sub-status-text';
+    const btn = document.getElementById(btnId);
+    const statusText = document.getElementById(statusId);
+    const notify = (message) => { if (statusText) statusText.textContent = message || ''; };
+
+    try {
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+        notify('Preparing checkout...');
+
+        const user = await getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const authHeader = typeof getApiAuthHeader === 'function' ? await getApiAuthHeader() : null;
+        if (!authHeader) {
+            notify('Please log in to continue.');
+            return;
+        }
+
+        await loadClientRazorpayCheckout();
+
+        const orderRes = await fetch('/api/create-client-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader }
+        });
+        const orderData = await orderRes.json();
+
+        if (!orderRes.ok) {
+            notify(orderData.error || 'Could not start checkout.');
+            return;
+        }
+
+        const rzp = new Razorpay({
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: 'Onlifit',
+            description: 'Monthly Client Access',
+            order_id: orderData.orderId,
+            theme: { color: '#000000' },
+            handler: async function (rpResponse) {
+                notify('Confirming payment...');
+                try {
+                    const verifyRes = await fetch('/api/verify-client-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                        body: JSON.stringify({
+                            razorpay_order_id: rpResponse.razorpay_order_id,
+                            razorpay_payment_id: rpResponse.razorpay_payment_id,
+                            razorpay_signature: rpResponse.razorpay_signature
+                        })
+                    });
+                    const verifyData = await verifyRes.json();
+                    if (verifyRes.ok && verifyData.success) {
+                        notify('Subscription activated!');
+                        await refreshCachedClientSubscriptionStatus(user.id);
+                        if (typeof options.onSuccess === 'function') {
+                            await options.onSuccess();
+                        }
+                    } else {
+                        notify('Payment received but activation failed. Contact support if this persists.');
+                    }
+                } catch (e) {
+                    notify('Could not confirm payment. If money was deducted, contact support.');
+                }
+            },
+            modal: {
+                ondismiss: function () { notify(''); }
+            }
+        });
+
+        rzp.on('payment.failed', function (response) {
+            notify('Payment failed: ' + (response?.error?.description || 'Please try again.'));
+        });
+
+        rzp.open();
+    } catch (err) {
+        notify(err.message || 'Something went wrong.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    }
+}
+
 function getDashboardPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
     if (normalized === 'admin') return 'admin-dashboard.html';
@@ -2349,6 +2475,12 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         if (options?.context === 'dashboard') {
             return `trainer-profile.html?id=${tid}`;
         }
+        const cachedSub = getCachedClientSubscriptionStatus();
+        if (cachedSub === null) {
+            // Logged-in client, checked, no active subscription — send them
+            // straight to the profile page's payment prompt instead of WhatsApp.
+            return `trainer-profile.html?id=${tid}&unlock=1`;
+        }
         const redirect = `trainer-profile.html?id=${tid}`;
         return `login.html?redirect=${encodeURIComponent(redirect)}`;
     }
@@ -2412,7 +2544,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
                             ${renderOfferLine()}
                         </div>
                         <div class="mt-2 grid grid-cols-2 gap-2">
-                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center gap-1 px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()"><span class="material-symbols-outlined text-[14px]">chat</span>WhatsApp</a>
+                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center gap-1 px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()"><span class="material-symbols-outlined text-[14px]">${getCachedClientSubscriptionStatus() === null ? 'lock' : 'chat'}</span>${getCachedClientSubscriptionStatus() === null ? 'Pay ₹499' : 'WhatsApp'}</a>
                             <a href="${escapeHtml(profileHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors truncate" onclick="event.stopPropagation()">View Profile</a>
                         </div>
                     </div>

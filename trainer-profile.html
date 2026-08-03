@@ -317,7 +317,7 @@
                 <p class="text-on-surface-variant text-sm">Opening WhatsApp so you can connect with the trainer directly.</p>
                 <p id="success-whatsapp-hint" class="hidden text-xs text-error mt-3">Didn't open automatically? Your browser may have blocked the popup — tap the button below.</p>
                 <div class="modal-cta-group-horizontal">
-                    <a href="/client/bookings" class="modal-cta bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View My Enquiries</a>
+                    <a href="client-dashboard.html#bookings" class="modal-cta bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View My Enquiries</a>
                     <a id="success-whatsapp" href="#" target="_blank" class="modal-cta hidden bg-white border border-outline-variant text-sm font-bold text-on-surface rounded-xl hover:bg-surface-container transition-all">Open WhatsApp</a>
                 </div>
             </div>
@@ -409,6 +409,13 @@
             trackProfileVisit(trainer.id);
 
             renderTrainerProfile();
+
+            if (params.get('unlock') === '1') {
+                const viewerForUnlock = await getCurrentUser();
+                if (viewerForUnlock?.role === 'client') {
+                    showClientSubscriptionPrompt();
+                }
+            }
         });
 
         function renderTrainerProfile() {
@@ -659,12 +666,19 @@
 
             const user = await getCurrentUser();
             if (!user) {
-                window.location.href = '/client/bookings';
+                window.location.href = 'client-dashboard.html#bookings';
                 return;
             }
             if (user.role === 'trainer') {
                 alert('Please log in as a client to book a trainer.');
                 return;
+            }
+            if (user.role === 'client') {
+                const sub = await getActiveClientSubscription(user.id);
+                if (!sub) {
+                    showClientSubscriptionPrompt();
+                    return;
+                }
             }
 
             const plan = trainer?.plans?.[selectedPlan];
@@ -701,6 +715,30 @@
         }
 
         let lastFocusedBeforeModal = null;
+
+        function showClientSubscriptionPrompt() {
+            const banner = document.getElementById('client-subscription-prompt');
+            if (banner) {
+                banner.classList.remove('hidden');
+                return;
+            }
+
+            lastFocusedBeforeModal = document.activeElement;
+            const modalEl = document.getElementById('booking-modal');
+            document.getElementById('modal-trainer-name').textContent = 'with ' + (trainer?.name || 'this trainer');
+            document.getElementById('modal-plan-info').innerHTML = `
+                <div id="client-subscription-prompt">
+                    <p class="text-sm text-on-surface-variant mb-4">Contacting trainers on Onlifit requires an active subscription.</p>
+                    <button type="button" id="client-sub-pay-btn" onclick="startClientSubscriptionCheckout({ onSuccess: async () => { closeBookingModal(); await openBookingModal(); } })"
+                        class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">
+                        Pay ₹499/month to contact this trainer
+                    </button>
+                    <p id="client-sub-status-text" class="text-xs text-on-surface-variant text-center mt-2"></p>
+                </div>
+            `;
+            document.getElementById('booking-form')?.classList.add('hidden');
+            modalEl.classList.remove('hidden');
+        }
 
         // ---------------------------------------------------------------
         // Enquiry form: chip selects, mode toggle, optional section,

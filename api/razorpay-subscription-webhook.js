@@ -85,6 +85,28 @@ async function handlePaymentCaptured(supabase, event, res) {
         return res.status(200).json({ received: true });
     }
 
+    const { data: clientSub } = await supabase
+        .from('client_subscriptions')
+        .select('client_id')
+        .eq('razorpay_order_id', orderId)
+        .maybeSingle();
+
+    if (clientSub) {
+        const { error } = await supabase.rpc('activate_client_subscription', {
+            p_client_id: clientSub.client_id,
+            p_razorpay_order_id: orderId,
+            p_razorpay_payment_id: paymentId,
+            p_amount: amountPaise ? amountPaise / 100 : null
+        });
+
+        if (error) {
+            console.error('webhook activate_client_subscription failed:', error);
+            return res.status(500).json({ error: 'Failed to process webhook' });
+        }
+
+        return res.status(200).json({ received: true });
+    }
+
     const { data: subPayment } = await supabase
         .from('subscription_payments')
         .select('trainer_id, plan, amount')

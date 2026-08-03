@@ -16,6 +16,13 @@
     </header>
 
     <main>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-outline-variant/20 mb-6">
+            <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Subscription</h3>
+            <p id="client-sub-status" class="text-sm font-bold">—</p>
+            <p id="client-sub-expiry" class="text-xs text-on-surface-variant mt-1">—</p>
+            <button id="client-sub-renew" class="hidden mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Renew — ₹499/month</button>
+        </div>
+
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-outline-variant/20">
                 <h3 class="font-headline text-sm font-bold text-on-surface mb-4">Invoices</h3>
@@ -44,6 +51,21 @@
     async function init() {
         const user = await requireAuth('client', window.location.href);
         if (!user) return;
+
+        const sub = await getActiveClientSubscription(user.id);
+        const statusEl = document.getElementById('client-sub-status');
+        const expiryEl = document.getElementById('client-sub-expiry');
+        const renewBtn = document.getElementById('client-sub-renew');
+        if (sub) {
+            statusEl.textContent = 'Active';
+            statusEl.classList.add('text-primary');
+            expiryEl.textContent = 'Renews on ' + new Date(sub.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } else {
+            statusEl.textContent = 'Expired';
+            expiryEl.textContent = 'Subscribe to contact trainers on WhatsApp.';
+            renewBtn.classList.remove('hidden');
+            renewBtn.addEventListener('click', () => startClientSubscriptionCheckout({ onSuccess: () => window.location.reload() }));
+        }
 
         // Placeholder: invoices and payment methods come from serverside billing service.
         // We'll show a simple message and provide an Add Payment Method button that opens support.

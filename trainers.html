@@ -224,8 +224,10 @@
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
-        requestAnimationFrame(() => {
+        requestAnimationFrame(async () => {
             void renderAuthNav();
+            const currentUser = await getCurrentUser();
+            if (currentUser?.role === 'client') await refreshCachedClientSubscriptionStatus(currentUser.id);
             void loadTrainers();
         });
 
@@ -406,7 +408,8 @@ function listenForTrainerUpdates() {
                     .gt('subscription_expires_at', new Date().toISOString())
                     .eq('verification_status', 'verified')
                     .eq('account_status', 'active')
-                    .order('rating', { ascending: false });
+                    .order('rating', { ascending: false })
+                    .limit(200);
 
                 if (error) throw error;
                 applyTrainerData(data || []);
