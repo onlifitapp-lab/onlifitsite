@@ -107,6 +107,51 @@ async function handlePaymentCaptured(supabase, event, res) {
         return res.status(200).json({ received: true });
     }
 
+    const { data: gymAccess } = await supabase
+        .from('gym_owner_city_access')
+        .select('gym_owner_id, city, amount_paid')
+        .eq('razorpay_order_id', orderId)
+        .maybeSingle();
+
+    if (gymAccess) {
+        const { error } = await supabase.rpc('activate_gym_owner_access', {
+            p_gym_owner_id: gymAccess.gym_owner_id,
+            p_city: gymAccess.city,
+            p_razorpay_order_id: orderId,
+            p_razorpay_payment_id: paymentId,
+            p_amount: amountPaise ? amountPaise / 100 : gymAccess.amount_paid
+        });
+
+        if (error) {
+            console.error('webhook activate_gym_owner_access failed:', error);
+            return res.status(500).json({ error: 'Failed to process webhook' });
+        }
+
+        return res.status(200).json({ received: true });
+    }
+
+    const { data: hiringPost } = await supabase
+        .from('gym_hiring_posts')
+        .select('id, amount_paid')
+        .eq('razorpay_order_id', orderId)
+        .maybeSingle();
+
+    if (hiringPost) {
+        const { error } = await supabase.rpc('activate_gym_hiring_post', {
+            p_post_id: hiringPost.id,
+            p_razorpay_order_id: orderId,
+            p_razorpay_payment_id: paymentId,
+            p_amount: amountPaise ? amountPaise / 100 : hiringPost.amount_paid
+        });
+
+        if (error) {
+            console.error('webhook activate_gym_hiring_post failed:', error);
+            return res.status(500).json({ error: 'Failed to process webhook' });
+        }
+
+        return res.status(200).json({ received: true });
+    }
+
     const { data: subPayment } = await supabase
         .from('subscription_payments')
         .select('trainer_id, plan, amount')

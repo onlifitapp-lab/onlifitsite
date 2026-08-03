@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+        <script>document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');</script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Gyms Hiring in Hyderabad | Onlifit</title>
+    <meta name="description" content="Browse gyms currently hiring personal trainers in Hyderabad. Find full-time, part-time, and freelance opportunities and contact gyms directly on WhatsApp." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <link href="styles.css" rel="stylesheet" />
+    <link href="mobile-optimizations.css" rel="stylesheet" />
+
+    <style>
+        html { font-size: 16px; }
+        body { font-size: 1rem; line-height: 1.5; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4W2306MJ1Y');
+</script>
+</head>
+<body class="bg-background text-on-background font-body">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+        <div class="flex items-center justify-between px-6 md:px-8 py-4 max-w-screen-2xl mx-auto">
+            <div class="flex items-center gap-8 min-w-0">
+                <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline font-semibold shrink-0">Onlifit</a>
+                <div class="hidden md:flex gap-6 items-center">
+                    <a href="about.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">About</a>
+                    <a href="pricing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
+                    <a href="gym-landing.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">For Gyms</a>
+                    <a href="join-us.html" class="text-sm font-bold text-on-surface-variant hover:text-primary transition-colors">Join Us</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="nav-auth" class="flex items-center"></div>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 text-on-surface hover:bg-surface-container rounded-full transition-colors" aria-label="Open menu">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-surface border-b border-outline-variant/30 px-6 py-4 flex flex-col gap-4 shadow-xl absolute w-full left-0 top-full">
+            <a href="about.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">About</a>
+            <a href="pricing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Pricing</a>
+            <a href="gym-landing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">For Gyms</a>
+            <a href="join-us.html" class="text-base font-bold text-on-surface hover:text-primary py-2">Join Us</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="pt-32 pb-12 px-6 bg-gradient-to-b from-surface to-background">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="font-headline text-4xl lg:text-5xl font-black text-on-surface mb-4">Gyms Hiring in Hyderabad</h1>
+            <p class="text-on-surface-variant text-lg mb-8 max-w-2xl mx-auto">Browse open positions at gyms and studios across Hyderabad, and connect directly on WhatsApp.</p>
+
+            <!-- Filter Bar -->
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-4 border border-outline-variant/50 flex flex-col md:flex-row gap-3">
+                <label class="sr-only" for="filter-speciality">Filter by speciality</label>
+                <select id="filter-speciality" onchange="applyJobFilters()" class="flex-1 px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[48px]">
+                    <option value="any">Any Speciality</option>
+                    <option value="Strength Training">Strength Training</option>
+                    <option value="Weight Loss">Weight Loss</option>
+                    <option value="Yoga">Yoga</option>
+                    <option value="Zumba">Zumba</option>
+                    <option value="HIIT">HIIT</option>
+                    <option value="Bodybuilding">Bodybuilding</option>
+                    <option value="Functional Fitness">Functional Fitness</option>
+                    <option value="Sports Training">Sports Training</option>
+                    <option value="Prenatal Fitness">Prenatal Fitness</option>
+                    <option value="Rehabilitation">Rehabilitation</option>
+                </select>
+                <label class="sr-only" for="filter-employment-type">Filter by employment type</label>
+                <select id="filter-employment-type" onchange="applyJobFilters()" class="flex-1 px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[48px]">
+                    <option value="any">Any Type</option>
+                    <option value="full_time">Full Time</option>
+                    <option value="part_time">Part Time</option>
+                    <option value="both">Both</option>
+                </select>
+                <label class="sr-only" for="filter-experience">Filter by experience level</label>
+                <select id="filter-experience" onchange="applyJobFilters()" class="flex-1 px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[48px]">
+                    <option value="any">Any Experience</option>
+                    <option value="2+ years">2+ years</option>
+                    <option value="3+ years">3+ years</option>
+                    <option value="5+ years">5+ years</option>
+                    <option value="7+ years">7+ years</option>
+                    <option value="10+ years">10+ years</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Job Listings -->
+    <section class="py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <p class="text-on-surface-variant" aria-live="polite"><span id="job-count" class="font-bold text-on-surface">0</span> jobs found</p>
+            </div>
+
+            <div id="jobs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                <!-- Job cards will be loaded here -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="py-8" aria-hidden="true">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                    <div class="bg-white border border-outline-variant/30 p-6 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-surface-container-low rounded w-2/3 mb-3"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/2 mb-2"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/3"></div>
+                    </div>
+                    <div class="bg-white border border-outline-variant/30 p-6 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-surface-container-low rounded w-2/3 mb-3"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/2 mb-2"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/3"></div>
+                    </div>
+                    <div class="bg-white border border-outline-variant/30 p-6 rounded-2xl animate-pulse">
+                        <div class="h-4 bg-surface-container-low rounded w-2/3 mb-3"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/2 mb-2"></div>
+                        <div class="h-3 bg-surface-container-low rounded w-1/3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="text-center py-16 hidden">
+                <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4" aria-hidden="true">work_off</span>
+                <p class="text-on-surface font-bold text-xl mb-2">No gyms hiring right now. Check back soon.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supabase and Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let allJobs = [];
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function employmentTypeLabel(type) {
+            if (type === 'full_time') return 'Full Time';
+            if (type === 'part_time') return 'Part Time';
+            if (type === 'both') return 'Full Time / Part Time';
+            return type || '';
+        }
+
+        function daysAgo(iso) {
+            if (!iso) return '';
+            const days = Math.floor((Date.now() - new Date(iso).getTime()) / (24 * 60 * 60 * 1000));
+            if (days <= 0) return 'Posted today';
+            if (days === 1) return 'Posted 1 day ago';
+            return `Posted ${days} days ago`;
+        }
+
+        function renderJobCardHTML(job) {
+            const gymName = escapeHtml(job.gym_profiles?.gym_name || 'A gym in Hyderabad');
+            return `
+                <div class="bg-white border border-outline-variant/30 rounded-2xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col h-full">
+                    <h3 class="font-headline font-bold text-lg text-on-surface mb-1">${gymName}</h3>
+                    <p class="text-sm text-on-surface-variant flex items-center gap-1 mb-3">
+                        <span class="material-symbols-outlined text-[16px]">location_on</span>${escapeHtml(job.location)}
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="inline-flex items-center rounded-full bg-primary/10 text-primary text-xs font-bold px-3 py-1">${escapeHtml(job.speciality)}</span>
+                        <span class="inline-flex items-center rounded-full bg-surface-container-low text-on-surface-variant text-xs font-bold px-3 py-1">${employmentTypeLabel(job.employment_type)}</span>
+                    </div>
+                    <p class="text-sm text-on-surface-variant mb-4">${escapeHtml(job.experience_level)} experience needed</p>
+                    <p class="text-xs text-on-surface-variant/70 mb-4 mt-auto">${daysAgo(job.posted_at)}</p>
+                    <a href="gym-job-detail.html?id=${encodeURIComponent(job.id)}" class="w-full text-center py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">View Job →</a>
+                </div>
+            `;
+        }
+
+        function applyJobFilters() {
+            const speciality = document.getElementById('filter-speciality').value;
+            const employmentType = document.getElementById('filter-employment-type').value;
+            const experience = document.getElementById('filter-experience').value;
+
+            const filtered = allJobs.filter(job => {
+                if (speciality !== 'any' && job.speciality !== speciality) return false;
+                if (employmentType !== 'any' && job.employment_type !== employmentType) return false;
+                if (experience !== 'any' && job.experience_level !== experience) return false;
+                return true;
+            });
+
+            renderJobs(filtered);
+        }
+
+        function renderJobs(jobs) {
+            const grid = document.getElementById('jobs-grid');
+            const emptyState = document.getElementById('empty-state');
+            document.getElementById('job-count').textContent = jobs.length;
+
+            if (jobs.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = jobs.map(renderJobCardHTML).join('');
+        }
+
+        async function loadJobs() {
+            document.getElementById('loading').classList.remove('hidden');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('gym_hiring_posts')
+                    .select('id, speciality, experience_level, location, employment_type, posted_at, expires_at, gym_profiles(gym_name)')
+                    .eq('status', 'active')
+                    .gt('expires_at', new Date().toISOString())
+                    .order('posted_at', { ascending: false })
+                    .limit(200);
+
+                if (error) throw error;
+                allJobs = data || [];
+                renderJobs(allJobs);
+            } catch (e) {
+                console.error('Failed to load gym hiring posts:', e);
+                allJobs = [];
+                renderJobs([]);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        requestAnimationFrame(() => {
+            void renderAuthNav();
+            void loadJobs();
+        });
+
+        (function () {
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileBtn?.addEventListener('click', () => {
+                mobileMenu?.classList.toggle('hidden');
+            });
+        })();
+    </script>
+    <script src="footer-component.js"></script>
+</body>
+</html>

@@ -24,7 +24,7 @@ const ONLIFIT_OAUTH_INTENT = 'oauth_intent';
 let _clerkLoadPromise = null;
 
 function normalizeUserRole(value, defaultRole = 'client') {
-    return value === 'trainer' || value === 'admin' || value === 'client'
+    return value === 'trainer' || value === 'admin' || value === 'client' || value === 'gym_owner'
         ? value
         : defaultRole;
 }
@@ -449,10 +449,99 @@ async function startClientSubscriptionCheckout(options = {}) {
     }
 }
 
+async function startGymHiringCheckout(options = {}) {
+    const btnId = options.btnId || 'post-job-pay-btn';
+    const statusId = options.statusId || 'post-job-status-text';
+    const orderBody = options.orderBody || {};
+    const btn = document.getElementById(btnId);
+    const statusText = document.getElementById(statusId);
+    const notify = (message) => { if (statusText) statusText.textContent = message || ''; };
+
+    try {
+        if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+        notify('Preparing checkout...');
+
+        const user = await getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const authHeader = typeof getApiAuthHeader === 'function' ? await getApiAuthHeader() : null;
+        if (!authHeader) {
+            notify('Please log in to continue.');
+            return;
+        }
+
+        await loadClientRazorpayCheckout();
+
+        const orderRes = await fetch('/api/create-hiringpost-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+            body: JSON.stringify(orderBody)
+        });
+        const orderData = await orderRes.json();
+
+        if (!orderRes.ok) {
+            notify(orderData.error || 'Could not start checkout.');
+            return;
+        }
+
+        const rzp = new Razorpay({
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: orderData.currency,
+            name: 'Onlifit',
+            description: 'Gym Hiring Post',
+            order_id: orderData.orderId,
+            theme: { color: '#000000' },
+            handler: async function (rpResponse) {
+                notify('Confirming payment...');
+                try {
+                    const verifyRes = await fetch('/api/verify-hiringpost-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                        body: JSON.stringify({
+                            razorpay_order_id: rpResponse.razorpay_order_id,
+                            razorpay_payment_id: rpResponse.razorpay_payment_id,
+                            razorpay_signature: rpResponse.razorpay_signature
+                        })
+                    });
+                    const verifyData = await verifyRes.json();
+                    if (verifyRes.ok && verifyData.success) {
+                        notify('Job post activated!');
+                        if (typeof options.onSuccess === 'function') {
+                            await options.onSuccess();
+                        }
+                    } else {
+                        notify('Payment received but activation failed. Contact support if this persists.');
+                    }
+                } catch (e) {
+                    notify('Could not confirm payment. If money was deducted, contact support.');
+                }
+            },
+            modal: {
+                ondismiss: function () { notify(''); }
+            }
+        });
+
+        rzp.on('payment.failed', function (response) {
+            notify('Payment failed: ' + (response?.error?.description || 'Please try again.'));
+        });
+
+        rzp.open();
+    } catch (err) {
+        notify(err.message || 'Something went wrong.');
+    } finally {
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    }
+}
+
 function getDashboardPathForRole(role) {
     const normalized = normalizeUserRole(role, 'client');
     if (normalized === 'admin') return 'admin-dashboard.html';
     if (normalized === 'trainer') return 'bookings.html';
+    if (normalized === 'gym_owner') return 'gym-dashboard.html';
     return 'client-dashboard.html';
 }
 

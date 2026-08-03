@@ -326,6 +326,11 @@
             <button onclick="handleSubscriptionAction('upgrade')" id="btn-free-trial-upgrade" class="hidden px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors whitespace-nowrap">Upgrade to Pro</button>
         </div>
 
+        <div id="gyms-hiring-banner" class="hidden bg-primary/5 border border-primary/20 rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-sm font-bold" id="gyms-hiring-text"></p>
+            <a href="gym-jobs.html" class="px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors whitespace-nowrap">Browse Jobs →</a>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high overflow-hidden">
             <div class="px-6 py-5 border-b border-outline-variant/20 flex items-center justify-between">
                 <div>
@@ -2708,6 +2713,7 @@
         renderSubscriptionCard(trainerUser);
         renderVerificationCard(trainerUser);
         renderFreeTrialCard(trainerUser);
+        renderGymsHiringBanner(trainerUser);
         renderBoostCard(trainerUser);
 
         const welcome = document.getElementById('welcome-message');
@@ -2853,6 +2859,35 @@
         if (exhausted) {
             upgradeBtn.textContent = 'Upgrade to Pro for ₹999/month to get 30 leads';
             upgradeBtn.classList.remove('hidden');
+        }
+    }
+
+    async function renderGymsHiringBanner(user) {
+        const banner = document.getElementById('gyms-hiring-banner');
+        const textEl = document.getElementById('gyms-hiring-text');
+        if (!banner || !textEl) return;
+
+        if (user?.role !== 'trainer') {
+            banner.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const { count } = await supabaseClient
+                .from('gym_hiring_posts')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'active')
+                .gt('expires_at', new Date().toISOString());
+
+            if (!count || count === 0) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            textEl.textContent = `${count} gym${count === 1 ? '' : 's'} ${count === 1 ? 'is' : 'are'} hiring in Hyderabad`;
+            banner.classList.remove('hidden');
+        } catch (e) {
+            banner.classList.add('hidden');
         }
     }
 

@@ -1,0 +1,533 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<script>
+    document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');
+</script>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Onlifit | Gym Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+
+<link href="styles.css" rel="stylesheet">
+<link href="mobile-optimizations.css" rel="stylesheet">
+
+<style>
+    html { font-size: 16px; }
+    body { font-size: 1rem; line-height: 1.5; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .glass-effect { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .route-view { display: none; }
+    .route-view.active-view { display: block; }
+
+    /* Hand-written, not new Tailwind utility classes -- styles.css is a
+       frozen precompiled snapshot, so new utility classes silently do
+       nothing (documented repeatedly elsewhere in this codebase). Same
+       reasoning as bookings.html's training-mode-grid. */
+    .post-count-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    .post-count-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 16px 12px;
+        border: 2px solid #e5e5e5;
+        border-radius: 14px;
+        cursor: pointer;
+        background: #fff;
+        transition: border-color .15s ease, background .15s ease;
+    }
+    .post-count-card.selected {
+        border-color: var(--md-sys-color-primary, #000);
+        background: rgba(0,0,0,0.03);
+    }
+</style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4W2306MJ1Y');
+</script>
+</head>
+<body class="app-shell bg-surface-container-low font-body text-on-surface">
+<!-- TopNavBar (Fixed) -->
+<nav class="app-nav fixed top-0 w-full z-50 glass-effect border-b border-outline-variant/30">
+    <div class="trainer-nav-inner flex items-center justify-between px-4 md:px-8 py-2.5 md:py-3 max-w-screen-2xl mx-auto">
+        <div class="flex items-center gap-3 md:gap-6 min-w-0">
+            <button id="gym-sidebar-toggle" type="button" class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant hover:bg-white/70 hover:text-primary transition-colors" aria-label="Open menu">
+                <span class="material-symbols-outlined text-[28px] leading-none">menu</span>
+            </button>
+            <a href="onlifit.html" class="text-2xl font-black tracking-tighter font-headline font-semibold text-primary">Onlifit</a>
+        </div>
+        <div id="nav-auth" class="flex items-center gap-2 sm:gap-3"></div>
+    </div>
+</nav>
+
+<div id="gym-sidebar-overlay" class="trainer-sidebar-overlay app-sidebar-overlay fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden" onclick="closeGymSidebar()"></div>
+
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside id="gym-sidebar-panel" class="trainer-sidebar-panel app-sidebar-panel fixed left-0 top-0 z-40 h-screen w-72 md:w-64 pt-16 bg-surface-container-lowest border-r border-b md:border-b-0 border-outline-variant/30 flex flex-col gap-2 py-5 font-headline text-sm overflow-y-auto md:overflow-visible shadow-2xl md:shadow-none">
+<div class="px-5 mb-6 flex items-center gap-3">
+<div id="gym-avatar" class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-sm font-bold text-primary shadow-md">
+    G
+</div>
+<div>
+<p id="gym-name-label" class="font-bold text-on-surface">Gym</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-black">Gym Owner</p>
+</div>
+</div>
+<nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0">
+<a class="flex items-center gap-3 px-6 py-2.5 font-bold rounded-r-full mr-4 transition-all text-on-surface-variant sidebar-link" href="gym-dashboard.html#overview">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="gym-dashboard.html#post-job">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">post_add</span>
+<span>Post a Job</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="gym-dashboard.html#my-posts">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">list_alt</span>
+<span>My Posts</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-2.5 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all sidebar-link" href="gym-dashboard.html#settings">
+<span class="material-symbols-outlined text-[20px] leading-none shrink-0">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+
+<!-- Main Content Canvas -->
+<main class="app-main app-main--with-sidebar flex-1 bg-surface-container-low relative">
+    <div id="page-loader" class="hidden absolute inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-4xl animate-spin">autorenew</span>
+    </div>
+    <div class="w-full max-w-screen-2xl mx-auto">
+
+    <!-- Overview -->
+    <section id="view-overview" class="route-view active-view">
+        <header class="dash-header mb-8 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Gym Dashboard</h1>
+                <p class="text-on-surface-variant mt-1.5 text-sm" id="welcome-message">Welcome back!</p>
+            </div>
+        </header>
+
+        <div class="space-y-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high p-6">
+                <h3 class="font-headline text-lg font-black mb-1" id="overview-gym-name">—</h3>
+                <p class="text-on-surface-variant text-sm" id="overview-gym-city">—</p>
+                <p class="text-xs font-bold uppercase tracking-widest mt-2 text-primary" id="overview-account-status">Active</p>
+            </div>
+
+            <div class="trainer-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                    <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-active-posts">0</h3>
+                    <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Active Posts</p>
+                </div>
+                <div class="trainer-stat-card dash-stat-card bg-white p-5 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden">
+                    <h3 class="text-3xl font-black text-on-surface font-headline leading-none" id="stat-total-posts">0</h3>
+                    <p class="text-on-surface-variant text-xs font-bold uppercase tracking-widest leading-tight mt-1.5">Total Posts</p>
+                </div>
+            </div>
+
+            <a href="gym-dashboard.html#post-job" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                <span class="material-symbols-outlined text-[18px]">post_add</span> Post a Job
+            </a>
+        </div>
+    </section>
+
+    <!-- Post a Job -->
+    <section id="view-post-job" class="route-view">
+        <header class="dash-header mb-8">
+            <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Post a Job</h1>
+            <p class="text-on-surface-variant mt-1.5 text-sm">Reach verified trainers across Hyderabad.</p>
+        </header>
+
+        <form id="post-job-form" class="bg-white rounded-2xl shadow-sm border border-surface-container-high p-6 space-y-6 max-w-2xl">
+            <div>
+                <p class="text-sm font-bold mb-3">How many positions?</p>
+                <div class="post-count-grid">
+                    <div class="post-count-card selected" data-count="1" onclick="selectPostCount(1)">
+                        <span class="font-headline font-black text-lg" id="post-count-price-1">₹1,999</span>
+                        <span class="text-xs text-on-surface-variant">1 post</span>
+                    </div>
+                    <div class="post-count-card" data-count="2" onclick="selectPostCount(2)">
+                        <span class="font-headline font-black text-lg" id="post-count-price-2">₹2,999</span>
+                        <span class="text-xs text-on-surface-variant">2 posts</span>
+                    </div>
+                    <div class="post-count-card" data-count="3" onclick="selectPostCount(3)">
+                        <span class="font-headline font-black text-lg" id="post-count-price-3">₹3,999</span>
+                        <span class="text-xs text-on-surface-variant">3 posts</span>
+                    </div>
+                </div>
+                <input type="hidden" id="selected-post-count" value="1" />
+            </div>
+
+            <div>
+                <label for="job-speciality" class="block text-sm font-bold mb-1.5">Speciality</label>
+                <select id="job-speciality" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]">
+                    <option value="">Select speciality</option>
+                    <option value="Strength Training">Strength Training</option>
+                    <option value="Weight Loss">Weight Loss</option>
+                    <option value="Yoga">Yoga</option>
+                    <option value="Zumba">Zumba</option>
+                    <option value="HIIT">HIIT</option>
+                    <option value="Bodybuilding">Bodybuilding</option>
+                    <option value="Functional Fitness">Functional Fitness</option>
+                    <option value="Sports Training">Sports Training</option>
+                    <option value="Prenatal Fitness">Prenatal Fitness</option>
+                    <option value="Rehabilitation">Rehabilitation</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="job-experience" class="block text-sm font-bold mb-1.5">Experience Level</label>
+                <select id="job-experience" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]">
+                    <option value="">Select experience level</option>
+                    <option value="2+ years">2+ years</option>
+                    <option value="3+ years">3+ years</option>
+                    <option value="5+ years">5+ years</option>
+                    <option value="7+ years">7+ years</option>
+                    <option value="10+ years">10+ years</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="job-location" class="block text-sm font-bold mb-1.5">Location within City</label>
+                <input id="job-location" type="text" required placeholder="e.g. Kondapur" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-1.5">Employment Type</label>
+                <select id="job-employment-type" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]">
+                    <option value="full_time">Full Time</option>
+                    <option value="part_time">Part Time</option>
+                    <option value="both">Both</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="job-description" class="block text-sm font-bold mb-1.5">Description (optional)</label>
+                <textarea id="job-description" rows="3" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm"></textarea>
+            </div>
+
+            <div>
+                <label for="job-whatsapp" class="block text-sm font-bold mb-1.5">Gym WhatsApp Number</label>
+                <input id="job-whatsapp" type="tel" required placeholder="10-digit number" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+                <p class="text-xs text-on-surface-variant mt-1">Trainers will contact you directly on this number.</p>
+            </div>
+
+            <button type="submit" id="post-job-pay-btn" class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
+                Pay <span id="post-job-pay-amount">₹1,999</span> &amp; Post Job
+            </button>
+            <p id="post-job-status-text" class="text-xs text-on-surface-variant text-center"></p>
+        </form>
+    </section>
+
+    <!-- My Posts -->
+    <section id="view-my-posts" class="route-view">
+        <header class="dash-header mb-8">
+            <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">My Posts</h1>
+            <p class="text-on-surface-variant mt-1.5 text-sm">Track your hiring posts and their status.</p>
+        </header>
+
+        <div id="my-posts-list" class="space-y-4">
+            <!-- Posts loaded here -->
+        </div>
+        <div id="my-posts-empty" class="hidden bg-white rounded-2xl shadow-sm border border-surface-container-high p-10 text-center">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-3">list_alt</span>
+            <p class="text-on-surface font-bold">You haven't posted any jobs yet.</p>
+        </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="view-settings" class="route-view">
+        <header class="dash-header mb-8">
+            <h1 class="text-3xl lg:text-4xl font-black font-headline tracking-tight text-on-surface">Settings</h1>
+            <p class="text-on-surface-variant mt-1.5 text-sm">Edit your gym profile details.</p>
+        </header>
+
+        <form id="settings-form" class="bg-white rounded-2xl shadow-sm border border-surface-container-high p-6 space-y-6 max-w-2xl">
+            <div>
+                <label for="settings-gym-name" class="block text-sm font-bold mb-1.5">Gym Name</label>
+                <input id="settings-gym-name" type="text" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+            </div>
+            <div>
+                <label for="settings-owner-name" class="block text-sm font-bold mb-1.5">Owner Name</label>
+                <input id="settings-owner-name" type="text" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+            </div>
+            <div>
+                <label for="settings-city" class="block text-sm font-bold mb-1.5">City</label>
+                <select id="settings-city" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]">
+                    <option value="Hyderabad">Hyderabad</option>
+                </select>
+            </div>
+            <div>
+                <label for="settings-locations" class="block text-sm font-bold mb-1.5">Number of Locations</label>
+                <input id="settings-locations" type="number" min="1" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+            </div>
+            <div>
+                <label for="settings-phone" class="block text-sm font-bold mb-1.5">Phone</label>
+                <input id="settings-phone" type="tel" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-on-surface text-sm min-h-[48px]" />
+            </div>
+            <button type="submit" class="px-6 py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 transition-all">Save Changes</button>
+            <p id="settings-status-text" class="text-xs text-on-surface-variant"></p>
+        </form>
+    </section>
+
+    </div>
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-client.js"></script>
+<script src="auth.js"></script>
+<script>
+    let gymUser = null;
+    let gymProfile = null;
+    let livePostPrices = { 1: 1999, 2: 2999, 3: 3999 };
+    let selectedPostCount = 1;
+
+    function openGymSidebar() {
+        document.getElementById('gym-sidebar-panel')?.classList.add('open');
+        document.getElementById('gym-sidebar-overlay')?.classList.add('open');
+        document.body.classList.add('overflow-hidden');
+    }
+    function closeGymSidebar() {
+        document.getElementById('gym-sidebar-panel')?.classList.remove('open');
+        document.getElementById('gym-sidebar-overlay')?.classList.remove('open');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    function showView(routeName) {
+        document.querySelectorAll('.route-view').forEach(el => el.classList.remove('active-view'));
+        document.getElementById('view-' + routeName)?.classList.add('active-view');
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            const isActive = link.getAttribute('href') === `gym-dashboard.html#${routeName}`;
+            link.classList.toggle('text-primary', isActive);
+            link.classList.toggle('font-bold', isActive);
+        });
+        if (routeName === 'my-posts') void loadMyPosts();
+    }
+
+    function handleRoute() {
+        const route = (window.location.hash || '#overview').replace('#', '') || 'overview';
+        const supported = ['overview', 'post-job', 'my-posts', 'settings'];
+        showView(supported.includes(route) ? route : 'overview');
+    }
+
+    function selectPostCount(count) {
+        selectedPostCount = count;
+        document.getElementById('selected-post-count').value = count;
+        document.querySelectorAll('.post-count-card').forEach(card => {
+            card.classList.toggle('selected', Number(card.dataset.count) === count);
+        });
+        const amountEl = document.getElementById('post-job-pay-amount');
+        amountEl.textContent = '₹' + (livePostPrices[count] || 0).toLocaleString('en-IN');
+    }
+
+    async function loadLivePostPrices() {
+        try {
+            const { data } = await supabaseClient
+                .from('system_settings')
+                .select('key, value')
+                .in('key', ['gym_1post_price_inr', 'gym_2post_price_inr', 'gym_3post_price_inr']);
+            const getVal = (key, fallback) => Number(data?.find(r => r.key === key)?.value) || fallback;
+            livePostPrices = {
+                1: getVal('gym_1post_price_inr', 1999),
+                2: getVal('gym_2post_price_inr', 2999),
+                3: getVal('gym_3post_price_inr', 3999)
+            };
+        } catch (e) {
+            console.warn('Could not load live gym post prices, using fallback values:', e?.message);
+        }
+        document.getElementById('post-count-price-1').textContent = '₹' + livePostPrices[1].toLocaleString('en-IN');
+        document.getElementById('post-count-price-2').textContent = '₹' + livePostPrices[2].toLocaleString('en-IN');
+        document.getElementById('post-count-price-3').textContent = '₹' + livePostPrices[3].toLocaleString('en-IN');
+        selectPostCount(selectedPostCount);
+    }
+
+    async function loadOverview() {
+        document.getElementById('overview-gym-name').textContent = gymProfile?.gym_name || '—';
+        document.getElementById('overview-gym-city').textContent = gymProfile?.city || '—';
+        document.getElementById('gym-name-label').textContent = gymProfile?.gym_name || 'Gym';
+        document.getElementById('gym-avatar').textContent = (gymProfile?.gym_name || 'G').charAt(0).toUpperCase();
+
+        const first = (gymUser?.name || 'there').split(' ')[0];
+        document.getElementById('welcome-message').textContent = `Welcome back, ${first}!`;
+
+        const { count: totalCount } = await supabaseClient
+            .from('gym_hiring_posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('gym_owner_id', gymUser.id);
+
+        const { count: activeCount } = await supabaseClient
+            .from('gym_hiring_posts')
+            .select('*', { count: 'exact', head: true })
+            .eq('gym_owner_id', gymUser.id)
+            .eq('status', 'active')
+            .gt('expires_at', new Date().toISOString());
+
+        document.getElementById('stat-total-posts').textContent = totalCount ?? 0;
+        document.getElementById('stat-active-posts').textContent = activeCount ?? 0;
+    }
+
+    function formatDate(iso) {
+        if (!iso) return '—';
+        try {
+            return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch { return '—'; }
+    }
+
+    function renderPostCard(post) {
+        const isActive = post.status === 'active' && post.expires_at && new Date(post.expires_at) > new Date();
+        const badge = isActive
+            ? '<span class="inline-flex items-center rounded-full bg-green-100 text-green-700 text-xs font-bold px-3 py-1">Live</span>'
+            : (post.status === 'draft'
+                ? '<span class="inline-flex items-center rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1">Draft</span>'
+                : '<span class="inline-flex items-center rounded-full bg-surface-container-high text-on-surface-variant text-xs font-bold px-3 py-1">Expired</span>');
+
+        const repostBtn = (!isActive && post.status !== 'draft')
+            ? `<a href="gym-dashboard.html#post-job" class="text-xs font-bold text-primary hover:opacity-80">Repost →</a>`
+            : '';
+
+        return `
+            <div class="bg-white rounded-2xl shadow-sm border border-surface-container-high p-5 flex items-center justify-between gap-4">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <h4 class="font-bold text-on-surface truncate">${post.speciality}</h4>
+                        ${badge}
+                    </div>
+                    <p class="text-xs text-on-surface-variant">Posted ${formatDate(post.posted_at)} &middot; Expires ${formatDate(post.expires_at)}</p>
+                </div>
+                ${repostBtn}
+            </div>
+        `;
+    }
+
+    async function loadMyPosts() {
+        const { data: posts, error } = await supabaseClient
+            .from('gym_hiring_posts')
+            .select('id, speciality, status, posted_at, expires_at')
+            .eq('gym_owner_id', gymUser.id)
+            .order('created_at', { ascending: false });
+
+        const list = document.getElementById('my-posts-list');
+        const empty = document.getElementById('my-posts-empty');
+
+        if (error || !posts || posts.length === 0) {
+            list.innerHTML = '';
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        empty.classList.add('hidden');
+        list.innerHTML = posts.map(renderPostCard).join('');
+    }
+
+    document.getElementById('post-job-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusText = document.getElementById('post-job-status-text');
+        const payBtn = document.getElementById('post-job-pay-btn');
+
+        const body = {
+            postCount: selectedPostCount,
+            speciality: document.getElementById('job-speciality').value,
+            experience_level: document.getElementById('job-experience').value,
+            location: document.getElementById('job-location').value.trim(),
+            employment_type: document.getElementById('job-employment-type').value,
+            gym_whatsapp: document.getElementById('job-whatsapp').value.replace(/\D/g, ''),
+            description: document.getElementById('job-description').value.trim()
+        };
+
+        if (!body.speciality || !body.experience_level || !body.location || !body.gym_whatsapp) {
+            statusText.textContent = 'Please fill in all required fields.';
+            return;
+        }
+
+        payBtn.disabled = true;
+        await startGymHiringCheckout({
+            orderBody: body,
+            onSuccess: async () => {
+                statusText.textContent = '';
+                document.getElementById('post-job-form').reset();
+                window.location.href = 'gym-dashboard.html#my-posts';
+                alert('Your job post is now live for 30 days!');
+            },
+            statusId: 'post-job-status-text'
+        });
+        payBtn.disabled = false;
+    });
+
+    document.getElementById('settings-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusText = document.getElementById('settings-status-text');
+        try {
+            const { error } = await supabaseClient
+                .from('gym_profiles')
+                .update({
+                    gym_name: document.getElementById('settings-gym-name').value.trim(),
+                    owner_name: document.getElementById('settings-owner-name').value.trim(),
+                    city: document.getElementById('settings-city').value,
+                    number_of_locations: Number(document.getElementById('settings-locations').value) || 1,
+                    phone: document.getElementById('settings-phone').value.trim() || null
+                })
+                .eq('owner_id', gymUser.id);
+
+            if (error) throw error;
+            statusText.textContent = 'Saved.';
+            gymProfile = { ...gymProfile, gym_name: document.getElementById('settings-gym-name').value.trim(), city: document.getElementById('settings-city').value };
+            void loadOverview();
+        } catch (err) {
+            statusText.textContent = 'Could not save changes: ' + (err?.message || 'Unknown error');
+        }
+    });
+
+    async function init() {
+        gymUser = await requireAuth('gym_owner', window.location.href);
+        if (!gymUser) return;
+
+        const { data: profile } = await supabaseClient
+            .from('gym_profiles')
+            .select('*')
+            .eq('owner_id', gymUser.id)
+            .maybeSingle();
+        gymProfile = profile;
+
+        if (gymProfile) {
+            document.getElementById('settings-gym-name').value = gymProfile.gym_name || '';
+            document.getElementById('settings-owner-name').value = gymProfile.owner_name || '';
+            document.getElementById('settings-city').value = gymProfile.city || 'Hyderabad';
+            document.getElementById('settings-locations').value = gymProfile.number_of_locations || 1;
+            document.getElementById('settings-phone').value = gymProfile.phone || '';
+        }
+
+        void renderAuthNav();
+        await loadOverview();
+        await loadLivePostPrices();
+        handleRoute();
+    }
+
+    window.addEventListener('hashchange', handleRoute);
+    document.addEventListener('DOMContentLoaded', init);
+
+    document.getElementById('gym-sidebar-toggle')?.addEventListener('click', openGymSidebar);
+    document.getElementById('gym-sidebar-overlay')?.addEventListener('click', closeGymSidebar);
+    document.querySelectorAll('#gym-sidebar-panel a').forEach(link => {
+        link.addEventListener('click', () => { if (window.innerWidth < 768) closeGymSidebar(); });
+    });
+</script>
+<script src="footer-component.js"></script>
+</body></html>
