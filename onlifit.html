@@ -382,7 +382,7 @@
 
                         <!-- Search Bar -->
                         <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-3 text-center lg:text-left">Search verified trainers near you</p>
-                        <div class="hero-search-bar bg-white rounded-2xl shadow-elevated w-full p-2 border border-outline-variant/50 mb-6 transform transition-all hover:-translate-y-0.5 relative z-50 overflow-hidden">
+                        <div class="hero-search-bar bg-white rounded-2xl shadow-elevated w-full p-2 border border-outline-variant/50 mb-6 transform transition-all hover:-translate-y-0.5 relative z-50">
                     <div class="hero-search-segment hero-search-input-wrap flex items-center relative">
                         <div class="relative w-full flex items-center">
                             <span class="material-symbols-outlined absolute left-0 text-on-surface-variant pointer-events-none">search</span>
@@ -971,30 +971,51 @@
             'Cardio', 'Running', 'Home Workout', "Women's Fitness", 'Postnatal Fitness',
             'Prenatal Fitness', 'Senior Fitness', 'Nutrition', 'Nutrition Coach'
         ];
+        const HYDERABAD_AREAS = [
+            'Kondapur', 'Banjara Hills', 'Jubilee Hills', 'Madhapur', 'Gachibowli',
+            'Kokapet', 'Kukatpally', 'Hitech City', 'Manikonda', 'Miyapur'
+        ];
         const DEFAULT_SUGGESTIONS = ['Personal Trainer', 'Weight Loss', 'Muscle Gain', 'Yoga', 'Strength Training', 'HIIT', 'Nutrition Coach'];
 
         const autocompleteDropdown = document.getElementById('autocomplete-dropdown');
         const autocompleteList = document.getElementById('autocomplete-suggestions');
         const autocompleteLabel = document.getElementById('autocomplete-suggestions-label');
 
+        function renderSuggestionGroup(label, terms, icon) {
+            if (terms.length === 0) return '';
+            return `
+                ${label ? `<li class="px-3 pt-2 pb-1 text-[10px] font-bold text-on-surface-variant/70 uppercase tracking-wider">${label}</li>` : ''}
+                ${terms.map(term => `
+                    <li><button type="button" data-value="${escapeHtml(term)}" class="w-full text-left px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-surface-container-lowest active:bg-surface-container-low text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors">
+                        <span class="material-symbols-outlined text-[16px] text-on-surface-variant">${icon}</span> ${escapeHtml(term)}
+                    </button></li>
+                `).join('')}
+            `;
+        }
+
         function renderAutocompleteSuggestions(query) {
             const q = (query || '').trim().toLowerCase();
-            const matches = q
-                ? SPECIALTY_SUGGESTIONS.filter(term => term.toLowerCase().includes(q)).slice(0, 8)
-                : DEFAULT_SUGGESTIONS;
 
-            autocompleteLabel.textContent = q ? 'Suggestions' : 'Popular Searches';
-
-            if (matches.length === 0) {
-                autocompleteList.innerHTML = '<li class="px-4 py-3 text-sm text-on-surface-variant">No matching services — press Search to search anyway</li>';
+            if (!q) {
+                autocompleteLabel.textContent = 'Popular Searches';
+                autocompleteList.innerHTML = renderSuggestionGroup('', DEFAULT_SUGGESTIONS, 'fitness_center');
                 return;
             }
 
-            autocompleteList.innerHTML = matches.map(term => `
-                <li><button type="button" data-value="${escapeHtml(term)}" class="w-full text-left px-3 py-2.5 min-h-[44px] rounded-lg hover:bg-surface-container-lowest active:bg-surface-container-low text-on-surface text-sm font-medium autocomplete-item flex items-center gap-2 transition-colors">
-                    <span class="material-symbols-outlined text-[16px] text-on-surface-variant">fitness_center</span> ${escapeHtml(term)}
-                </button></li>
-            `).join('');
+            const specialtyMatches = SPECIALTY_SUGGESTIONS.filter(term => term.toLowerCase().includes(q)).slice(0, 8);
+            const areaMatches = HYDERABAD_AREAS.filter(term => term.toLowerCase().includes(q)).slice(0, 8);
+
+            autocompleteLabel.textContent = 'Suggestions';
+
+            if (specialtyMatches.length === 0 && areaMatches.length === 0) {
+                autocompleteList.innerHTML = '<li class="px-4 py-3 text-sm text-on-surface-variant">No matching results — press Search to search anyway</li>';
+                return;
+            }
+
+            const showGroupLabels = specialtyMatches.length > 0 && areaMatches.length > 0;
+            autocompleteList.innerHTML =
+                renderSuggestionGroup(showGroupLabels ? 'Specialities' : '', specialtyMatches, 'fitness_center') +
+                renderSuggestionGroup(showGroupLabels ? 'Areas' : '', areaMatches, 'location_on');
         }
 
         function openAutocompleteDropdown() {
@@ -1045,12 +1066,7 @@
             const item = e.target.closest('.autocomplete-item');
             if (!item) return;
             const text = item.dataset.value || item.innerText.trim();
-            searchInput.value = text;
-            dynamicPlaceholder.style.display = 'none';
-            closeAutocompleteDropdown();
-
-            // Optional: Automatically trigger search
-            // performSearch();
+            window.location.href = 'trainers.html?q=' + encodeURIComponent(text);
         });
 
         async function loadHomepageReviews() {
