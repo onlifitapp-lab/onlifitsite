@@ -238,37 +238,6 @@
             .carousel-pill { flex: 0 0 15%; }
         }
 
-        /* Hand-written, not dependent on Tailwind utility classes (styles.css
-           is a stale hand-compiled snapshot -- w-2/h-2/rounded-full/
-           bg-outline-variant classes used here previously may not be
-           compiled, which would leave an unstyled <button> for the base
-           state while only the raw .active background rule still applied,
-           rendering as an oversized black box instead of a small dot). */
-        .testimonial-dots {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            margin-top: 16px;
-        }
-        .testimonial-dots button {
-            width: 6px;
-            height: 6px;
-            padding: 0;
-            border: none;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.15);
-            cursor: pointer;
-            transition: background-color 0.25s ease;
-        }
-        .testimonial-dots button:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        .testimonial-dots button.active {
-            width: 6px;
-            height: 6px;
-            background: #000000;
-        }
-
         @keyframes countUp {
             from {
                 opacity: 0;
@@ -1232,9 +1201,6 @@
             if (!card) return;
             const cardWidth = card.offsetWidth + 24;
             carousel.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
-            if (typeof window.syncTestimonialPagination === 'function') {
-                window.setTimeout(() => window.syncTestimonialPagination(), 320);
-            }
         }
 
         // Smooth scroll for navigation
@@ -1705,92 +1671,17 @@
                     t.setAttribute('tabindex', '0');
                 }
 
-                const createDots = () => {
-                    const parent = t.parentElement;
-                    if (!parent) return null;
-                    let dots = parent.querySelector('.testimonial-dots');
-                    if (dots) return dots;
-                    dots = document.createElement('div');
-                    dots.className = 'testimonial-dots flex gap-2 justify-center mt-4';
-                    parent.appendChild(dots);
-                    return dots;
-                };
-
-                const dots = createDots();
-                let dotButtons = [];
-
-                const getCards = () => Array.from(t.querySelectorAll('.testimonial-card'));
-
                 const getStepWidth = () => {
                     const card = t.querySelector('.testimonial-card');
                     const gap = parseInt(getComputedStyle(t).gap || '24', 10) || 24;
                     return card ? (card.offsetWidth + gap) : 1;
                 };
 
-                const getActiveIndex = () => {
-                    const cards = getCards();
-                    if (cards.length === 0) return 0;
-                    const idx = Math.round(t.scrollLeft / getStepWidth());
-                    return Math.max(0, Math.min(cards.length - 1, idx));
-                };
-
-                const setActiveDot = (index) => {
-                    dotButtons.forEach((btn, i) => {
-                        btn.classList.toggle('active', i === index);
-                        btn.setAttribute('aria-current', i === index ? 'true' : 'false');
-                    });
-                };
-
-                const syncActiveDot = () => {
-                    setActiveDot(getActiveIndex());
-                };
-
-                window.syncTestimonialPagination = syncActiveDot;
-
-                const updateDots = () => {
-                    if (!dots) return;
-                    dots.innerHTML = '';
-                    dotButtons = [];
-                    const cards = getCards();
-                    cards.forEach((_, i) => {
-                        const b = document.createElement('button');
-                        // Sizing/color come entirely from the hand-written
-                        // .testimonial-dots button CSS rule above -- no
-                        // Tailwind utility classes needed here.
-                        b.type = 'button';
-                        b.setAttribute('aria-label', `Go to testimonial ${i + 1}`);
-                        b.addEventListener('click', () => {
-                            const cardsNow = getCards();
-                            const card = cardsNow[i];
-                            if (card) {
-                                t.scrollTo({ left: card.offsetLeft - 12, behavior: 'smooth' });
-                                setActiveDot(i);
-                            }
-                        });
-                        dotButtons.push(b);
-                        dots.appendChild(b);
-                    });
-                    syncActiveDot();
-                };
-
-                const ro = new MutationObserver(() => { updateDots(); });
-                ro.observe(t, { childList: true });
-
-                let scrollRaf = null;
-                t.addEventListener('scroll', () => {
-                    if (scrollRaf !== null) return;
-                    scrollRaf = requestAnimationFrame(() => {
-                        scrollRaf = null;
-                        syncActiveDot();
-                    });
-                }, { passive: true });
-
                 t.addEventListener('keydown', (e) => {
                     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
                     e.preventDefault();
                     const step = getStepWidth();
                     t.scrollBy({ left: e.key === 'ArrowLeft' ? -step : step, behavior: 'smooth' });
-                    window.setTimeout(syncActiveDot, 320);
                 });
 
                 const ti = trackHomepageInterval(setInterval(() => {
@@ -1803,7 +1694,6 @@
                     } else {
                         t.scrollBy({ left: step, behavior: 'smooth' });
                     }
-                    window.setTimeout(syncActiveDot, 320);
                 }, 4500));
 
                 t.addEventListener('mouseenter', () => clearTrackedHomepageInterval(ti));
