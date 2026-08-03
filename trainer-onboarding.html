@@ -812,7 +812,7 @@
                     <div class="ob-plan-card">
                         <h3 class="ob-plan-name">PRO — for growing trainers</h3>
                         <div class="ob-plan-price-row">
-                            <span class="ob-plan-price">₹999</span>
+                            <span id="ob-pro-price" class="ob-plan-price">₹999</span>
                             <span class="ob-plan-period">/ month</span>
                         </div>
                         <p class="ob-plan-note">Billed monthly. Exact amount confirmed at checkout.</p>
@@ -832,7 +832,7 @@
                         <div class="ob-plan-badge">BEST VALUE</div>
                         <h3 class="ob-plan-name">ELITE — for business owners</h3>
                         <div class="ob-plan-price-row">
-                            <span class="ob-plan-price">₹2,999</span>
+                            <span id="ob-elite-price" class="ob-plan-price">₹2,999</span>
                             <span class="ob-plan-period">/ month</span>
                         </div>
                         <p class="ob-plan-note">Billed monthly. Exact amount confirmed at checkout.</p>
@@ -897,6 +897,23 @@
     <script src="auth.js"></script>
     <script src="subscription-payments.js"></script>
     <script>
+        async function loadLiveOnboardingPlanPrices() {
+            try {
+                const { data } = await supabaseClient
+                    .from('system_settings')
+                    .select('key, value')
+                    .in('key', ['pro_plan_price_inr', 'elite_plan_price_inr']);
+                const getVal = (key, fallback) => Number(data?.find(r => r.key === key)?.value) || fallback;
+                const pro = getVal('pro_plan_price_inr', 999);
+                const elite = getVal('elite_plan_price_inr', 2999);
+                document.getElementById('ob-pro-price').textContent = '₹' + pro.toLocaleString('en-IN');
+                document.getElementById('ob-elite-price').textContent = '₹' + elite.toLocaleString('en-IN');
+            } catch (e) {
+                console.warn('Could not load live plan prices, using fallback values:', e?.message);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', loadLiveOnboardingPlanPrices);
+
         // CRITICAL SAFEGUARD: Enforce trainer role
         // If somehow this page is reached by a non-trainer, redirect them appropriately
         (async function() {

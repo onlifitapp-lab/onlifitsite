@@ -164,7 +164,7 @@
             <p class="text-sm text-on-surface-variant mb-6">For fitness business owners</p>
             <div class="mb-6">
                 <span class="text-sm font-bold text-on-surface-variant">₹</span>
-                <span id="elite-price" class="text-4xl font-black font-headline">2,499</span>
+                <span id="elite-price" class="text-4xl font-black font-headline">2,999</span>
                 <span id="elite-period" class="text-sm font-bold text-on-surface-variant">/month</span>
             </div>
             <ul class="space-y-3 mb-8 flex-1">
@@ -244,7 +244,7 @@
                             <p class="text-sm text-on-surface-variant">Perfect for the weekend rush</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-black font-headline">₹499</div>
+                            <div id="boost-3day-price" class="text-2xl font-black font-headline">₹499</div>
                             <button type="button" id="boost-buy-3" onclick="handleBoostPurchaseClick(3)" class="mt-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Buy Boost</button>
                         </div>
                     </div>
@@ -256,7 +256,7 @@
                             <p class="text-sm text-on-surface-variant">Consistent high-volume traffic</p>
                         </div>
                         <div class="text-right">
-                            <div class="text-2xl font-black font-headline">₹999</div>
+                            <div id="boost-7day-price" class="text-2xl font-black font-headline">₹999</div>
                             <button type="button" id="boost-buy-7" onclick="handleBoostPurchaseClick(7)" class="mt-2 px-6 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-90 transition-colors">Buy Boost</button>
                         </div>
                     </div>
@@ -409,6 +409,35 @@
 <script src="subscription-payments.js"></script>
 <script src="boost-payments.js"></script>
 <script>
+    let livePlanPrices = { pro: 999, elite: 2999, boost3: 499, boost7: 999 };
+
+    async function loadLivePlanPrices() {
+        try {
+            const { data } = await supabaseClient
+                .from('system_settings')
+                .select('key, value')
+                .in('key', ['pro_plan_price_inr', 'elite_plan_price_inr', 'boost_3day_price_inr', 'boost_7day_price_inr']);
+
+            const getVal = (key, fallback) => Number(data?.find(r => r.key === key)?.value) || fallback;
+            livePlanPrices = {
+                pro: getVal('pro_plan_price_inr', 999),
+                elite: getVal('elite_plan_price_inr', 2999),
+                boost3: getVal('boost_3day_price_inr', 499),
+                boost7: getVal('boost_7day_price_inr', 999)
+            };
+        } catch (e) {
+            console.warn('Could not load live plan prices, using fallback values:', e?.message);
+        }
+
+        document.getElementById('boost-3day-price').textContent = '₹' + livePlanPrices.boost3.toLocaleString('en-IN');
+        document.getElementById('boost-7day-price').textContent = '₹' + livePlanPrices.boost7.toLocaleString('en-IN');
+        if (!isAnnual) {
+            document.getElementById('pro-price').textContent = livePlanPrices.pro.toLocaleString('en-IN');
+            document.getElementById('elite-price').textContent = livePlanPrices.elite.toLocaleString('en-IN');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', loadLivePlanPrices);
+
     renderAuthNav();
 
     (function () {
@@ -498,16 +527,16 @@
 
         if (isAnnual) {
             circle.style.left = '1.75rem';
-            proPrice.textContent = '799';
-            elitePrice.textContent = '1,999';
+            proPrice.textContent = Math.round(livePlanPrices.pro * 0.8).toLocaleString('en-IN');
+            elitePrice.textContent = Math.round(livePlanPrices.elite * 0.8).toLocaleString('en-IN');
             proPeriod.textContent = '/mo (billed yearly)';
             elitePeriod.textContent = '/mo (billed yearly)';
             labels[0].classList.replace('text-on-surface', 'text-on-surface-variant');
             labels[1].querySelector('span:first-child') && (labels[1].querySelector('span:first-child').parentElement.classList.replace('text-on-surface-variant', 'text-on-surface'));
         } else {
             circle.style.left = '0.25rem';
-            proPrice.textContent = '999';
-            elitePrice.textContent = '2,499';
+            proPrice.textContent = livePlanPrices.pro.toLocaleString('en-IN');
+            elitePrice.textContent = livePlanPrices.elite.toLocaleString('en-IN');
             proPeriod.textContent = '/month';
             elitePeriod.textContent = '/month';
             labels[0].classList.replace('text-on-surface-variant', 'text-on-surface');
