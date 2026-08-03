@@ -1569,7 +1569,6 @@
 
                 car.addEventListener('pointerdown', (e) => {
                     isDown = true;
-                    car.setPointerCapture(e.pointerId);
                     startX = e.pageX - car.offsetLeft;
                     scrollLeft = car.scrollLeft;
                     car.classList.add('dragging');
@@ -1577,9 +1576,13 @@
 
                 car.addEventListener('pointermove', (e) => {
                     if (!isDown) return;
-                    e.preventDefault();
                     const x = e.pageX - car.offsetLeft;
                     const walk = (x - startX);
+                    if (!car.hasPointerCapture(e.pointerId) && Math.abs(walk) > 5) {
+                        car.setPointerCapture(e.pointerId);
+                    }
+                    if (!car.hasPointerCapture(e.pointerId)) return;
+                    e.preventDefault();
                     car.scrollLeft = scrollLeft - walk;
                 });
 
