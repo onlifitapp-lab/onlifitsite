@@ -36,10 +36,10 @@ async function purchaseSubscription(plan, onStatus) {
 
         await loadRazorpayCheckout();
 
-        const orderRes = await fetch('/api/create-subscription-order', {
+        const orderRes = await fetch('/api/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-            body: JSON.stringify({ plan })
+            body: JSON.stringify({ type: 'subscription', plan })
         });
         const orderData = await orderRes.json();
 
@@ -63,10 +63,11 @@ async function purchaseSubscription(plan, onStatus) {
             handler: async function (rpResponse) {
                 notify('loading', 'Confirming payment...');
                 try {
-                    const verifyRes = await fetch('/api/verify-subscription-payment', {
+                    const verifyRes = await fetch('/api/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                         body: JSON.stringify({
+                            type: 'subscription',
                             razorpay_order_id: rpResponse.razorpay_order_id,
                             razorpay_payment_id: rpResponse.razorpay_payment_id,
                             razorpay_signature: rpResponse.razorpay_signature

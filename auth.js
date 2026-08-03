@@ -387,9 +387,10 @@ async function startClientSubscriptionCheckout(options = {}) {
 
         await loadClientRazorpayCheckout();
 
-        const orderRes = await fetch('/api/create-client-order', {
+        const orderRes = await fetch('/api/create-order', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader }
+            headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+            body: JSON.stringify({ type: 'client' })
         });
         const orderData = await orderRes.json();
 
@@ -409,10 +410,11 @@ async function startClientSubscriptionCheckout(options = {}) {
             handler: async function (rpResponse) {
                 notify('Confirming payment...');
                 try {
-                    const verifyRes = await fetch('/api/verify-client-payment', {
+                    const verifyRes = await fetch('/api/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                         body: JSON.stringify({
+                            type: 'client',
                             razorpay_order_id: rpResponse.razorpay_order_id,
                             razorpay_payment_id: rpResponse.razorpay_payment_id,
                             razorpay_signature: rpResponse.razorpay_signature
@@ -475,10 +477,10 @@ async function startGymHiringCheckout(options = {}) {
 
         await loadClientRazorpayCheckout();
 
-        const orderRes = await fetch('/api/create-hiringpost-order', {
+        const orderRes = await fetch('/api/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-            body: JSON.stringify(orderBody)
+            body: JSON.stringify({ ...orderBody, type: 'hiringpost' })
         });
         const orderData = await orderRes.json();
 
@@ -498,10 +500,11 @@ async function startGymHiringCheckout(options = {}) {
             handler: async function (rpResponse) {
                 notify('Confirming payment...');
                 try {
-                    const verifyRes = await fetch('/api/verify-hiringpost-payment', {
+                    const verifyRes = await fetch('/api/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                         body: JSON.stringify({
+                            type: 'hiringpost',
                             razorpay_order_id: rpResponse.razorpay_order_id,
                             razorpay_payment_id: rpResponse.razorpay_payment_id,
                             razorpay_signature: rpResponse.razorpay_signature

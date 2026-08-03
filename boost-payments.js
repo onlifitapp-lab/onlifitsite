@@ -37,10 +37,10 @@ async function purchaseBoost(durationDays, onStatus) {
 
         await loadRazorpayCheckoutForBoost();
 
-        const orderRes = await fetch('/api/create-boost-order', {
+        const orderRes = await fetch('/api/create-order', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-            body: JSON.stringify({ durationDays })
+            body: JSON.stringify({ type: 'boost', durationDays })
         });
         const orderData = await orderRes.json();
 
@@ -60,10 +60,11 @@ async function purchaseBoost(durationDays, onStatus) {
             handler: async function (rpResponse) {
                 notify('loading', 'Confirming payment...');
                 try {
-                    const verifyRes = await fetch('/api/verify-boost-payment', {
+                    const verifyRes = await fetch('/api/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
                         body: JSON.stringify({
+                            type: 'boost',
                             razorpay_order_id: rpResponse.razorpay_order_id,
                             razorpay_payment_id: rpResponse.razorpay_payment_id,
                             razorpay_signature: rpResponse.razorpay_signature

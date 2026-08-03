@@ -863,6 +863,9 @@
                 <div class="nav-item" data-tab="leads">
                     Leads
                 </div>
+                <div class="nav-item" data-tab="gyms">
+                    Gyms
+                </div>
                 <div class="nav-item" data-tab="plans">
                     Plans
                 </div>
@@ -1138,6 +1141,48 @@
                         <div class="loading">
                             <div class="spinner"></div>
                             <p>Loading leads...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gyms Tab (Phase 3) -->
+            <div id="gyms" class="tab-content">
+                <div class="content-header">
+                    <h2>Gym Hiring</h2>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 32px;">
+                    <div class="stat-card">
+                        <h3>Gym Owner Signups</h3>
+                        <div class="value" id="gym-kpi-signups">0</div>
+                        <div class="change">All-time</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Hiring Posts</h3>
+                        <div class="value" id="gym-kpi-active-posts">0</div>
+                        <div class="change">Currently listed</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Hiring Posts</h3>
+                        <div class="value" id="gym-kpi-total-posts">0</div>
+                        <div class="change">All-time</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Hiring Post Revenue</h3>
+                        <div class="value" id="gym-kpi-revenue">₹0</div>
+                        <div class="change">Paid hiring posts</div>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="table-header">
+                        <input type="text" class="search-bar" id="gyms-search" placeholder="Search gym, owner, speciality, location...">
+                    </div>
+                    <div id="gyms-table">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading gym hiring posts...</p>
                         </div>
                     </div>
                 </div>
@@ -1750,6 +1795,7 @@
                 else if (tabId === 'revenue') loadRevenue();
                 else if (tabId === 'bookings') loadBookings();
                 else if (tabId === 'leads') loadAdminLeads();
+                else if (tabId === 'gyms') loadGyms();
                 else if (tabId === 'plans') loadPlansData();
                 else if (tabId === 'blogs') loadBlogsAdmin();
                 else if (tabId === 'support') loadSupportTickets();
@@ -2186,6 +2232,111 @@
 
             html += '</tbody></table>';
             document.getElementById('bookings-table').innerHTML = html;
+        }
+
+        // Load Gyms (Phase 3 — gym owner signups + hiring posts)
+        let allGymPosts = [];
+
+        async function loadGyms() {
+            try {
+                const [signupsRes, postsRes] = await Promise.all([
+                    supabase.from('gym_profiles').select('id', { count: 'exact', head: true }),
+                    supabase
+                        .from('gym_hiring_posts')
+                        .select(`
+                            *,
+                            gym_profile:gym_profile_id(gym_name, owner_name, city)
+                        `)
+                        .order('created_at', { ascending: false })
+                ]);
+
+                if (signupsRes.error) console.error('Error loading gym signups:', signupsRes.error);
+                if (postsRes.error) console.error('Error loading gym hiring posts:', postsRes.error);
+
+                allGymPosts = postsRes.data || [];
+
+                document.getElementById('gym-kpi-signups').textContent = signupsRes.count ?? 0;
+                document.getElementById('gym-kpi-total-posts').textContent = allGymPosts.length;
+                document.getElementById('gym-kpi-active-posts').textContent =
+                    allGymPosts.filter(p => p.status === 'active').length;
+
+                const revenue = allGymPosts
+                    .filter(p => p.status === 'active' || p.status === 'expired')
+                    .reduce((sum, p) => sum + (Number(p.amount_paid) || 0), 0);
+                document.getElementById('gym-kpi-revenue').textContent = `₹${revenue.toLocaleString('en-IN')}`;
+
+                renderGymsTable(allGymPosts);
+
+                const gymsSearchEl = document.getElementById('gyms-search');
+                if (gymsSearchEl && !gymsSearchEl.dataset.bound) {
+                    gymsSearchEl.dataset.bound = '1';
+                    gymsSearchEl.addEventListener('input', function(e) {
+                        const searchTerm = e.target.value.toLowerCase();
+                        const filtered = allGymPosts.filter(p =>
+                            p.gym_profile?.gym_name?.toLowerCase().includes(searchTerm) ||
+                            p.gym_profile?.owner_name?.toLowerCase().includes(searchTerm) ||
+                            p.speciality?.toLowerCase().includes(searchTerm) ||
+                            p.location?.toLowerCase().includes(searchTerm)
+                        );
+                        renderGymsTable(filtered);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error loading gyms:', error);
+                document.getElementById('gyms-table').innerHTML = `
+                    <div class="empty-state"><p>No gym hiring posts yet</p><p>Posts will appear here once a gym owner pays for a listing</p></div>
+                `;
+            }
+        }
+
+        function renderGymsTable(posts) {
+            if (!posts || posts.length === 0) {
+                document.getElementById('gyms-table').innerHTML = `
+                    <div class="empty-state"><p>No gym hiring posts found</p><p>Posts will appear here once a gym owner pays for a listing</p></div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Gym</th>
+                            <th>Owner</th>
+                            <th>Speciality</th>
+                            <th>Location</th>
+                            <th>Employment</th>
+                            <th>Status</th>
+                            <th>Amount Paid</th>
+                            <th>Expires</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            posts.forEach(post => {
+                const badgeClass = post.status === 'active' ? 'badge-verified' :
+                                 post.status === 'failed' ? 'badge-rejected' : 'badge-pending';
+                const amountVal = post.amount_paid ? `₹${Number(post.amount_paid).toLocaleString('en-IN')}` : '₹0';
+                const expiresVal = post.expires_at ? new Date(post.expires_at).toLocaleDateString('en-IN') : 'N/A';
+
+                html += `
+                    <tr>
+                        <td>${escapeHtml(post.gym_profile?.gym_name) || 'N/A'}</td>
+                        <td>${escapeHtml(post.gym_profile?.owner_name) || 'N/A'}</td>
+                        <td>${escapeHtml(post.speciality) || 'N/A'}</td>
+                        <td>${escapeHtml(post.location) || 'N/A'}</td>
+                        <td>${escapeHtml(post.employment_type) || 'N/A'}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(post.status)}</span></td>
+                        <td><strong>${amountVal}</strong></td>
+                        <td>${expiresVal}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('gyms-table').innerHTML = html;
         }
 
         // Generates a short-lived signed URL for a private trainer-documents
