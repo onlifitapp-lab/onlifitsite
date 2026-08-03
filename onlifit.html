@@ -251,21 +251,21 @@
             margin-top: 16px;
         }
         .testimonial-dots button {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             padding: 0;
             border: none;
             border-radius: 999px;
             background: rgba(0, 0, 0, 0.15);
             cursor: pointer;
-            transition: background-color 0.25s ease, width 0.25s ease;
+            transition: background-color 0.25s ease;
         }
         .testimonial-dots button:hover {
             background: rgba(0, 0, 0, 0.3);
         }
         .testimonial-dots button.active {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             background: #000000;
         }
 
@@ -1123,7 +1123,7 @@
                     const hasAvatar = trainerAvatar && /^https?:\/\//i.test(trainerAvatar);
                     const initial = (r.client?.name || 'O').charAt(0).toUpperCase();
                     return `
-                        <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                        <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex gap-1 text-tertiary">${renderStars(isFinite(rating) ? rating : 0)}</div>
                                 <span class="text-xs text-on-surface-variant font-semibold">${dateText}</span>
@@ -1181,7 +1181,7 @@
             ];
 
             return fallbackReviews.map(r => `
-                <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0 w-[400px]">
+                <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex gap-1 text-tertiary">${renderStars(r.rating)}</div>
                         <span class="text-xs text-on-surface-variant font-semibold">${r.date}</span>
