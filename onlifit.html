@@ -1240,10 +1240,37 @@
             const mobileBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             if (mobileBtn && mobileMenu) {
+                const closeMobileMenu = () => {
+                    mobileMenu.classList.add('hidden');
+                    mobileBtn.querySelector('span').textContent = 'menu';
+                    document.body.classList.remove('overflow-hidden');
+                };
+                const openMobileMenu = () => {
+                    mobileMenu.classList.remove('hidden');
+                    mobileBtn.querySelector('span').textContent = 'close';
+                    document.body.classList.add('overflow-hidden');
+                };
+
                 mobileBtn.addEventListener('click', () => {
-                    mobileMenu.classList.toggle('hidden');
-                    const icon = mobileBtn.querySelector('span');
-                    icon.textContent = mobileMenu.classList.contains('hidden') ? 'menu' : 'close';
+                    if (mobileMenu.classList.contains('hidden')) {
+                        openMobileMenu();
+                    } else {
+                        closeMobileMenu();
+                    }
+                });
+
+                // Close on nav link click inside the menu
+                mobileMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', closeMobileMenu);
+                });
+
+                // Close on click outside the menu
+                document.addEventListener('click', (e) => {
+                    if (!mobileMenu.classList.contains('hidden') &&
+                        !mobileMenu.contains(e.target) &&
+                        !mobileBtn.contains(e.target)) {
+                        closeMobileMenu();
+                    }
                 });
             }
 
