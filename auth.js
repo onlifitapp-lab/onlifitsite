@@ -1296,7 +1296,7 @@ async function getTrainers(options = {}) {
         }
     } catch (e) {}
 
-    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, kyc_verified, certificates_verified, verification_status, experience, training_mode, profile_completion_score, last_active_at, boost_expires_at, subscription_plan';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, kyc_verified, certificates_verified, verification_status, experience, training_mode, profile_completion_score, last_active_at, boost_expires_at, subscription_plan';
     const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, kyc_verified, certificates_verified, verification_status, experience, training_mode, boost_expires_at, subscription_plan';
     const selectWithBadgeFull = selectBaseFull + ', has_black_status';
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
@@ -1623,7 +1623,7 @@ async function searchTrainers(query, location, mode) {
         return filtered;
     }
 
-    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, latitude, longitude, training_mode, profile_completion_score, last_active_at, boost_expires_at, subscription_plan';
+    const selectBaseFull = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, training_mode, profile_completion_score, last_active_at, boost_expires_at, subscription_plan';
     const selectBaseSlim = 'id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags, training_mode, boost_expires_at, subscription_plan';
     const selectWithBadgeFull = selectBaseFull + ', has_black_status';
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
