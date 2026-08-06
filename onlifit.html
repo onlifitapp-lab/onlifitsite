@@ -2,7 +2,7 @@
 <html class="scroll-smooth" lang="en">
 
 <head>
-        <script>document.write('<base href="' + (window.location.protocol === 'file:' ? './' : '/') + '">');</script>
+        <base href="/">
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Onlifit | Find Your Perfect Personal Trainer</title>
@@ -32,7 +32,7 @@
     
 <!-- Performance: Optimized fonts - removed unused weights to load faster -->        
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=block" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=swap" rel="stylesheet" />
 
     <!-- Tailwind CSS -->
     <link href="styles.css" rel="stylesheet" />
@@ -1056,11 +1056,15 @@
             section.classList.remove('hidden');
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('reviews')
-                    .select('id, rating, text, created_at, client:client_id(name, city, location), trainer:trainer_id(name, avatar_url)')
-                    .order('created_at', { ascending: false })
-                    .limit(10);
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+                const { data, error } = await Promise.race([
+                    supabaseClient
+                        .from('reviews')
+                        .select('id, rating, text, created_at, client:client_id(name, city, location), trainer:trainer_id(name, avatar_url)')
+                        .order('created_at', { ascending: false })
+                        .limit(10),
+                    timeoutPromise
+                ]);
 
                 if (error) throw error;
 
@@ -1694,12 +1698,6 @@
         }
 
         async function populateFeaturedTrainers() {
-            // Wait for trainer loader to be ready
-            let attempts = 0;
-            while (typeof getTrainers !== 'function' && attempts < 50) {
-                await new Promise(r => setTimeout(r, 60));
-                attempts++;
-            }
             if (typeof getTrainers !== 'function') return;
 
             try {
@@ -1727,13 +1725,17 @@
             if (!container || typeof supabaseClient === 'undefined') return;
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('gym_hiring_posts')
-                    .select('id, speciality, location, employment_type, gym_profiles(gym_name)')
-                    .eq('status', 'active')
-                    .gt('expires_at', new Date().toISOString())
-                    .order('posted_at', { ascending: false })
-                    .limit(3);
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+                const { data, error } = await Promise.race([
+                    supabaseClient
+                        .from('gym_hiring_posts')
+                        .select('id, speciality, location, employment_type, gym_profiles(gym_name)')
+                        .eq('status', 'active')
+                        .gt('expires_at', new Date().toISOString())
+                        .order('posted_at', { ascending: false })
+                        .limit(3),
+                    timeoutPromise
+                ]);
 
                 if (error) throw error;
 
