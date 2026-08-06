@@ -626,22 +626,27 @@
         </section>
 
         <!-- 5 — Gyms Hiring -->
-        <section class="py-16 lg:py-20 px-6 bg-surface-container-lowest">
+        <section id="gyms-hiring-section" class="py-16 lg:py-20 px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">For trainers</p>
-                        <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Gyms Hiring in Hyderabad</h2>
+                        <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Gyms Hiring Near You</h2>
                         <p class="text-on-surface-variant text-sm mt-1">Active job posts from gyms looking for trainers right now.</p>
                     </div>
                 </div>
 
-                <div id="gyms-hiring" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border border-outline-variant/30 shadow-sm h-40"></div>
+                <div class="bg-primary text-white rounded-2xl p-6 mb-6 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+                    <span class="material-symbols-outlined absolute -right-2 -bottom-4 text-[80px] opacity-20 pointer-events-none select-none" aria-hidden="true">business_center</span>
+                    <div class="relative text-center md:text-left">
+                        <h3 class="font-headline text-xl font-black mb-1">Are you a personal trainer?</h3>
+                        <p class="text-white/80 text-sm max-w-lg">Gyms in Hyderabad are actively looking for trainers like you. Browse open positions and contact gyms directly on WhatsApp.</p>
+                    </div>
+                    <a href="gym-jobs.html" class="relative shrink-0 inline-block px-6 py-2.5 text-sm font-bold bg-white text-primary rounded-full shadow-lg hover:opacity-90 transition-all duration-300">Browse All Jobs →</a>
                 </div>
 
-                <div class="text-center mt-6">
-                    <a href="gym-jobs.html" class="inline-block px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Browse All Jobs →</a>
+                <div id="gyms-hiring" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-outline-variant/30 shadow-sm h-40"></div>
                 </div>
             </div>
         </section>
@@ -1727,13 +1732,11 @@
 
                 const posts = data || [];
                 if (posts.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full text-center py-10">
-                            <p class="text-on-surface-variant text-sm">No gyms hiring right now — check back soon</p>
-                        </div>`;
+                    document.getElementById('gyms-hiring-section')?.classList.add('hidden');
                     return;
                 }
 
+                document.getElementById('gyms-hiring-section')?.classList.remove('hidden');
                 container.innerHTML = posts.map(p => {
                     const gymName = escapeHtml(p.gym_profiles?.gym_name || 'A gym in Hyderabad');
                     const speciality = escapeHtml(p.speciality || 'Trainer');
@@ -1756,10 +1759,7 @@
                 }).join('');
             } catch (e) {
                 console.warn('Failed to populate gyms hiring', e);
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-on-surface-variant text-sm">No gyms hiring right now — check back soon</p>
-                    </div>`;
+                document.getElementById('gyms-hiring-section')?.classList.add('hidden');
             }
         }
 
