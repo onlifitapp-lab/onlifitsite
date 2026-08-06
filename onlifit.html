@@ -625,34 +625,23 @@
             </div>
         </section>
 
-        <!-- 5 — Onlifit Black -->
-        <section class="py-16 lg:py-20 px-6 bg-on-surface text-white">
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-6">
-                <div class="flex-1">
-                    <div class="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-white/10 border border-white/20">
-                        <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">stars</span>
-                        <span class="text-[11px] font-bold uppercase tracking-widest">Premium Tier</span>
-                    </div>
-                    <h2 class="font-headline text-3xl md:text-4xl font-black">Onlifit Black</h2>
-                    <p class="text-white/60 mt-2 max-w-lg">Our highest-rated and most trusted trainers — handpicked for consistent results.</p>
-                    <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/80">
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Verified Identity</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Top Reviews</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Consistent Performance</li>
-                        <li class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-white">check_circle</span> Priority Visibility</li>
-                    </ul>
-                </div>
-                <div class="flex items-center gap-4 shrink-0">
-                    <a href="trainers.html?filter=onlifit_black" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-on-surface font-bold shadow-lg hover:opacity-90 transition-all">Explore Black Trainers</a>
-                    <div class="hidden md:flex gap-2">
-                        <button class="carousel-arrow prev w-11 h-11 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 transition-colors" data-target="black-trainers" aria-label="Previous"><span class="material-symbols-outlined text-[18px]">west</span></button>
-                        <button class="carousel-arrow next w-11 h-11 rounded-full border border-white/20 text-white flex items-center justify-center hover:bg-white/10 transition-colors" data-target="black-trainers" aria-label="Next"><span class="material-symbols-outlined text-[18px]">east</span></button>
+        <!-- 5 — Gyms Hiring -->
+        <section class="py-16 lg:py-20 px-6 bg-surface-container-lowest">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">For trainers</p>
+                        <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Gyms Hiring in Hyderabad</h2>
+                        <p class="text-on-surface-variant text-sm mt-1">Active job posts from gyms looking for trainers right now.</p>
                     </div>
                 </div>
-            </div>
-            <div id="black-trainers" class="carousel flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
-                <div class="carousel-card shrink-0 w-[84%] sm:w-[48%] md:w-[32%] lg:w-[28%] p-4">
-                    <div class="bg-white/5 p-4 rounded-2xl h-full"></div>
+
+                <div id="gyms-hiring" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-outline-variant/30 shadow-sm h-40"></div>
+                </div>
+
+                <div class="text-center mt-6">
+                    <a href="gym-jobs.html" class="inline-block px-6 py-2.5 text-sm font-bold bg-primary text-on-primary rounded-full shadow-lg shadow-primary/20 hover:opacity-90 transition-all duration-300">Browse All Jobs →</a>
                 </div>
             </div>
         </section>
@@ -763,15 +752,6 @@
                         </button>
                         <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
                             Directly on WhatsApp — no in-app messaging, no middleman. You'll find the contact option on every trainer's card and profile.
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
-                        <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
-                            <span class="font-bold">What's the difference between Onlifit Black and regular trainers?</span>
-                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
-                        </button>
-                        <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
-                            Onlifit Black highlights our highest-rated, most consistent trainers with verified identity and priority visibility — a curated shortlist, not just another filter.
                         </div>
                     </div>
                     <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
@@ -1259,7 +1239,7 @@
 
             requestAnimationFrame(() => {
                 void renderAuthNav();
-                // Initial featured-trainers render is handled by populateFeaturedAndBlack()
+                // Initial featured-trainers render is handled by populateFeaturedTrainers()
                 // (see DOMContentLoaded listener below), which wraps cards in .carousel-card
                 // for the carousel layout. renderDynamicTrainers() is still used by performSearch().
                 void loadHomepageReviews();
@@ -1318,7 +1298,7 @@
             });
         }
 
-        // Note: initial featured-trainers render is handled by populateFeaturedAndBlack()
+        // Note: initial featured-trainers render is handled by populateFeaturedTrainers()
         // (wraps cards in .carousel-card for the carousel layout). renderHomepageTrainers()
         // is still used below for post-search results, which intentionally replace the
         // carousel with a plain results grid.
@@ -1640,7 +1620,7 @@
             });
 
             // Auto-scroll feature for featured and black trainer carousels
-            ['featured-trainers', 'black-trainers'].forEach(id => {
+            ['featured-trainers'].forEach(id => {
                 const c = document.getElementById(id);
                 if (!c) return;
                 try {
@@ -1701,7 +1681,7 @@
             })();
         }
 
-        async function populateFeaturedAndBlack() {
+        async function populateFeaturedTrainers() {
             // Wait for trainer loader to be ready
             let attempts = 0;
             while (typeof getTrainers !== 'function' && attempts < 50) {
@@ -1718,44 +1698,76 @@
                 // section never renders empty before enough trainers have ratings/flags set.
                 let featured = trainers.filter(t => t?.featured === true || (Number(t?.rating) || 0) >= 4.5).slice(0, 8);
                 if (featured.length === 0) featured = trainers.slice(0, 8);
-                const featuredIds = new Set(featured.map(t => t?.id).filter(Boolean));
-
-                // Black: explicit flag only. Never reuse a trainer already shown in Featured —
-                // showing the same cards twice undermines the "premium tier" the section promises.
-                const black = trainers
-                    .filter(t => t?.onlifit_black === true || t?.is_onlifit_black === true || (Array.isArray(t?.badges) && t.badges.includes('onlifit_black')))
-                    .filter(t => !featuredIds.has(t?.id))
-                    .slice(0, 8);
 
                 const featuredContainer = document.getElementById('featured-trainers');
-                const blackContainer = document.getElementById('black-trainers');
 
                 if (featuredContainer && typeof window.renderPremiumTrainerCardHTML === 'function') {
                     featuredContainer.innerHTML = featured.map(t => `<div class="carousel-card shrink-0 w-[84%] sm:w-[48%] lg:w-[32%] p-4">${window.renderPremiumTrainerCardHTML(t, { context: 'public' })}</div>`).join('');
                 }
 
-                if (blackContainer && typeof window.renderPremiumTrainerCardHTML === 'function') {
-                    if (black.length === 0) {
-                        blackContainer.innerHTML = `
-                            <div class="w-full py-12 text-center">
-                                <span class="material-symbols-outlined text-4xl text-white/30 mb-3">stars</span>
-                                <h3 class="font-headline text-lg font-bold text-white mb-1">Premium trainers coming soon</h3>
-                                <p class="text-white/50 text-sm max-w-sm mx-auto">We're curating our first Onlifit Black lineup. Check back shortly.</p>
-                            </div>`;
-                    } else {
-                        blackContainer.innerHTML = black.map(t => `<div class="carousel-card shrink-0 w-[84%] sm:w-[48%] lg:w-[32%] p-4">${window.renderPremiumTrainerCardHTML(t, { context: 'public' })}</div>`).join('');
-                    }
+            } catch (e) {
+                console.warn('Failed to populate featured trainers', e);
+            }
+        }
+
+        async function populateGymsHiring() {
+            const container = document.getElementById('gyms-hiring');
+            if (!container || typeof supabaseClient === 'undefined') return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('gym_hiring_posts')
+                    .select('id, speciality, location, employment_type, gym_profiles(gym_name)')
+                    .eq('status', 'active')
+                    .gt('expires_at', new Date().toISOString())
+                    .order('posted_at', { ascending: false })
+                    .limit(3);
+
+                if (error) throw error;
+
+                const posts = data || [];
+                if (posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-10">
+                            <p class="text-on-surface-variant text-sm">No gyms hiring right now — check back soon</p>
+                        </div>`;
+                    return;
                 }
 
+                container.innerHTML = posts.map(p => {
+                    const gymName = escapeHtml(p.gym_profiles?.gym_name || 'A gym in Hyderabad');
+                    const speciality = escapeHtml(p.speciality || 'Trainer');
+                    const location = escapeHtml(p.location || 'Hyderabad');
+                    const employmentType = escapeHtml(p.employment_type || '');
+                    return `
+                        <div class="bg-white rounded-2xl p-5 border border-outline-variant/30 shadow-sm flex flex-col">
+                            <h3 class="font-headline text-lg font-bold text-on-surface mb-1">${gymName}</h3>
+                            <p class="text-sm font-semibold text-primary mb-3">${speciality}</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="inline-flex items-center gap-1 text-xs font-bold text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">location_on</span> ${location}
+                                </span>
+                                ${employmentType ? `<span class="inline-flex items-center gap-1 text-xs font-bold text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-full">
+                                    <span class="material-symbols-outlined text-[14px]">work</span> ${employmentType}
+                                </span>` : ''}
+                            </div>
+                            <a href="gym-job-detail.html?id=${encodeURIComponent(p.id)}" class="mt-auto inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline">View Job →</a>
+                        </div>`;
+                }).join('');
             } catch (e) {
-                console.warn('Failed to populate featured/black trainers', e);
+                console.warn('Failed to populate gyms hiring', e);
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-10">
+                        <p class="text-on-surface-variant text-sm">No gyms hiring right now — check back soon</p>
+                    </div>`;
             }
         }
 
         // Wire up carousel init after DOM content is ready
         document.addEventListener('DOMContentLoaded', () => {
             try { initCarousels(); } catch (e) { console.warn('Carousel init failed', e); }
-            try { populateFeaturedAndBlack(); } catch (e) { console.warn('Populate trainers failed', e); }
+            try { populateFeaturedTrainers(); } catch (e) { console.warn('Populate trainers failed', e); }
+            try { populateGymsHiring(); } catch (e) { console.warn('Populate gyms hiring failed', e); }
         });
     </script>
 
