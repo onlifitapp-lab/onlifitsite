@@ -1741,11 +1741,11 @@
 
                 const posts = data || [];
                 if (posts.length === 0) {
-                    document.getElementById('gyms-hiring-section')?.classList.add('hidden');
+                    container.classList.add('hidden');
                     return;
                 }
 
-                document.getElementById('gyms-hiring-section')?.classList.remove('hidden');
+                container.classList.remove('hidden');
                 container.innerHTML = posts.map(p => {
                     const gymName = escapeHtml(p.gym_profiles?.gym_name || 'A gym in Hyderabad');
                     const speciality = escapeHtml(p.speciality || 'Trainer');
@@ -1768,7 +1768,7 @@
                 }).join('');
             } catch (e) {
                 console.warn('Failed to populate gyms hiring', e);
-                document.getElementById('gyms-hiring-section')?.classList.add('hidden');
+                container.classList.add('hidden');
             }
         }
 
