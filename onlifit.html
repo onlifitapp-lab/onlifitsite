@@ -52,6 +52,130 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
 
+        /* Hand-written, not a Tailwind arbitrary-bracket class: styles.css is a
+           stale precompiled snapshot, so min-h-[420px]/[500px]/[600px] never
+           actually compiled and silently did nothing at any breakpoint. */
+        .become-trainer-card {
+            min-height: 420px;
+        }
+        @media (min-width: 768px) {
+            .become-trainer-card {
+                min-height: 500px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .become-trainer-card {
+                min-height: 600px;
+            }
+        }
+
+        /* Hand-written, same reason as .become-trainer-card above: several
+           md- and lg-prefixed padding utilities used on this page are not
+           compiled into styles.css, so responsive vertical section padding
+           silently did nothing at those breakpoints. */
+        .hero-section-pad {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .hero-section-pad {
+                padding-top: 3.5rem;
+                padding-bottom: 4rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .hero-section-pad {
+                padding-top: 5rem;
+                padding-bottom: 6rem;
+            }
+        }
+
+        /* Same fix as .hero-section-pad, reused across the sections that
+           previously relied on dead py-16 lg:py-20 / py-14 lg:py-16 /
+           py-16 lg:py-24 / py-16 combos. */
+        .section-pad-lg {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .section-pad-lg {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .section-pad-lg {
+                padding-top: 5rem;
+                padding-bottom: 5rem;
+            }
+        }
+
+        .section-pad-md {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .section-pad-md {
+                padding-top: 3.5rem;
+                padding-bottom: 3.5rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .section-pad-md {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+        }
+
+        .section-pad-xl {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .section-pad-xl {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .section-pad-xl {
+                padding-top: 6rem;
+                padding-bottom: 6rem;
+            }
+        }
+
+        .section-pad-sm {
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .section-pad-sm {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+        }
+
+        .footer-pad {
+            padding-top: 3.5rem;
+            padding-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .footer-pad {
+                padding-top: 6rem;
+                padding-bottom: 3rem;
+            }
+        }
+        .footer-grid {
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+        @media (min-width: 768px) {
+            .footer-grid {
+                gap: 3rem;
+                margin-bottom: 5rem;
+            }
+        }
+
         /* mobile-optimizations.css sets a blanket padding:12px 16px on every
            text input under 768px, which collapses the hero search bar's icon
            clearance back down and re-causes the icon/text overlap this fix
@@ -308,9 +432,9 @@
 
             <!-- Mobile Dropdown Menu -->
             <div id="mobile-menu" class="hidden md:hidden bg-surface border-t border-outline-variant/30 px-6 py-4 flex flex-col gap-4 rounded-b-2xl absolute w-full left-0 top-full mt-1 shadow-elevated">
-                <a href="pricing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Pricing</a>
-                <a href="join-us.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">Join Us</a>
-                <a href="gym-landing.html" class="text-base font-bold text-on-surface hover:text-primary py-2 border-b border-outline-variant/30">For Gyms</a>
+                <a href="pricing.html" class="text-base font-bold text-on-surface hover:text-primary py-3 border-b border-outline-variant/30">Pricing</a>
+                <a href="join-us.html" class="text-base font-bold text-on-surface hover:text-primary py-3 border-b border-outline-variant/30">Join Us</a>
+                <a href="gym-landing.html" class="text-base font-bold text-on-surface hover:text-primary py-3 border-b border-outline-variant/30">For Gyms</a>
 
                 <div id="mobile-nav-auth" class="flex flex-col gap-3 mt-2 sm:hidden">
                     <a href="login.html" class="w-full text-center px-5 py-3 text-base font-bold border-2 border-outline-variant/50 rounded-xl text-on-surface hover:bg-surface-container transition-all">Login</a>
@@ -323,7 +447,7 @@
     <main class="pt-24 md:pt-28">
 
         <!-- Hero Section -->
-        <section class="relative px-6 pt-14 pb-16 lg:pt-20 lg:pb-24 overflow-hidden bg-surface">
+        <section class="hero-section-pad relative px-6 overflow-hidden bg-surface">
             <div class="hero-grid-bg absolute inset-0 -z-0" aria-hidden="true"></div>
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -336,7 +460,7 @@
                         </div>
 
                         <!-- Main Header (H1) -->
-                        <h1 class="font-headline text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-5 leading-[1.05] tracking-tight">
+                        <h1 class="font-headline text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-5 leading-[1.05] tracking-tight">
                             Find your perfect trainer today
                         </h1>
 
@@ -460,7 +584,7 @@
         <!-- --- Redesigned Homepage Sections (mobile-first, carousels, simplified flows) --- -->
 
         <!-- 2 — Featured Trainers -->
-        <section class="py-16 lg:py-20 px-6 border-t border-outline-variant/30">
+        <section class="section-pad-lg px-6 border-t border-outline-variant/30">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
@@ -491,7 +615,7 @@
         </section>
 
         <!-- 3 — How Onlifit Works -->
-        <section class="py-16 lg:py-20 px-6">
+        <section class="section-pad-lg px-6">
             <div class="max-w-7xl mx-auto text-center mb-10">
                 <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2">The process</p>
                 <h2 class="font-headline text-3xl md:text-4xl font-black">How Onlifit Works</h2>
@@ -544,7 +668,7 @@
         </section>
 
         <!-- 4 — Browse Categories -->
-        <section class="py-14 lg:py-16 px-6 bg-surface-container-lowest">
+        <section class="section-pad-md px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="font-headline text-xl font-black">Browse by specialty</h3>
@@ -620,7 +744,7 @@
         </section>
 
         <!-- 5 — Gyms Hiring -->
-        <section id="gyms-hiring-section" class="py-16 lg:py-20 px-6 bg-surface-container-lowest">
+        <section id="gyms-hiring-section" class="section-pad-lg px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
@@ -653,7 +777,7 @@
         </section>
 
         <!-- 6 — Testimonials -->
-        <section id="reviews-section" class="py-16 lg:py-20 px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
+        <section id="reviews-section" class="section-pad-lg px-6 overflow-hidden bg-primary/5 border-y border-primary/10">
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
@@ -678,9 +802,9 @@
         </section>
 
         <!-- 7 — Become a Trainer -->
-        <section class="px-4 md:px-6 py-16 lg:py-24 bg-surface-container-lowest">
+        <section class="section-pad-xl px-4 md:px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
-                <div class="relative rounded-[2.5rem] overflow-hidden group min-h-[500px] md:min-h-[600px] flex items-center shadow-2xl transition-all duration-500 hover:shadow-black/20">
+                <div class="become-trainer-card relative rounded-[2.5rem] overflow-hidden group flex items-center shadow-2xl transition-all duration-500 hover:shadow-black/20">
                     <!-- Background Image & Overlays -->
                     <div class="absolute inset-0 z-0">
                         <img src="become-trainer.jpg" alt="Become a trainer" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" decoding="async">
@@ -728,7 +852,7 @@
         </section>
 
         <!-- 8 — FAQ -->
-        <section class="py-16 px-6 bg-surface">
+        <section class="section-pad-sm px-6 bg-surface">
             <div class="max-w-3xl mx-auto">
                 <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2 text-center">Questions &amp; answers</p>
                 <h2 class="font-headline text-2xl md:text-3xl font-black text-center mb-8">Frequently Asked Questions</h2>
@@ -776,9 +900,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="w-full bg-on-surface text-white pt-24 pb-12 px-8">
+    <footer class="footer-pad w-full bg-on-surface text-white px-8">
         <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+            <div class="footer-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Brand -->
                 <div class="lg:col-span-1">
                     <a href="onlifit.html" class="text-3xl font-black tracking-tighter text-white font-headline font-semibold mb-6 block">Onlifit</a>
