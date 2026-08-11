@@ -33,6 +33,33 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
+
+        /* Trainer filter row — a real 2x2 grid on mobile so all four controls
+           line up evenly (the old flex-wrap + ml-auto left "Top Rated"
+           stranded alone on its own line, disconnected from "Any rating").
+           Reflows to a single row at sm+ where there's width for it. */
+        .trainers-filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .trainers-filter-item {
+            width: 100%;
+        }
+        @media (min-width: 640px) {
+            .trainers-filter-row {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.75rem;
+            }
+            .trainers-filter-item {
+                width: auto;
+            }
+            .trainers-filter-sort {
+                margin-left: auto;
+            }
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -128,27 +155,27 @@
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <p class="text-on-surface-variant" aria-live="polite"><span id="trainer-count" class="font-bold text-on-surface">0</span> trainers found</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div class="trainers-filter-row">
                     <button type="button" id="black-only-toggle" onclick="toggleBlackOnly()" aria-pressed="false"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border-2 border-on-surface text-on-surface font-black text-xs uppercase tracking-widest transition-all min-h-[44px] hover:opacity-80">
+                        class="trainers-filter-item inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border-2 border-on-surface text-on-surface font-black text-xs uppercase tracking-widest transition-all min-h-[44px] hover:opacity-80">
                         <span class="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
                         Onlifit Black
                     </button>
                     <label class="sr-only" for="price-filter">Filter by price</label>
-                    <select id="price-filter" onchange="applyAllFilters()" aria-label="Filter by price" class="px-3 py-2 rounded-lg border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[44px]">
+                    <select id="price-filter" onchange="applyAllFilters()" aria-label="Filter by price" class="trainers-filter-item px-3 py-2 rounded-lg border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[44px]">
                         <option value="any">Any price</option>
                         <option value="0-500">Under &#8377;500/hr</option>
                         <option value="500-1000">&#8377;500&ndash;1000/hr</option>
                         <option value="1000-999999">&#8377;1000+/hr</option>
                     </select>
                     <label class="sr-only" for="rating-filter">Filter by minimum rating</label>
-                    <select id="rating-filter" onchange="applyAllFilters()" aria-label="Filter by minimum rating" class="px-3 py-2 rounded-lg border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[44px]">
+                    <select id="rating-filter" onchange="applyAllFilters()" aria-label="Filter by minimum rating" class="trainers-filter-item px-3 py-2 rounded-lg border border-outline-variant bg-white text-on-surface text-sm font-medium min-h-[44px]">
                         <option value="0">Any rating</option>
                         <option value="4">4+ stars</option>
                         <option value="4.5">4.5+ stars</option>
                     </select>
                     <label class="sr-only" for="sort-by">Sort trainers</label>
-                    <select id="sort-by" onchange="sortTrainers()" aria-label="Sort trainers" class="px-4 py-2 rounded-lg border border-outline-variant bg-white text-on-surface font-medium min-h-[44px] ml-auto">
+                    <select id="sort-by" onchange="sortTrainers()" aria-label="Sort trainers" class="trainers-filter-item trainers-filter-sort px-4 py-2 rounded-lg border border-outline-variant bg-white text-on-surface font-medium min-h-[44px]">
                         <option value="rating">Top Rated</option>
                         <option value="price-low">Price: Low to High</option>
                         <option value="price-high">Price: High to Low</option>

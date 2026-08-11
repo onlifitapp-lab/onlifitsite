@@ -474,6 +474,19 @@
             opacity: 0.12;
         }
 
+        /* Hero H1 — at font-black weight, tight tracking crowds letters
+           together on small viewports (looked like text "touching"). Normal
+           tracking below md:, back to the tighter/premium tracking at md+
+           where the larger type size gives it room. */
+        .hero-heading {
+            letter-spacing: -0.01em;
+        }
+        @media (min-width: 768px) {
+            .hero-heading {
+                letter-spacing: -0.025em;
+            }
+        }
+
         /* Hero image — shown at every breakpoint now; ordered above the text
            column on mobile/tablet, back to natural (second) position at lg+
            where the two-column grid takes over. */
@@ -603,7 +616,7 @@
                         </div>
 
                         <!-- Main Header (H1) -->
-                        <h1 class="font-headline text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-4 leading-[1.05] tracking-tight">
+                        <h1 class="font-headline hero-heading text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-on-surface mb-4 leading-[1.1] md:leading-[1.05]">
                             Find your perfect trainer today
                         </h1>
 
