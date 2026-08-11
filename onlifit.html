@@ -392,6 +392,120 @@
             mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 40%, transparent 90%);
         }
 
+        /* Soft color blobs behind the hero for depth — sits under .hero-grid-bg,
+           uses only the existing primary/secondary tokens (read from CSS vars
+           already set by styles.css), no new brand colors. */
+        .hero-blob {
+            position: absolute;
+            border-radius: 999px;
+            filter: blur(70px);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+        .hero-blob-1 {
+            width: 420px;
+            height: 420px;
+            top: -140px;
+            right: -120px;
+            background: rgb(0 0 0);
+            opacity: 0.05;
+        }
+        .hero-blob-2 {
+            width: 320px;
+            height: 320px;
+            bottom: -160px;
+            left: -100px;
+            background: rgb(0 0 0);
+            opacity: 0.035;
+        }
+
+        /* Section eyebrow — shared badge treatment used above every section
+           heading so headings read as one consistent system top-to-bottom. */
+        .section-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.6875rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+        .section-eyebrow::before {
+            content: '';
+            width: 18px;
+            height: 2px;
+            border-radius: 2px;
+            background: currentColor;
+            opacity: 0.5;
+        }
+
+        /* Hero stat strip under the search bar */
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+        .hero-stats .stat-num {
+            font-size: 1.5rem;
+            line-height: 1.1;
+        }
+        @media (min-width: 1024px) {
+            .hero-stats .stat-num {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Elevated card hover used across trainer / step / category cards for
+           a consistent lift-and-shadow interaction instead of ad-hoc hovers. */
+        .lift-card {
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+        }
+        .lift-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.16);
+        }
+
+        /* Testimonial quote glyph */
+        .quote-mark {
+            font-family: Georgia, serif;
+            font-size: 3.5rem;
+            line-height: 1;
+            font-weight: 700;
+            opacity: 0.12;
+        }
+
+        /* Gyms Hiring banner — subtle off-white radial glow on a black card
+           so it reads as designed depth rather than a flat block. */
+        .center-md-left {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 768px) {
+            .center-md-left {
+                margin-left: 0;
+            }
+        }
+
+        .gyms-hiring-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 80% at 100% 0%, rgba(255,255,255,0.10), transparent 60%),
+                        radial-gradient(ellipse 50% 60% at 0% 100%, rgba(255,255,255,0.06), transparent 60%);
+            pointer-events: none;
+        }
+
+        /* FAQ accordion active state */
+        .faq-item[data-open="true"] {
+            border-color: rgba(0,0,0,0.4);
+            box-shadow: 0 8px 24px -12px rgba(0,0,0,0.12);
+        }
+        .faq-item .faq-icon {
+            transition: transform 0.3s ease;
+        }
+        .faq-item[data-open="true"] .faq-icon {
+            transform: rotate(180deg);
+        }
+
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -449,6 +563,8 @@
         <!-- Hero Section -->
         <section class="hero-section-pad relative px-6 overflow-hidden bg-surface">
             <div class="hero-grid-bg absolute inset-0 -z-0" aria-hidden="true"></div>
+            <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+            <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Left Column: Text Content -->
@@ -539,6 +655,22 @@
                                 No commission
                             </span>
                         </div>
+
+                        <!-- Stat strip -->
+                        <div class="hero-stats mt-10 pt-8 border-t border-outline-variant/40 max-w-md mx-auto lg:mx-0">
+                            <div>
+                                <div class="stat-num font-headline font-black text-on-surface">1000+</div>
+                                <div class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70 mt-1">Active Users</div>
+                            </div>
+                            <div>
+                                <div class="stat-num font-headline font-black text-on-surface">4.8<span class="text-base align-top">★</span></div>
+                                <div class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70 mt-1">Avg. Rating</div>
+                            </div>
+                            <div>
+                                <div class="stat-num font-headline font-black text-on-surface">Zero</div>
+                                <div class="text-xs font-bold uppercase tracking-wider text-on-surface-variant/70 mt-1">Commission</div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right Column: Hero Image -->
@@ -588,7 +720,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-1.5">Handpicked for you</p>
+                        <p class="section-eyebrow text-on-surface-variant/70 mb-1.5">Handpicked for you</p>
                         <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Featured Trainers</h2>
                         <p class="text-on-surface-variant text-sm mt-1">Top-rated and promoted trainers to help you start fast.</p>
                     </div>
@@ -617,13 +749,13 @@
         <!-- 3 — How Onlifit Works -->
         <section class="section-pad-lg px-6">
             <div class="max-w-7xl mx-auto text-center mb-10">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2">The process</p>
+                <p class="section-eyebrow justify-center text-on-surface-variant/70 mb-2">The process</p>
                 <h2 class="font-headline text-3xl md:text-4xl font-black">How Onlifit Works</h2>
                 <p class="text-on-surface-variant mt-2">Find a trainer, choose a plan, and connect on WhatsApp.</p>
             </div>
             <div class="max-w-7xl mx-auto">
                 <div class="w-full flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory">
-                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                    <div class="how-step lift-card relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-on-surface/30">
                         <div class="flex items-start justify-between mb-5">
                             <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
                                 <span class="material-symbols-outlined text-white text-[20px]">search</span>
@@ -633,7 +765,7 @@
                         <h4 class="font-bold">Search</h4>
                         <p class="text-on-surface-variant text-sm mt-2">Search by goal, location or specialty.</p>
                     </div>
-                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                    <div class="how-step lift-card relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-on-surface/30">
                         <div class="flex items-start justify-between mb-5">
                             <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
                                 <span class="material-symbols-outlined text-white text-[20px]">playlist_add_check</span>
@@ -643,7 +775,7 @@
                         <h4 class="font-bold">Choose Trainer</h4>
                         <p class="text-on-surface-variant text-sm mt-2">Compare pricing, ratings and reviews.</p>
                     </div>
-                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                    <div class="how-step lift-card relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-on-surface/30">
                         <div class="flex items-start justify-between mb-5">
                             <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
                                 <span class="material-symbols-outlined text-white text-[20px]">chat</span>
@@ -653,7 +785,7 @@
                         <h4 class="font-bold">Contact on WhatsApp</h4>
                         <p class="text-on-surface-variant text-sm mt-2">Message directly, no middleman.</p>
                     </div>
-                    <div class="how-step relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all">
+                    <div class="how-step lift-card relative snap-start bg-white rounded-2xl p-6 text-left border border-outline-variant/30 hover:border-on-surface/30">
                         <div class="flex items-start justify-between mb-5">
                             <div class="w-11 h-11 rounded-xl bg-on-surface flex items-center justify-center">
                                 <span class="material-symbols-outlined text-white text-[20px]">fitness_center</span>
@@ -676,7 +808,7 @@
                 </div>
                 <div id="categories-carousel" class="carousel flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
                     <button type="button" onclick="onlifitSearchCategory('Yoga')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">self_improvement</span>
                             </div>
@@ -684,7 +816,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Weight Loss')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">monitor_weight</span>
                             </div>
@@ -692,7 +824,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Strength Training')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">fitness_center</span>
                             </div>
@@ -700,7 +832,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('HIIT')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">bolt</span>
                             </div>
@@ -708,7 +840,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Bodybuilding')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">fitness_center</span>
                             </div>
@@ -716,7 +848,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Zumba')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">music_note</span>
                             </div>
@@ -724,7 +856,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Functional Fitness')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">sports_gymnastics</span>
                             </div>
@@ -732,7 +864,7 @@
                         </div>
                     </button>
                     <button type="button" onclick="onlifitSearchCategory('Rehabilitation')" class="carousel-pill snap-start">
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                        <div class="lift-card bg-white rounded-2xl p-4 flex flex-col items-center gap-2 text-center border border-outline-variant/30 shadow-sm hover:border-on-surface/30">
                             <div class="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <span class="material-symbols-outlined text-primary" style="font-size: 24px">healing</span>
                             </div>
@@ -746,18 +878,26 @@
         <!-- 5 — Gyms Hiring -->
         <section id="gyms-hiring-section" class="section-pad-lg px-6 bg-surface-container-lowest">
             <div class="max-w-7xl mx-auto">
-                <div class="relative overflow-hidden rounded-2xl mb-6 bg-on-surface">
-                    <div class="flex flex-col md:flex-row items-center gap-6 p-7 md:p-10">
+                <div class="gyms-hiring-banner relative overflow-hidden rounded-[1.75rem] mb-6 bg-on-surface">
+                    <div class="gyms-hiring-glow" aria-hidden="true"></div>
+                    <div class="relative flex flex-col md:flex-row md:items-center gap-8 md:gap-6 px-6 py-10 md:p-12">
                         <div class="flex-1 text-center md:text-left">
-                            <span class="inline-block text-xs font-bold uppercase tracking-widest text-white/50 mb-3">For Personal Trainers</span>
-                            <h3 class="font-headline text-2xl md:text-3xl font-black text-white mb-2">Gyms Are Hiring Near You</h3>
-                            <p class="text-white/60 text-sm leading-relaxed max-w-md">Browse open positions from gyms in Hyderabad and contact them directly on WhatsApp.</p>
+                            <div class="center-md-left w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center mb-5">
+                                <span class="material-symbols-outlined text-white text-[22px]">work</span>
+                            </div>
+                            <span class="section-eyebrow justify-center md:justify-start text-white/50 mb-3">For Personal Trainers</span>
+                            <h3 class="font-headline text-3xl md:text-4xl font-black text-white mb-3 leading-tight">Gyms Are Hiring Near You</h3>
+                            <p class="center-md-left text-white/60 text-sm leading-relaxed max-w-md">Browse open positions from gyms in Hyderabad and contact them directly on WhatsApp.</p>
                         </div>
-                        <div class="shrink-0 text-center">
-                            <a href="gym-jobs.html" class="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-on-surface rounded-full font-bold text-sm hover:opacity-90 transition-all">
-                                Browse Jobs →
+                        <div class="shrink-0 flex flex-col items-center md:items-end gap-3">
+                            <a href="gym-jobs.html" class="inline-flex items-center justify-center gap-2 w-full md:w-auto px-8 py-4 bg-white text-on-surface rounded-full font-bold text-sm hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg shadow-black/20">
+                                Browse Jobs
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
                             </a>
-                            <p class="text-white/40 text-xs mt-2">Free for trainers</p>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-white/50">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white/50"></span>
+                                Free for trainers
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -773,7 +913,7 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <p class="text-[11px] font-bold uppercase tracking-widest text-primary/70 mb-1.5">Real results</p>
+                        <p class="section-eyebrow text-on-surface mb-1.5">Real results</p>
                         <h2 class="font-headline text-2xl md:text-3xl font-black text-on-surface">Success Stories</h2>
                         <p class="text-on-surface-variant text-sm mt-1">Real results from real members.</p>
                     </div>
@@ -846,40 +986,40 @@
         <!-- 8 — FAQ -->
         <section class="section-pad-sm px-6 bg-surface">
             <div class="max-w-3xl mx-auto">
-                <p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70 mb-2 text-center">Questions &amp; answers</p>
+                <p class="section-eyebrow justify-center text-on-surface-variant/70 mb-2">Questions &amp; answers</p>
                 <h2 class="font-headline text-2xl md:text-3xl font-black text-center mb-8">Frequently Asked Questions</h2>
                 <div class="space-y-4">
-                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <div class="faq-item bg-white rounded-xl border border-outline-variant/50 overflow-hidden" data-open="false">
                         <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
                             <span class="font-bold">How do I find the right trainer?</span>
-                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                            <span class="material-symbols-outlined faq-icon text-on-surface-variant">expand_more</span>
                         </button>
                         <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
                             Search by goal, location, or specialty at the top of this page. Every trainer's profile shows their rating, reviews, and pricing so you can compare before reaching out.
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <div class="faq-item bg-white rounded-xl border border-outline-variant/50 overflow-hidden" data-open="false">
                         <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
                             <span class="font-bold">Is the first session really free?</span>
-                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                            <span class="material-symbols-outlined faq-icon text-on-surface-variant">expand_more</span>
                         </button>
                         <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
                             Yes — most trainers offer a free first class so you can decide if they're the right fit before committing to a plan.
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <div class="faq-item bg-white rounded-xl border border-outline-variant/50 overflow-hidden" data-open="false">
                         <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
                             <span class="font-bold">How do I contact a trainer?</span>
-                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                            <span class="material-symbols-outlined faq-icon text-on-surface-variant">expand_more</span>
                         </button>
                         <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
                             Directly on WhatsApp — no in-app messaging, no middleman. You'll find the contact option on every trainer's card and profile.
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
+                    <div class="faq-item bg-white rounded-xl border border-outline-variant/50 overflow-hidden" data-open="false">
                         <button onclick="toggleFaq(this)" class="w-full px-6 py-5 text-left flex justify-between items-center">
                             <span class="font-bold">Can I train online and offline with the same trainer?</span>
-                            <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
+                            <span class="material-symbols-outlined faq-icon text-on-surface-variant">expand_more</span>
                         </button>
                         <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
                             Many trainers offer both — check the Online/Offline badge on their card, or ask directly on WhatsApp what works for your schedule.
@@ -1198,12 +1338,13 @@
                     const hasAvatar = trainerAvatar && /^https?:\/\//i.test(trainerAvatar);
                     const initial = (r.client?.name || 'O').charAt(0).toUpperCase();
                     return `
-                        <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
+                        <div class="testimonial-card lift-card relative bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
+                            <span class="quote-mark absolute top-4 right-6 text-on-surface select-none" aria-hidden="true">&rdquo;</span>
                             <div class="flex items-center justify-between mb-4">
                                 <div class="flex gap-1 text-tertiary">${renderStars(isFinite(rating) ? rating : 0)}</div>
                                 <span class="text-xs text-on-surface-variant font-semibold">${dateText}</span>
                             </div>
-                            <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"${safeText}"</p>
+                            <p class="relative text-on-surface font-medium leading-relaxed mb-6 italic">"${safeText}"</p>
                             <div class="flex items-center gap-3">
                                 ${hasAvatar
                                     ? `<img src="${escapeHtml(trainerAvatar)}" alt="${trainerName}" class="h-10 w-10 rounded-full object-cover flex-shrink-0" loading="lazy" />`
@@ -1256,12 +1397,13 @@
             ];
 
             return fallbackReviews.map(r => `
-                <div class="testimonial-card bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
+                <div class="testimonial-card lift-card relative bg-white p-8 rounded-2xl border border-outline-variant/30 shadow-sm shrink-0" style="width: min(85vw, 400px)">
+                    <span class="quote-mark absolute top-4 right-6 text-on-surface select-none" aria-hidden="true">&rdquo;</span>
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex gap-1 text-tertiary">${renderStars(r.rating)}</div>
                         <span class="text-xs text-on-surface-variant font-semibold">${r.date}</span>
                     </div>
-                    <p class="text-on-surface font-medium leading-relaxed mb-6 italic">"${escapeHtml(r.text)}"</p>
+                    <p class="relative text-on-surface font-medium leading-relaxed mb-6 italic">"${escapeHtml(r.text)}"</p>
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-black flex-shrink-0">${r.initial}</div>
                         <div class="flex flex-col min-w-0">
@@ -1470,9 +1612,10 @@
 
         function toggleFaq(btn) {
             const content = btn.nextElementSibling;
-            const icon = btn.querySelector('.material-symbols-outlined');
+            const item = btn.closest('.faq-item');
             content.classList.toggle('hidden');
-            icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+            const isOpen = !content.classList.contains('hidden');
+            if (item) item.setAttribute('data-open', isOpen ? 'true' : 'false');
         }
 
         async function performSearch() {
