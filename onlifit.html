@@ -486,6 +486,21 @@
             }
         }
 
+        /* Hero "Verified Trainers" badge — inset within the photo's own
+           corner on mobile (an outside overhang has nowhere to go on a
+           narrow viewport and reads as a disconnected stray box); floats
+           outside the corner, partly overhanging, once there's room. */
+        .hero-verified-badge {
+            bottom: 0.75rem;
+            left: 0.75rem;
+        }
+        @media (min-width: 768px) {
+            .hero-verified-badge {
+                bottom: -1.5rem;
+                left: -1.5rem;
+            }
+        }
+
         /* Gyms Hiring banner — subtle off-white radial glow on a black card
            so it reads as designed depth rather than a flat block. */
         .center-md-left {
@@ -692,15 +707,18 @@
                     <div class="hero-image-col relative mb-8 lg:mb-0">
                         <div class="relative hero-image-shell">
                             <img src="trainer-hero.jpg" alt="Personal trainer helping client" class="w-full h-full object-cover rounded-3xl shadow-2xl" width="6016" height="4016" loading="eager" fetchpriority="high" decoding="async" />
-                            <!-- Floating badge on image -->
-                            <div class="absolute -bottom-5 -left-4 md:-bottom-6 md:-left-6 bg-white rounded-2xl shadow-xl p-4 md:p-6 border border-outline-variant/20">
-                                <div class="flex items-center gap-3 md:gap-4">
-                                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-tertiary flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-outlined text-white text-xl md:text-2xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+                            <!-- Floating badge on image — inset within the photo on mobile
+                                 (room is tight so overhanging outside the frame reads as a
+                                 stray box), overhanging the corner on desktop where there's
+                                 space for it to float free. -->
+                            <div class="hero-verified-badge absolute bg-white rounded-2xl shadow-xl p-3 md:p-6 border border-outline-variant/20">
+                                <div class="flex items-center gap-2.5 md:gap-4">
+                                    <div class="w-9 h-9 md:w-12 md:h-12 rounded-full bg-tertiary flex items-center justify-center shrink-0">
+                                        <span class="material-symbols-outlined text-white text-lg md:text-2xl" style="font-variation-settings: 'FILL' 1;">verified</span>
                                     </div>
                                     <div>
-                                        <div class="text-lg md:text-2xl font-black text-on-surface font-headline">Verified</div>
-                                        <div class="text-[10px] md:text-xs text-on-surface-variant font-bold uppercase tracking-wider">Trainers</div>
+                                        <div class="text-base md:text-2xl font-black text-on-surface font-headline">Verified</div>
+                                        <div class="text-[9px] md:text-xs text-on-surface-variant font-bold uppercase tracking-wider">Trainers</div>
                                     </div>
                                 </div>
                             </div>
