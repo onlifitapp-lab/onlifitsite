@@ -1394,8 +1394,8 @@ async function getTrainers(options = {}) {
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
     try {
-        // 3. Extended timeout for cold starts: wait up to 6s for trainers to load (better UX than showing empty)
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 6000));
+        // 3. Extended timeout for cold starts: wait up to 10s for trainers to load (better UX than showing empty)
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 10000));
 
         const fetchPromise = (async () => {
             // Try richer selects first, but fall back when optional columns are missing.
