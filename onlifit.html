@@ -1351,16 +1351,16 @@
             if (!section || !carousel) return;
             section.classList.remove('hidden');
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000));
-                const { data, error } = await Promise.race([
-                    supabaseClient
-                        .from('reviews')
-                        .select('id, rating, text, created_at, client:client_id(name, city, location), trainer:trainer_id(name, avatar_url)')
-                        .order('created_at', { ascending: false })
-                        .limit(10),
-                    timeoutPromise
-                ]);
+                const { data, error } = await supabaseClient
+                    .from('reviews')
+                    .select('id, rating, text, created_at, client:client_id(name, city, location), trainer:trainer_id(name, avatar_url)')
+                    .order('created_at', { ascending: false })
+                    .limit(10)
+                    .abortSignal(controller.signal);
+                clearTimeout(timeoutId);
 
                 if (error) throw error;
 
@@ -1405,6 +1405,7 @@
                     `;
                 }).join('');
             } catch (e) {
+                clearTimeout(timeoutId);
                 console.error('Homepage reviews failed to load:', e);
                 carousel.innerHTML = renderDummyReviews();
                 if (loading) loading.remove();
@@ -2023,18 +2024,18 @@
             const container = document.getElementById('gyms-hiring');
             if (!container || typeof supabaseClient === 'undefined') return;
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000));
-                const { data, error } = await Promise.race([
-                    supabaseClient
-                        .from('gym_hiring_posts')
-                        .select('id, speciality, location, employment_type, gym_profiles(gym_name)')
-                        .eq('status', 'active')
-                        .gt('expires_at', new Date().toISOString())
-                        .order('posted_at', { ascending: false })
-                        .limit(3),
-                    timeoutPromise
-                ]);
+                const { data, error } = await supabaseClient
+                    .from('gym_hiring_posts')
+                    .select('id, speciality, location, employment_type, gym_profiles(gym_name)')
+                    .eq('status', 'active')
+                    .gt('expires_at', new Date().toISOString())
+                    .order('posted_at', { ascending: false })
+                    .limit(3)
+                    .abortSignal(controller.signal);
+                clearTimeout(timeoutId);
 
                 if (error) throw error;
 
@@ -2066,6 +2067,7 @@
                         </div>`;
                 }).join('');
             } catch (e) {
+                clearTimeout(timeoutId);
                 console.warn('Failed to populate gyms hiring', e);
                 container.classList.add('hidden');
             }
