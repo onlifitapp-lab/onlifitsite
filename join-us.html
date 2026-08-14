@@ -1,35 +1,111 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="scroll-smooth" lang="en">
 
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Join Us | Become an Onlifit Personal Trainer</title>
-    
+    <meta name="description" content="Join Onlifit free for 90 days. Get discovered by clients in Hyderabad looking for a personal trainer. Zero commission on sessions." />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=block" rel="stylesheet" />
-    
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL,GRAD,opsz@100..700,0..1,-50..200,20..48&display=swap" rel="stylesheet" />
+
     <link href="styles.css" rel="stylesheet" />
     <link href="mobile-optimizations.css" rel="stylesheet" />
-    
+
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
     <style>
         html { font-size: 16px; scroll-behavior: smooth; }
         body { font-size: 1rem; line-height: 1.5; }
-        
+
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        
+
         .glass-nav { background: rgba(250, 249, 251, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.05); }
         .glass-nav.scrolled { background: rgba(255, 255, 255, 0.95); box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
-        
-        .hover-lift { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .hover-lift:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08); }
-        .hover-lift-dark:hover { box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); }
-        
-        .animate-fade-up { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-        .animate-fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        /* Hero — slow shifting gradient overlay. Monochrome: soft white
+           blooms drifting over the dark surface, no new brand colors. */
+        .hero-gradient-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08), transparent 45%),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.06), transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04), transparent 60%);
+            background-size: 200% 200%;
+            animation: gradientShift 18s ease-in-out infinite;
+        }
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Headline on-load fade — separate from AOS, which only fires on
+           scroll. The hero is visible immediately on load, so it needs its
+           own animation independent of the scroll-triggered sections below. */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-fade-up { animation: fadeUp 0.9s ease-out both; }
+        .hero-fade-up-delay-1 { animation: fadeUp 0.9s ease-out 0.15s both; }
+        .hero-fade-up-delay-2 { animation: fadeUp 0.9s ease-out 0.3s both; }
+        .hero-fade-up-delay-3 { animation: fadeUp 0.9s ease-out 0.45s both; }
+
+        /* Status dot — a live/availability indicator (universal UI
+           convention), not a brand color addition. */
+        .status-dot {
+            background: #22c55e;
+            animation: statusPulse 2s ease-out infinite;
+        }
+        @keyframes statusPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+            70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* How It Works — dashed connector between step circles, desktop only. */
+        .step-connector {
+            position: absolute;
+            top: 24px;
+            left: calc(16.66% + 24px);
+            right: calc(16.66% + 24px);
+            border-top: 2px dashed rgba(0,0,0,0.15);
+        }
+
+        /* Section padding — hand-written with real media queries. Tailwind's
+           md:/lg: py-* combos aren't reliably compiled in this precompiled
+           styles.css (same issue documented elsewhere in this codebase). */
+        .section-pad {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+        @media (min-width: 1024px) {
+            .section-pad {
+                padding-top: 6rem;
+                padding-bottom: 6rem;
+            }
+        }
+
+        /* Section 5 fields are a preview of what the real signup flow asks
+           for, not a working form — intentionally inert so nothing typed
+           here is silently discarded before the real account/onboarding
+           flow captures it. */
+        .preview-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(0,0,0,0.12);
+            background: rgba(0,0,0,0.02);
+            color: rgba(0,0,0,0.4);
+            font-size: 0.875rem;
+            cursor: not-allowed;
+        }
     </style>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-4W2306MJ1Y"></script>
@@ -50,409 +126,199 @@
                 <a href="onlifit.html" class="text-2xl font-black tracking-tighter text-primary font-headline font-semibold">Onlifit</a>
                 <div class="hidden md:flex gap-8 items-center">
                     <a href="pricing.html" class="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Pricing</a>
-                    <a href="join-us.html" class="text-sm font-semibold text-primary transition-colors relative after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-primary">Join Us</a>
+                    <a href="join-us.html" class="text-sm font-semibold text-primary border-b-2 border-primary pb-1 transition-colors">Join Us</a>
                     <a href="gym-landing.html" class="text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">For Gyms</a>
                 </div>
             </div>
             <div class="flex items-center gap-4">
                 <a href="login.html?role=trainer&source=join-us" class="hidden lg:block px-5 py-2 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">Sign In</a>
-                <a href="login.html?tab=signup&role=trainer&source=join-us" class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary hover:bg-secondary rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.1)] transition-all hover:scale-105">Apply Now</a>      
+                <a href="login.html?tab=signup&role=trainer&source=join-us" class="px-6 py-2.5 text-sm font-bold bg-primary text-on-primary hover:bg-secondary rounded-full shadow-md transition-all hover:scale-105">Apply Now</a>
             </div>
         </div>
     </nav>
 
-    <main class="pt-24" id="main-content">
-        <!-- Hero Section -->
-        <section class="relative px-6 py-12 lg:py-24 overflow-hidden bg-surface">
-            <!-- Glows -->
-            <div class="absolute -top-10 -right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-0 pointer-events-none"></div>
-            <div class="absolute top-40 -left-20 w-80 h-80 bg-tertiary/10 rounded-full blur-3xl -z-0 pointer-events-none"></div>
+    <main id="main-content">
 
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 w-full animate-fade-up">
-                <!-- Left Details -->
-                <div class="text-center lg:text-left space-y-8">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-bold tracking-widest uppercase mb-4">
-                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                        Premium Trainer Network
-                    </div>
-                    <h1 class="font-headline text-5xl lg:text-7xl lg:leading-[1.1] font-black text-on-surface tracking-tight">
-                        We Don't Hire Trainers. <br/>
-                        <span class="text-primary">We Partner With the Best.</span>
-                    </h1>
-                    <p class="text-xl lg:text-2xl text-on-surface-variant leading-relaxed max-w-xl mx-auto lg:mx-0">
-                        Elevate your brand, scale your business, and work with clients who are serious about their results.
-                    </p>
-                    <ul class="space-y-4 pt-4 text-left inline-block lg:block text-on-surface font-medium">
-                        <li class="flex items-center gap-4"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary material-symbols-outlined text-sm">bolt</span> Earn ₹1,000-₹5,000 per hour</li>
-                        <li class="flex items-center gap-4"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary material-symbols-outlined text-sm">public</span> Connect with high-intent global clients</li>
-                        <li class="flex items-center gap-4"><span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary material-symbols-outlined text-sm">diamond</span> Keep 100% of your earnings</li>      
-                    </ul>
+        <!-- Section 1 — Hero -->
+        <section class="relative min-h-screen flex items-center justify-center overflow-hidden bg-on-surface px-6 py-24">
+            <div class="hero-gradient-bg" aria-hidden="true"></div>
+
+            <div class="relative z-10 max-w-4xl mx-auto text-center">
+                <div class="hero-fade-up inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-widest mb-8">
+                    <span class="status-dot w-2 h-2 rounded-full"></span>
+                    Now accepting trainers in Hyderabad
                 </div>
 
-                <!-- Right Signup Action card -->
-                <div class="bg-surface-container-lowest text-on-surface rounded-3xl p-10 lg:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] border border-outline-variant/30 max-w-md w-full mx-auto relative">
-                    <!-- Premium badge floating -->
-                    <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/10 border border-primary/20 backdrop-blur-md rounded-2xl rotate-12 flex items-center justify-center shadow-lg animate-[bounce_4s_infinite]">
-                        <span class="material-symbols-outlined text-primary text-4xl">verified</span>
+                <h1 class="hero-fade-up-delay-1 font-headline text-5xl lg:text-7xl font-black text-white leading-tight tracking-tight mb-6">
+                    Turn Your Fitness Expertise Into a Client Pipeline
+                </h1>
+
+                <p class="hero-fade-up-delay-2 text-lg lg:text-xl text-white/70 leading-relaxed max-w-2xl mx-auto mb-8">
+                    Join Onlifit free for 90 days. Get discovered by clients in Hyderabad looking for a trainer like you.
+                </p>
+
+                <div class="hero-fade-up-delay-2 flex flex-wrap items-center justify-center gap-3 mb-10">
+                    <span class="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">Free for 90 days</span>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold">0% commission on sessions</span>
+                </div>
+
+                <a href="login.html?tab=signup&role=trainer&source=join-us"
+                    class="hero-fade-up-delay-3 inline-flex items-center justify-center px-10 py-5 bg-white text-on-surface rounded-full font-bold text-lg hover:scale-105 transition-all shadow-xl">
+                    Apply as a Trainer →
+                </a>
+            </div>
+        </section>
+
+        <!-- Section 2 — Why Join -->
+        <section class="section-pad px-6 bg-surface">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70 mb-3">Why Join</p>
+                    <h2 class="font-headline text-3xl lg:text-4xl font-black text-on-surface">Built for trainers, not platforms</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm" data-aos="fade-up" data-aos-delay="0">
+                        <div class="bg-primary text-white w-14 h-14 rounded-xl flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-2xl">card_giftcard</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Free for 90 Days</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">No subscription, no upfront cost. Join free and start getting discovered immediately.</p>
                     </div>
 
-                    <div class="mb-10 text-left">
-                        <h2 class="text-3xl font-black font-headline text-on-surface mb-2">Apply for Access</h2>
-                        <p class="text-sm text-on-surface-variant">Join the platform redefining premium fitness.</p>
+                    <div class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm" data-aos="fade-up" data-aos-delay="100">
+                        <div class="bg-primary text-white w-14 h-14 rounded-xl flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-2xl">chat</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Direct WhatsApp Contact</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">Clients contact you directly on WhatsApp. No middleman, no platform fees on sessions.</p>
                     </div>
 
-                    <a href="login.html?tab=signup&role=trainer&source=join-us"
-                        class="w-full relative group overflow-hidden flex items-center justify-center py-4 rounded-xl bg-primary text-on-primary font-bold text-lg transition-all shadow-[0_8px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.2)] hover:bg-secondary hover:scale-[1.02] mb-6">     
-                        <span class="relative z-10 flex items-center gap-2">Start Application <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span></span>
-                    </a>
-
-                    <div class="text-center pt-4 border-t border-outline-variant/20">
-                        <a href="login.html?tab=signup&role=trainer&source=join-us" class="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors inline-flex items-center gap-1">
-                            Already started? Continue here
-                        </a>
+                    <div class="bg-white rounded-2xl p-8 border border-outline-variant/30 shadow-sm" data-aos="fade-up" data-aos-delay="200">
+                        <div class="bg-primary text-white w-14 h-14 rounded-xl flex items-center justify-center mb-6">
+                            <span class="material-symbols-outlined text-2xl">verified</span>
+                        </div>
+                        <h3 class="font-headline text-xl font-bold text-on-surface mb-2">Verified Profile</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">Your profile is reviewed by our team before going live. Clients trust verified trainers.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Stats Band -->
-        <div class="border-y border-outline-variant/20 bg-surface relative z-20 py-24 px-6 animate-fade-up">  
-            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 text-center divide-y md:divide-y-0 md:divide-x divide-outline-variant/20">
-                <div class="space-y-4 pt-10 md:pt-0">
-                    <p class="text-5xl lg:text-7xl font-black text-on-surface font-headline tracking-tighter counter" data-target="10000">0</p>
-                    <p class="text-sm font-bold text-primary uppercase tracking-widest">+ Clients Waiting</p>
-                    <p class="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">actively searching for their next elite trainer.</p> 
-                </div>
-                <div class="space-y-4 pt-10 md:pt-0">
-                    <p class="text-5xl lg:text-7xl font-black text-on-surface font-headline tracking-tighter"><span class="text-4xl lg:text-5xl align-top">₹</span><span class="counter" data-target="20">0</span><span class="text-4xl lg:text-5xl">Cr+</span></p>
-                    <p class="text-sm font-bold text-primary uppercase tracking-widest">Paid Out</p>
-                    <p class="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">Real money deposited directly to trainers.</p>       
-                </div>
-                <div class="space-y-4 pt-10 md:pt-0">
-                    <p class="text-5xl lg:text-7xl font-black text-on-surface font-headline tracking-tighter counter" data-target="50">0</p>
-                    <p class="text-sm font-bold text-primary uppercase tracking-widest">+ Disciplines</p>
-                    <p class="text-sm text-on-surface-variant max-w-xs mx-auto leading-relaxed">fitness categories supported for your unique specialty.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Elite Badge Storytelling -->
-        <section class="py-16 lg:py-24 px-6 max-w-4xl mx-auto text-center relative animate-fade-up">
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none"></div>
-            
-            <div class="mb-10 inline-flex items-center justify-center p-1 rounded-full border border-primary/20 bg-primary/5">
-                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                    <span class="material-symbols-outlined text-3xl">workspace_premium</span>
-                </div>
-            </div>
-            
-            <h2 class="text-4xl lg:text-6xl font-black font-headline text-on-surface mb-8 tracking-tight">
-                <span class="text-primary">Onlifit Black</span>
-            </h2>
-            <div class="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-10"></div>
-            <p class="text-xl lg:text-2xl text-on-surface-variant leading-relaxed">
-                Only <strong class="text-on-surface bg-surface-container px-2 py-1 rounded">1 in 4 applicants</strong> makes it through our verification.
-                Our rigorous background check, certification review, and interview process ensures that when clients see your profile, they know they are working with the best. 
-            </p>
-            <p class="mt-8 text-xl font-semibold text-primary italic">You might be next.</p>
-        </section>
-
-        <!-- Premium Benefits Cards -->
-        <section class="py-16 lg:py-24 px-6 relative overflow-hidden bg-surface text-on-surface">
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none"></div>
-
-            <div class="max-w-7xl mx-auto relative z-10">
-                <div class="text-center mb-24 animate-fade-up">
-                    <h2 class="text-4xl md:text-5xl font-black font-headline text-on-surface">Engineered for Success</h2>
+        <!-- Section 3 — How It Works -->
+        <section class="section-pad px-6 bg-surface-container-lowest">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant/70 mb-3">The Process</p>
+                    <h2 class="font-headline text-3xl lg:text-4xl font-black text-on-surface">How It Works</h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-                    <!-- Card 1 -->
-                    <div class="bg-white rounded-3xl p-10 shadow-sm hover:shadow-2xl border border-outline-variant/30 hover:border-primary/30 flex flex-col text-left group animate-fade-up transform transition-all duration-500 hover:-translate-y-2" style="transition-delay: 100ms;">
-                        <div class="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-lg transition-all duration-500">
-                            <span class="material-symbols-outlined text-primary">person_play</span>
-                        </div>
-                        <p class="text-xs font-black text-on-surface-variant tracking-[0.2em] uppercase mb-4 group-hover:text-primary transition-colors">01. Autonomy</p>
-                        <h3 class="font-headline text-3xl font-bold mb-4 text-on-surface">100% Control</h3>
-                        <p class="text-on-surface-variant leading-relaxed transition-colors group-hover:text-on-surface">You set your session pricing, package rates, and availability. You are the CEO of your business.</p>
-                        <div class="mt-auto pt-8 border-t border-outline-variant/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span class="text-sm text-primary uppercase tracking-widest font-bold flex items-center gap-2">Your Terms <span class="material-symbols-outlined text-sm">arrow_forward</span></span>
-                        </div>
+                <div class="relative flex flex-col lg:flex-row gap-12 lg:gap-8">
+                    <div class="step-connector hidden lg:block" aria-hidden="true"></div>
+
+                    <div class="relative flex-1 text-center" data-aos="fade-right" data-aos-delay="0">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-on-surface text-white flex items-center justify-center font-bold text-lg mb-5 relative z-10">1</div>
+                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">Fill the form below</h3>
+                        <p class="text-on-surface-variant text-sm">Takes 2 minutes</p>
                     </div>
 
-                    <!-- Card 2 -->
-                    <div class="bg-white rounded-3xl p-10 shadow-sm hover:shadow-2xl border border-outline-variant/30 hover:border-tertiary/30 flex flex-col text-left group animate-fade-up transform transition-all duration-500 hover:-translate-y-2" style="transition-delay: 200ms;">
-                         <div class="w-14 h-14 bg-tertiary/10 text-tertiary rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-lg transition-all duration-500">
-                            <span class="material-symbols-outlined text-tertiary">account_balance_wallet</span>
-                        </div>
-                        <p class="text-xs font-black text-on-surface-variant tracking-[0.2em] uppercase mb-4 group-hover:text-tertiary transition-colors">02. Value</p>
-                        <h3 class="font-headline text-3xl font-bold mb-4 text-on-surface">Transparent Commission Model</h3>
-                        <p class="text-on-surface-variant leading-relaxed transition-colors group-hover:text-on-surface">You always see clear commission details before you start. No hidden deductions, no surprises, and full payout transparency.</p>
-                        <div class="mt-auto pt-8 border-t border-outline-variant/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span class="text-sm text-tertiary uppercase tracking-widest font-bold flex items-center gap-2">100% Retained <span class="material-symbols-outlined text-sm">arrow_forward</span></span>
-                        </div>
+                    <div class="relative flex-1 text-center" data-aos="fade-right" data-aos-delay="150">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-on-surface text-white flex items-center justify-center font-bold text-lg mb-5 relative z-10">2</div>
+                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">We review your profile</h3>
+                        <p class="text-on-surface-variant text-sm">Manual verification by our team</p>
                     </div>
 
-                    <!-- Card 3 -->
-                    <div class="bg-white rounded-3xl p-10 shadow-sm hover:shadow-2xl border border-outline-variant/30 hover:border-secondary/30 flex flex-col text-left group animate-fade-up transform transition-all duration-500 hover:-translate-y-2" style="transition-delay: 300ms;">
-                         <div class="w-14 h-14 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-lg transition-all duration-500">
-                            <span class="material-symbols-outlined text-secondary">public</span>
-                        </div>
-                        <p class="text-xs font-black text-on-surface-variant tracking-[0.2em] uppercase mb-4 group-hover:text-secondary transition-colors">03. Scale</p>
-                        <h3 class="font-headline text-3xl font-bold mb-4 text-on-surface">Global Reach</h3>
-                        <p class="text-on-surface-variant leading-relaxed transition-colors group-hover:text-on-surface">Break geographical boundaries. Train high-ticket clients online anywhere in the world.</p>
-                        <div class="mt-auto pt-8 border-t border-outline-variant/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span class="text-sm text-secondary uppercase tracking-widest font-bold flex items-center gap-2">Limitless Growth <span class="material-symbols-outlined text-sm">arrow_forward</span></span>
+                    <div class="relative flex-1 text-center" data-aos="fade-right" data-aos-delay="300">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-on-surface text-white flex items-center justify-center font-bold text-lg mb-5 relative z-10">3</div>
+                        <h3 class="font-headline text-lg font-bold text-on-surface mb-1">Go live and get leads</h3>
+                        <p class="text-on-surface-variant text-sm">Clients can find and contact you</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Trainer Earnings Showcase -->
-        <section class="py-16 lg:py-24 px-6 relative bg-surface-container-low border-b border-outline-variant/20">
-            <div class="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-3xl rounded-full pointer-events-none -z-10"></div>
-            
-            <div class="max-w-6xl mx-auto animate-fade-up relative z-10">
-                <div class="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div class="space-y-4">
-                        <p class="text-sm font-bold text-primary uppercase tracking-widest">Real Results</p>
-                        <h2 class="text-4xl lg:text-6xl font-black font-headline text-on-surface tracking-tight">Trainers are earning</h2>
-                    </div>
-                    <p class="text-xl text-on-surface-variant max-w-md">Real specialists making elite revenue on their bespoke terms.</p>
+        <!-- Section 4 — Honest Stats -->
+        <section class="section-pad px-6 bg-surface">
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div data-aos="fade-up" data-aos-delay="0">
+                    <p class="font-headline text-4xl md:text-5xl font-black text-on-surface mb-2">90 days</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Free trial period</p>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Earn Card -->
-                    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 hover:border-primary/50 hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-32 h-32 bg-primary/5 blur-[50px] group-hover:bg-primary/10 transition-colors"></div>
-                        <div class="flex items-start justify-between mb-8 relative z-10">
-                            <div class="w-14 h-14 bg-surface-container-lowest rounded-full flex items-center justify-center text-xl shadow-sm text-on-surface">🧘‍♀️</div>
-                            <span class="px-3 py-1 bg-surface-container-low rounded-full text-xs font-medium text-on-surface-variant">15 hrs/wk</span>
-                        </div>
-                        <div class="relative z-10">
-                            <h3 class="font-bold text-2xl text-on-surface mb-2">Yoga Specialist</h3>
-                            <p class="text-4xl font-black text-on-surface mt-6">₹60K-₹80K <span class="text-base text-on-surface-variant font-medium font-body">/mo</span></p>
-                            <!-- Progress visual -->
-                            <div class="w-full bg-outline-variant/30 h-1.5 rounded-full mt-6 overflow-hidden">
-                                <div class="bg-primary h-full w-[60%]"></div>
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <p class="font-headline text-4xl md:text-5xl font-black text-on-surface mb-2">0%</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Commission on your sessions</p>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <p class="font-headline text-4xl md:text-5xl font-black text-on-surface mb-2">Hyderabad</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Where we operate</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5 — Application -->
+        <section class="section-pad px-6 bg-surface-container-lowest">
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-outline-variant/30" data-aos="fade-up">
+                    <div class="text-center mb-8">
+                        <h2 class="font-headline text-2xl lg:text-3xl font-black text-on-surface mb-2">Start Your Application</h2>
+                        <p class="text-on-surface-variant text-sm">Here's what we'll ask when you sign up — takes about 5 minutes.</p>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); window.location.href='login.html?tab=signup&role=trainer&source=join-us';">
+                        <div class="space-y-5 mb-8">
+                            <div>
+                                <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-name">Full name</label>
+                                <input class="preview-field" id="preview-name" type="text" placeholder="Your full name" disabled />
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-email">Email</label>
+                                    <input class="preview-field" id="preview-email" type="email" placeholder="you@example.com" disabled />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-phone">Phone</label>
+                                    <input class="preview-field" id="preview-phone" type="tel" placeholder="WhatsApp number" disabled />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-specialty">Specialty</label>
+                                    <input class="preview-field" id="preview-specialty" type="text" placeholder="e.g. Strength Training" disabled />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-experience">Experience</label>
+                                    <input class="preview-field" id="preview-experience" type="text" placeholder="e.g. 3 years" disabled />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-location">Location</label>
+                                <input class="preview-field" id="preview-location" type="text" placeholder="Area in Hyderabad" disabled />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-on-surface mb-1.5" for="preview-bio">Bio</label>
+                                <textarea class="preview-field" id="preview-bio" rows="3" placeholder="Tell clients about your background and training style" disabled></textarea>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Earn Card -->
-                    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 hover:border-tertiary/50 hover:shadow-xl transition-all duration-500 group relative overflow-hidden transform md:-translate-y-8">
-                        <div class="absolute right-0 top-0 w-32 h-32 bg-tertiary/5 blur-[50px] group-hover:bg-tertiary/10 transition-colors"></div>
-                        <div class="flex items-start justify-between mb-8 relative z-10">
-                            <div class="w-14 h-14 bg-surface-container-lowest rounded-full flex items-center justify-center text-xl shadow-sm text-on-surface">💪</div>
-                            <span class="px-3 py-1 bg-tertiary/10 rounded-full text-xs font-medium text-tertiary border border-tertiary/20">25 hrs/wk</span>
-                        </div>
-                        <div class="relative z-10">
-                            <h3 class="font-bold text-2xl text-on-surface mb-2">Strength Coach</h3>
-                            <p class="text-4xl font-black text-tertiary mt-6">₹1.2L-₹1.5L <span class="text-base text-on-surface-variant font-medium font-body">/mo</span></p>
-                            <div class="w-full bg-outline-variant/30 h-1.5 rounded-full mt-6 overflow-hidden">
-                                <div class="bg-tertiary h-full w-[90%] shadow-tertiary/30"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Earn Card -->
-                    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl p-8 hover:border-secondary/50 hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-32 h-32 bg-secondary/5 blur-[50px] group-hover:bg-secondary/10 transition-colors"></div>
-                        <div class="flex items-start justify-between mb-8 relative z-10">
-                            <div class="w-14 h-14 bg-surface-container-lowest rounded-full flex items-center justify-center text-xl shadow-sm text-on-surface">🏃‍♂️</div>
-                            <span class="px-3 py-1 bg-surface-container-low rounded-full text-xs font-medium text-on-surface-variant">10 hrs/wk</span>
-                        </div>
-                        <div class="relative z-10">
-                            <h3 class="font-bold text-2xl text-on-surface mb-2">HIIT Expert</h3>
-                            <p class="text-4xl font-black text-on-surface mt-6">₹40K-₹50K <span class="text-base text-on-surface-variant font-medium font-body">/mo</span></p>
-                            <div class="w-full bg-outline-variant/30 h-1.5 rounded-full mt-6 overflow-hidden">
-                                <div class="bg-secondary h-full w-[45%]"></div>
-                            </div>
-                        </div>
-                    </div>
+                        <button type="submit" class="w-full py-4 rounded-full bg-primary text-on-primary font-bold text-lg hover:opacity-90 transition-all">
+                            Continue Application →
+                        </button>
+                        <p class="text-center text-xs text-on-surface-variant mt-4">You'll fill these in on the next step when you create your account.</p>
+                    </form>
                 </div>
             </div>
-        </section>
-
-        <!-- How It Works Section - Horizontal Flow -->
-        <section class="py-16 lg:py-24 px-6 max-w-7xl mx-auto bg-surface-container-lowest rounded-[3rem] border border-outline-variant/30 relative overflow-hidden mb-24 hover:shadow-2xl transition-shadow duration-700 animate-fade-up">
-            <div class="absolute top-0 right-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
-            <div class="text-center mb-24 relative z-10">
-                <p class="text-sm font-bold text-primary uppercase tracking-widest mb-4">The Journey</p>
-                <h2 class="text-4xl md:text-5xl font-black font-headline text-on-surface">
-                    Path to Partnership
-                </h2>
-            </div>
-
-            <div class="relative z-10 px-4 md:px-12">
-                <!-- Desktop connecting line -->
-                <div class="hidden lg:block absolute top-[44px] left-[15%] right-[15%] h-px bg-outline-variant/30">
-                    <div class="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent animate-[slide_3s_ease-in-out_infinite]"></div>
-                </div>
-                
-                <style> @keyframes slide { 0% { left: -30%; opacity: 0; } 50% { opacity: 1; } 100% { left: 100%; opacity: 0; } } </style>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 relative">
-                    <!-- Step 1 -->
-                    <div class="relative group text-center md:text-left lg:text-center">
-                        <div class="w-24 h-24 mx-auto bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-primary transition-colors duration-500 shadow-md">
-                            <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-primary transition-colors">verified</span>
-                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">1</div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-on-surface mb-4 group-hover:text-primary transition-colors duration-300">Apply & Get Verified</h3>
-                        <p class="text-on-surface-variant leading-relaxed text-sm">Submit your experience. We manually review every application to maintain our elite pedigree.</p>       
-                    </div>
-
-                    <!-- Step 2 -->
-                    <div class="relative group text-center md:text-left lg:text-center">
-                        <div class="w-24 h-24 mx-auto bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-tertiary transition-colors duration-500 shadow-md">
-                            <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-tertiary transition-colors">tune</span>
-                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-tertiary rounded-full flex items-center justify-center text-white font-bold text-sm">2</div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-on-surface mb-4 group-hover:text-tertiary transition-colors duration-300">Define Your Offering</h3> 
-                        <p class="text-on-surface-variant leading-relaxed text-sm">Set your rates, define your target audience, and craft bespoke packages that reflect your expertise.</p>
-                    </div>
-
-                    <!-- Step 3 -->
-                    <div class="relative group text-center md:text-left lg:text-center">
-                        <div class="w-24 h-24 mx-auto bg-surface border border-outline-variant/30 rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-secondary transition-colors duration-500 shadow-md">
-                            <span class="material-symbols-outlined text-3xl text-on-surface-variant group-hover:text-secondary transition-colors">rocket_launch</span>
-                            <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-on-surface mb-4 group-hover:text-secondary transition-colors duration-300">Build Your Client Base</h3>      
-                        <p class="text-on-surface-variant leading-relaxed text-sm">Go live, utilize our tools, and get discovered by clients willing to pay premium rates for results.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Strong Final CTA Block -->
-        <section class="max-w-5xl mx-auto px-6 mb-24 animate-fade-up">
-            <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-[2.5rem] p-12 lg:p-20 text-center relative overflow-hidden shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] transition-all duration-700">
-                <div class="absolute inset-0 bg-primary/5 opacity-50 mix-blend-overlay"></div>
-                <div class="absolute -top-40 -right-40 w-96 h-96 bg-tertiary/10 rounded-full blur-[100px]"></div>
-                <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/10 rounded-full blur-[100px]"></div>
-                
-                <div class="relative z-10">
-                    <p class="text-primary font-bold uppercase tracking-[0.3em] text-sm mb-6">Spots strictly limited</p>
-                    <h2 class="text-4xl lg:text-6xl font-black text-on-surface font-headline mb-8 tracking-tight">Ready to Elevate <br/> Your Career?</h2>
-                    
-                    <a href="login.html?tab=signup&role=trainer&source=join-us" class="inline-flex items-center justify-center gap-3 px-12 py-5 bg-primary text-on-primary rounded-full font-bold text-lg hover:bg-secondary transition-all hover:scale-105 shadow-[0_8px_20px_rgba(0,0,0,0.15)] group mt-4">       
-                        Begin Your Application
-                        <span class="material-symbols-outlined transition-transform group-hover:translate-x-2">arrow_right_alt</span>
-                    </a>
-                    <p class="mt-8 text-sm text-on-surface-variant font-medium">Application takes 5 minutes. No credit card required.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- FAQ Section Block -->
-        <section class="py-24 px-6 max-w-4xl mx-auto animate-fade-up">
-            <h2 class="text-4xl font-black font-headline text-on-surface mb-16 text-center tracking-tight">Frequently Asked Questions</h2>
-
-            <div class="space-y-4">
-                <details class="group bg-surface-container-lowest rounded-2xl border border-outline-variant/30 open:border-primary/30 transition-all cursor-pointer overflow-hidden shadow-sm">
-                    <summary class="font-semibold text-lg text-on-surface p-6 flex justify-between items-center group-open:text-primary select-none list-none marker:hidden">
-                        Is there really zero commission?
-                        <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 group-open:text-primary">expand_more</span>
-                    </summary>
-                    <div class="px-6 pb-6 pt-2 text-on-surface-variant leading-relaxed group-open:animate-fade-up border-t border-outline-variant/10 mt-2">
-                        Yes. Most platforms take 20-30% of your earnings. At Onlifit, you keep 100% of the session fee. Clients pay a small service fee directly to us when booking, so you never see a cut in your paycheck.
-                    </div>
-                </details>
-
-                <details class="group bg-surface-container-lowest rounded-2xl border border-outline-variant/30 open:border-primary/30 transition-all cursor-pointer overflow-hidden shadow-sm">
-                    <summary class="font-semibold text-lg text-on-surface p-6 flex justify-between items-center group-open:text-primary select-none list-none marker:hidden">
-                        When do I get paid?
-                        <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 group-open:text-primary">expand_more</span>
-                    </summary>
-                     <div class="px-6 pb-6 pt-2 text-on-surface-variant leading-relaxed group-open:animate-fade-up border-t border-outline-variant/10 mt-2">
-                        Payouts are processed 24 hours after a successfully completed session directly to your linked bank account. No waiting for end-of-month cycles.
-                    </div>
-                </details>
-
-                <details class="group bg-surface-container-lowest rounded-2xl border border-outline-variant/30 open:border-primary/30 transition-all cursor-pointer overflow-hidden shadow-sm">
-                    <summary class="font-semibold text-lg text-on-surface p-6 flex justify-between items-center group-open:text-primary select-none list-none marker:hidden">
-                        Can I train international clients?
-                        <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 group-open:text-primary">expand_more</span>
-                    </summary>
-                     <div class="px-6 pb-6 pt-2 text-on-surface-variant leading-relaxed group-open:animate-fade-up border-t border-outline-variant/10 mt-2">
-                        Absolutely. If you offer online sessions, your profile can be discovered by clients globally. Our platform automatically handles timezone conversions and secure cross-border payments.
-                    </div>
-                </details>
-
-                <details class="group bg-surface-container-lowest rounded-2xl border border-outline-variant/30 open:border-primary/30 transition-all cursor-pointer overflow-hidden shadow-sm">
-                    <summary class="font-semibold text-lg text-on-surface p-6 flex justify-between items-center group-open:text-primary select-none list-none marker:hidden">
-                        What happens if a client cancels?
-                         <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180 group-open:text-primary">expand_more</span>
-                    </summary>
-                     <div class="px-6 pb-6 pt-2 text-on-surface-variant leading-relaxed group-open:animate-fade-up border-t border-outline-variant/10 mt-2">
-                        You define your own cancellation policy during onboarding (e.g., 24-hour notice, strict no-refunds). We enforce it automatically to ensure your time is never wasted.
-                    </div>
-                </details>
-            </div>
-            
-            <style>
-                details > summary::-webkit-details-marker { display: none; }
-            </style>
         </section>
 
     </main>
 
-    <!-- Interaction Script for scroll animations and counters -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>AOS.init({ duration: 700, once: true, easing: 'ease-out-cubic' });</script>
+
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            // Fade-up Observer
-            const fadeElements = document.querySelectorAll('.animate-fade-up');
-            const fadeObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-            
-            fadeElements.forEach(el => fadeObserver.observe(el));
-
-            // Counter Observer
-            const counters = document.querySelectorAll('.counter');
-            const speed = 200; 
-
-            const animateCounters = () => {
-                counters.forEach(counter => {
-                    const updateCount = () => {
-                        const target = +counter.getAttribute('data-target');
-                        const count = +counter.innerText.replace(/,/g, '');
-                        const inc = target / speed;
-
-                        if (count < target) {
-                            counter.innerText = Math.ceil(count + inc).toLocaleString();
-                            setTimeout(updateCount, 15);
-                        } else {
-                            counter.innerText = target.toLocaleString();
-                        }
-                    };
-                    updateCount();
-                });
-            };
-
-            const counterObserver = new IntersectionObserver((entries) => {
-                let ran = false;
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !ran) {
-                        animateCounters();
-                        ran = true;
-                        counterObserver.disconnect();
-                    }
-                });
-            }, { threshold: 0.5 });
-            
-            if(counters.length > 0) counterObserver.observe(counters[0]);
-            
-            // Navbar scroll effect
+        document.addEventListener('DOMContentLoaded', () => {
             const navbar = document.getElementById('navbar');
             window.addEventListener('scroll', () => {
-                if(window.scrollY > 50) {
+                if (window.scrollY > 50) {
                     navbar.classList.add('scrolled');
                     navbar.classList.remove('glass-nav');
                 } else {
