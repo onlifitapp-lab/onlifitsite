@@ -77,26 +77,29 @@
             <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                     <h2 class="font-headline text-2xl md:text-3xl font-black mb-3">For Clients</h2>
-                    <p class="text-white/80 text-lg">Browsing, booking, and messaging trainers is completely free. Forever.</p>
+                    <p class="text-white/80 text-lg">Browse all verified trainers in Hyderabad and contact any trainer directly on WhatsApp.</p>
                 </div>
                 <div class="text-center md:text-right">
-                    <p class="font-headline text-5xl font-black">₹0</p>
-                    <p class="text-white/60 text-sm">Always free</p>
+                    <p class="font-headline text-5xl font-black">₹499</p>
+                    <p class="text-white/60 text-sm">/month</p>
                 </div>
             </div>
             <div class="mt-8 flex flex-wrap gap-4">
                 <span class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">
-                    <span class="material-symbols-outlined text-lg">check_circle</span> Browse all trainers
+                    <span class="material-symbols-outlined text-lg">check_circle</span> Browse all trainer profiles
                 </span>
                 <span class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">
-                    <span class="material-symbols-outlined text-lg">check_circle</span> Read reviews
+                    <span class="material-symbols-outlined text-lg">check_circle</span> Unlock WhatsApp contact for any trainer
                 </span>
                 <span class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">
-                    <span class="material-symbols-outlined text-lg">check_circle</span> Book sessions
+                    <span class="material-symbols-outlined text-lg">check_circle</span> Cancel anytime
                 </span>
-                <span class="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">
-                    <span class="material-symbols-outlined text-lg">check_circle</span> Direct messaging
-                </span>
+            </div>
+            <div class="mt-8">
+                <a href="login.html?tab=signup" class="inline-flex items-center gap-2 px-8 py-3 bg-white text-primary font-bold rounded-xl hover:bg-surface transition-colors">
+                    Get Started
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </a>
             </div>
         </div>
     </div>
@@ -108,14 +111,11 @@
         <p class="text-on-surface-variant text-sm mt-2">You can upgrade or downgrade your plan anytime.</p>
         
         <!-- Toggle -->
-        <div class="flex items-center justify-center gap-4 mt-8">
-            <span id="monthly-label" class="text-sm font-bold text-on-surface">Monthly</span>
-            <button id="pricing-toggle" onclick="togglePricing()" class="w-14 h-8 bg-surface-container-high rounded-full p-1 relative transition-colors duration-300">
-                <div id="toggle-circle" class="w-6 h-6 bg-primary rounded-full absolute left-1 top-1 transition-all duration-300"></div>
-            </button>
-            <span id="annual-label" class="text-sm font-bold text-on-surface-variant flex items-center gap-2">
-                Annual <span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-bold">Save 20%</span>
-            </span>
+        <div class="flex items-center justify-center mt-8">
+            <div class="inline-flex rounded-full bg-surface-container-high p-1 gap-1">
+                <button id="btn-monthly" onclick="togglePricing('monthly')" class="px-6 py-2 rounded-full text-sm font-bold transition-all bg-on-surface text-white">Monthly</button>
+                <button id="btn-annual" onclick="togglePricing('annual')" class="px-6 py-2 rounded-full text-sm font-bold transition-all text-on-surface-variant">Annual <span class="ml-1 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">Save 20%</span></button>
+            </div>
         </div>
     </div>
 
@@ -183,10 +183,6 @@
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
                     <span>Homepage featured placement</span>
-                </li>
-                <li class="flex items-start gap-3 text-sm">
-                    <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
-                    <span><strong>Onlifit Black</strong> eligibility</span>
                 </li>
                 <li class="flex items-start gap-3 text-sm">
                     <span class="material-symbols-outlined text-green-600 text-lg flex-shrink-0">check_circle</span>
@@ -273,7 +269,7 @@
     <div class="max-w-4xl mx-auto mb-20">
         <h2 class="font-headline text-2xl font-black text-center mb-8">Compare Plans</h2>
         <div class="overflow-x-auto">
-            <table class="w-full bg-white rounded-2xl overflow-hidden border border-outline-variant/50">
+            <table class="w-full bg-white rounded-2xl overflow-hidden border border-outline-variant/50" style="min-width: 600px;">
                 <thead>
                     <tr class="bg-surface-container">
                         <th class="text-left p-4 font-bold">Feature</th>
@@ -299,11 +295,6 @@
                     </tr>
                     <tr class="border-t border-outline-variant/30">
                         <td class="p-4 font-medium">Homepage Featured</td>
-                        <td class="text-center p-4 bg-primary/5 text-on-surface-variant/50">—</td>
-                        <td class="text-center p-4 font-bold text-green-600">✓</td>
-                    </tr>
-                    <tr class="border-t border-outline-variant/30">
-                        <td class="p-4 font-medium">Onlifit Black Eligibility</td>
                         <td class="text-center p-4 bg-primary/5 text-on-surface-variant/50">—</td>
                         <td class="text-center p-4 font-bold text-green-600">✓</td>
                     </tr>
@@ -350,7 +341,7 @@
                     <span class="material-symbols-outlined text-on-surface-variant transition-transform">expand_more</span>
                 </button>
                 <div class="px-6 pb-5 text-sm text-on-surface-variant hidden">
-                    Every trainer starts on the Free plan with no time limit — list your profile and get discovered by clients right away. Upgrade to Pro or Elite anytime for more visibility and features; you can cancel anytime.
+                    Every trainer gets a 90-day free trial when they join — list your profile and get discovered by clients right away. Upgrade to Pro or Elite anytime for more visibility and features; you can cancel anytime.
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-outline-variant/50 overflow-hidden">
@@ -454,8 +445,12 @@
 
     async function handleBoostPurchaseClick(durationDays) {
         const user = await getCurrentUser();
-        if (!user || user.role !== 'trainer') {
-            window.location.href = 'join-us.html';
+        if (!user) {
+            window.location.href = 'login.html?redirect=pricing.html';
+            return;
+        }
+        if (user.role !== 'trainer') {
+            alert('Boost is only available for trainers. Please sign in with a trainer account.');
             return;
         }
 
@@ -516,30 +511,40 @@
     }
 
     let isAnnual = false;
-    function togglePricing() {
-        isAnnual = !isAnnual;
-        const circle = document.getElementById('toggle-circle');
+    function annualPriceFromMonthly(price) {
+        // Nearest ₹...99 price point below the raw 20%-off value.
+        return Math.round(Math.round(price * 0.8) / 100) * 100 - 1;
+    }
+    function togglePricing(period) {
+        isAnnual = period === 'annual';
+
         const proPrice = document.getElementById('pro-price');
         const elitePrice = document.getElementById('elite-price');
         const proPeriod = document.getElementById('pro-period');
         const elitePeriod = document.getElementById('elite-period');
-        const labels = [document.getElementById('monthly-label'), document.getElementById('annual-label')];
+        const btnMonthly = document.getElementById('btn-monthly');
+        const btnAnnual = document.getElementById('btn-annual');
+
+        const activeClasses = ['bg-on-surface', 'text-white'];
+        const inactiveClass = 'text-on-surface-variant';
+
+        const activeBtn = isAnnual ? btnAnnual : btnMonthly;
+        const inactiveBtn = isAnnual ? btnMonthly : btnAnnual;
+        activeBtn.classList.add(...activeClasses);
+        activeBtn.classList.remove(inactiveClass);
+        inactiveBtn.classList.remove(...activeClasses);
+        inactiveBtn.classList.add(inactiveClass);
 
         if (isAnnual) {
-            circle.style.left = '1.75rem';
-            proPrice.textContent = Math.round(livePlanPrices.pro * 0.8).toLocaleString('en-IN');
-            elitePrice.textContent = Math.round(livePlanPrices.elite * 0.8).toLocaleString('en-IN');
+            proPrice.textContent = annualPriceFromMonthly(livePlanPrices.pro).toLocaleString('en-IN');
+            elitePrice.textContent = annualPriceFromMonthly(livePlanPrices.elite).toLocaleString('en-IN');
             proPeriod.textContent = '/mo (billed yearly)';
             elitePeriod.textContent = '/mo (billed yearly)';
-            labels[0].classList.replace('text-on-surface', 'text-on-surface-variant');
-            labels[1].querySelector('span:first-child') && (labels[1].querySelector('span:first-child').parentElement.classList.replace('text-on-surface-variant', 'text-on-surface'));
         } else {
-            circle.style.left = '0.25rem';
             proPrice.textContent = livePlanPrices.pro.toLocaleString('en-IN');
             elitePrice.textContent = livePlanPrices.elite.toLocaleString('en-IN');
             proPeriod.textContent = '/month';
             elitePeriod.textContent = '/month';
-            labels[0].classList.replace('text-on-surface-variant', 'text-on-surface');
         }
     }
 
