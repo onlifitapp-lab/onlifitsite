@@ -1394,62 +1394,49 @@ async function getTrainers(options = {}) {
     const selectWithBadgeSlim = selectBaseSlim + ', has_black_status';
 
     try {
-        // 3. Extended timeout for cold starts: wait up to 10s for trainers to load (better UX than showing empty)
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ _timeout: true }), 10000));
+        // 3. Abort after 8s so a stalled request doesn't hang indefinitely — falls
+        // back to cached/empty rather than waiting passively (no background
+        // warm-up: an aborted request is actually cancelled, not still running).
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        const fetchPromise = (async () => {
-            // Try richer selects first, but fall back when optional columns are missing.
-            const candidates = [
-                selectWithBadgeFull,
-                selectWithBadgeSlim,
-                selectBaseFull,
-                selectBaseSlim
-            ];
+        // Try richer selects first, but fall back when optional columns are missing.
+        const candidates = [
+            selectWithBadgeFull,
+            selectWithBadgeSlim,
+            selectBaseFull,
+            selectBaseSlim
+        ];
 
-            for (const selectStr of candidates) {
-                const res = await applyDiscoverabilityFilter(
-                    supabaseClient.from('profiles').select(selectStr)
-                );
+        let response;
+        for (const selectStr of candidates) {
+            const res = await applyDiscoverabilityFilter(
+                supabaseClient.from('profiles').select(selectStr)
+            ).abortSignal(controller.signal);
 
-                if (!res?.error) return res;
+            if (!res?.error) { response = res; break; }
 
-                // Missing optional columns: try next candidate.
-                const err = res.error;
-                if (isMissingColumnError(err, 'has_black_status')) continue;
-                if (isMissingColumnError(err, 'latitude') || isMissingColumnError(err, 'longitude')) continue;
-                if (isMissingColumnError(err, 'profile_completion_score') || isMissingColumnError(err, 'last_active_at')) continue;
-                if (isMissingColumnError(err, 'training_mode')) continue;
+            // Missing optional columns: try next candidate.
+            const err = res.error;
+            if (isMissingColumnError(err, 'has_black_status')) continue;
+            if (isMissingColumnError(err, 'latitude') || isMissingColumnError(err, 'longitude')) continue;
+            if (isMissingColumnError(err, 'profile_completion_score') || isMissingColumnError(err, 'last_active_at')) continue;
+            if (isMissingColumnError(err, 'training_mode')) continue;
 
-                return res;
-            }
+            response = res;
+            break;
+        }
 
+        if (!response) {
             // Shouldn't happen, but keep a safe fallback.
-            return await applyDiscoverabilityFilter(
+            response = await applyDiscoverabilityFilter(
                 supabaseClient
                     .from('profiles')
                     .select('id, name, avatar_url, rating, review_count, location, specialty, bio, plans, tags')
-            );
-        })();
-
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-        if (response._timeout) {
-            console.warn('Supabase trainers query took >6s. Returning cached/empty and continuing fetch in background.');
-            fetchPromise.then(res => {
-                if (res?.data && res.data.length > 0) {
-                    const normalized = normalizeTrainerList(res.data);
-                    _cachedTrainers = normalized;
-                    _cachedTrainersTime = Date.now();
-                    localStorage.setItem(TRAINERS_CACHE_KEY, JSON.stringify(normalized));
-                    localStorage.setItem(TRAINERS_CACHE_TIME_KEY, Date.now().toString());
-                    emitUpdate(normalized);
-                } else {
-                    emitUpdate(_cachedTrainers || []);
-                }
-            }).catch(e => console.error('Background fetch error:', e));
-
-            return _cachedTrainers || [];
+            ).abortSignal(controller.signal);
         }
+
+        clearTimeout(timeoutId);
 
         const { data, error } = response;
         if (error) {
