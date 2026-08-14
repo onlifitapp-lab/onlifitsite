@@ -2788,7 +2788,7 @@ async function renderAuthNav() {
         const desktopHtml = `
             <div class="flex items-center justify-end gap-2 sm:gap-4 w-full">
                 <!-- Notifications -->
-                <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full">
+                <a href="notifications.html" class="relative text-on-surface-variant hover:text-primary transition-all hidden sm:inline-flex items-center justify-center h-9 w-9 rounded-full shrink-0">
                     <span class="material-symbols-outlined text-[20px] leading-none">notifications</span>
                     ${unreadCount > 0 ? `<span class="absolute -top-1 -right-0 w-4 h-4 bg-primary text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white">${unreadCount}</span>` : ''}
                 </a>
@@ -2803,7 +2803,7 @@ async function renderAuthNav() {
 
                 <!-- Dashboard link (Grid + Text) -->
                 <a href="${dashboardHref}"
-                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
+                   class="text-sm font-bold text-on-surface-variant hover:text-primary transition-all inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none shrink-0">
                     <span class="material-symbols-outlined text-[20px] leading-none">grid_view</span>
                     <span class="hidden sm:inline">Dashboard</span>
                 </a>
@@ -2814,7 +2814,7 @@ async function renderAuthNav() {
                 </div>
 
                 <!-- Logout Button -->
-                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all inline-flex items-center justify-center h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none">
+                <button onclick="logout()" class="text-sm font-bold text-on-surface-variant hover:text-error transition-all inline-flex items-center justify-center h-11 w-11 sm:h-9 sm:w-auto rounded-full sm:rounded-none shrink-0">
                     <span class="material-symbols-outlined text-[20px] leading-none sm:hidden">logout</span>
                     <span class="hidden sm:inline">Logout</span>
                 </button>
