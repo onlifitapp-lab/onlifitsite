@@ -113,7 +113,7 @@
 
         .nav-item.active {
             background: #FFFFFF;
-            color: #FF5A5F;
+            color: #000000;
             font-weight: 600;
         }
 
@@ -365,8 +365,8 @@
         }
 
         .badge-verified {
-            background: #10B981;
-            color: #FFFFFF;
+            background: #E7F4EC;
+            color: #1B7A43;
         }
 
         .badge-rejected {
@@ -555,8 +555,8 @@
         }
 
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid #E8E8E8;
+            border-top: 3px solid #000000;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -592,7 +592,7 @@
         /* Loading Spinner - Professional */
         .spinner {
             border: 2px solid #F5F5F5;
-            border-top: 2px solid #FF5A5F;
+            border-top: 2px solid #000000;
             border-radius: 50%;
             width: 36px;
             height: 36px;
@@ -714,19 +714,19 @@
         th.sortable .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.5; }
         th.sortable.sort-active .sort-arrow { opacity: 1; }
 
-        .badge-status-new { background: #E7F1FF; color: #1D4ED8; }
-        .badge-status-contacted { background: #FEF3C7; color: #92400E; }
-        .badge-status-converted { background: #D1FAE5; color: #065F46; }
-        .badge-status-closed { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+        .badge-status-new { background: #FDF3E3; color: #8A5A00; }
+        .badge-status-contacted { background: #F5F5F5; color: #717171; }
+        .badge-status-converted { background: #E7F4EC; color: #1B7A43; }
+        .badge-status-closed { background: #F5F5F5; color: #717171; border: 1px solid #D0D0D0; }
 
         .badge-priority-high { background: #FDECEC; color: #C0362C; }
-        .badge-priority-medium { background: #FEF3C7; color: #92400E; }
-        .badge-priority-low { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+        .badge-priority-medium { background: #FDF3E3; color: #8A5A00; }
+        .badge-priority-low { background: #F5F5F5; color: #717171; border: 1px solid #D0D0D0; }
 
-        .badge-assign-assigned { background: #F1F1F1; color: #555; border: 1px solid #E0E0E0; }
+        .badge-assign-assigned { background: #F5F5F5; color: #717171; border: 1px solid #D0D0D0; }
         .badge-assign-unassigned { background: #FDECEC; color: #C0362C; }
         .badge-assign-disabled { background: #FDECEC; color: #C0362C; }
-        .badge-assign-expired { background: #FEF3C7; color: #92400E; }
+        .badge-assign-expired { background: #FDF3E3; color: #8A5A00; }
 
         /* Admin Lead Drawer — mirrors bookings.html's trainer lead drawer
            structurally (right-side panel, overlay, same open/close/focus/
@@ -802,7 +802,7 @@
 
         .lead-drawer-notice {
             display: none;
-            background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+            background: #FDF3E3; color: #8A5A00; border: 1px solid #F5D896;
             border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600;
             margin-top: 10px;
         }
@@ -1948,7 +1948,7 @@
                         `;
                     });
                 } else {
-                    html += '<tr><td colspan="4" style="text-align: center; color: #718096;">No recent trainers</td></tr>';
+                    html += '<tr><td colspan="4" style="text-align: center; color: #666666;">No recent trainers</td></tr>';
                 }
 
                 html += '</tbody></table>';
@@ -2396,9 +2396,9 @@
                             <div class="document-preview">
                                 ${signedUrl ? `
                                     <a href="${escapeHtml(signedUrl)}">
-                                        <img src="${escapeHtml(signedUrl)}" alt="${escapeHtml(cert.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23e2e8f0\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23718096\'%3EPDF%3C/text%3E%3C/svg%3E'">
+                                        <img src="${escapeHtml(signedUrl)}" alt="${escapeHtml(cert.name)}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect fill=\'%23E8E8E8\' width=\'100\' height=\'100\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23666666\'%3EPDF%3C/text%3E%3C/svg%3E'">
                                     </a>
-                                ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
+                                ` : '<p style="color:#C0362C;font-size:12px;">Unable to load document</p>'}
                                 <p><strong>${escapeHtml(cert.name)}</strong></p>
                                 <p style="font-size: 11px; color: ${cert.verified ? '#000000' : '#666666'}; font-weight: 600;">
                                     ${cert.verified ? 'VERIFIED' : 'PENDING'}
@@ -2408,34 +2408,34 @@
                     });
                     certificatesHTML += '</div>';
                 } else {
-                    certificatesHTML = '<p style="color: #718096;">No certificates uploaded</p>';
+                    certificatesHTML = '<p style="color: #666666;">No certificates uploaded</p>';
                 }
 
                 const html = `
                     <div style="margin-bottom: 20px;">
-                        <h4 style="margin-bottom: 15px; color: #2d3748;">Personal Information</h4>
+                        <h4 style="margin-bottom: 15px; color: #1A1A1A;">Personal Information</h4>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                             <div>
-                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Name</label>
+                                <label style="font-size: 12px; color: #666666; display: block; margin-bottom: 5px;">Name</label>
                                 <p style="font-size: 14px;"><strong>${escapeHtml(trainer.name) || 'N/A'}</strong></p>
                             </div>
                             <div>
-                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Email</label>
+                                <label style="font-size: 12px; color: #666666; display: block; margin-bottom: 5px;">Email</label>
                                 <p style="font-size: 14px;">${escapeHtml(trainer.email)}</p>
                             </div>
                             <div>
-                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Phone</label>
+                                <label style="font-size: 12px; color: #666666; display: block; margin-bottom: 5px;">Phone</label>
                                 <p style="font-size: 14px;">${escapeHtml(trainer.phone) || 'N/A'}</p>
                             </div>
                             <div>
-                                <label style="font-size: 12px; color: #718096; display: block; margin-bottom: 5px;">Specialty</label>
+                                <label style="font-size: 12px; color: #666666; display: block; margin-bottom: 5px;">Specialty</label>
                                 <p style="font-size: 14px;">${escapeHtml(getTrainerSpecialty(trainer)) || 'N/A'}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 20px; padding: 20px; background: #fef5e7; border-radius: 8px; border-left: 4px solid #f39c12;">
-                        <h4 style="margin-bottom: 15px; color: #2d3748;">KYC Documents</h4>
+                    <div style="margin-bottom: 20px; padding: 20px; background: #FDF3E3; border-radius: 8px; border-left: 4px solid #8A5A00;">
+                        <h4 style="margin-bottom: 15px; color: #1A1A1A;">KYC Documents</h4>
                         ${trainer.kyc_front_url || trainer.kyc_back_url ? `
                             <div class="document-grid">
                                 ${trainer.kyc_front_url ? `
@@ -2444,7 +2444,7 @@
                                             <a href="${escapeHtml(kycFrontSignedUrl)}">
                                                 <img src="${escapeHtml(kycFrontSignedUrl)}" alt="KYC Front">
                                             </a>
-                                        ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
+                                        ` : '<p style="color:#C0362C;font-size:12px;">Unable to load document</p>'}
                                         <p><strong>ID Front</strong></p>
                                     </div>
                                 ` : ''}
@@ -2454,7 +2454,7 @@
                                             <a href="${escapeHtml(kycBackSignedUrl)}">
                                                 <img src="${escapeHtml(kycBackSignedUrl)}" alt="KYC Back">
                                             </a>
-                                        ` : '<p style="color:#c0392b;font-size:12px;">Unable to load document</p>'}
+                                        ` : '<p style="color:#C0362C;font-size:12px;">Unable to load document</p>'}
                                         <p><strong>ID Back</strong></p>
                                     </div>
                                 ` : ''}
@@ -2473,11 +2473,11 @@
                                     </div>
                                 ` : ''}
                             </div>
-                        ` : '<p style="color: #718096;">No KYC documents uploaded</p>'}
+                        ` : '<p style="color: #666666;">No KYC documents uploaded</p>'}
                     </div>
 
-                    <div style="margin-bottom: 20px; padding: 20px; background: #ebf8ff; border-radius: 8px; border-left: 4px solid #3182ce;">
-                        <h4 style="margin-bottom: 15px; color: #2d3748;">Certifications</h4>
+                    <div style="margin-bottom: 20px; padding: 20px; background: #F5F5F5; border-radius: 8px; border-left: 4px solid #000000;">
+                        <h4 style="margin-bottom: 15px; color: #1A1A1A;">Certifications</h4>
                         ${certificatesHTML}
                         ${trainer.certificate_urls && trainer.certificate_urls.length > 0 && !trainer.certificates_verified ? `
                             <div style="margin-top: 15px;">
@@ -2493,7 +2493,7 @@
                         ` : trainer.certificates_verified ? '<p style="color: #000000; margin-top: 10px; font-weight: 600;">All certificates verified</p>' : ''}
                     </div>
 
-                    <div style="padding: 15px; background: #f7fafc; border-radius: 8px;">
+                    <div style="padding: 15px; background: #F5F5F5; border-radius: 8px;">
                         <p style="font-size: 13px; margin-bottom: 5px;"><strong>Overall Verification Status:</strong></p>
                         <p style="font-size: 16px;">
                             ${(() => {
@@ -2510,8 +2510,8 @@
                     </div>
 
                     <details style="margin-top: 16px;">
-                        <summary style="cursor: pointer; font-weight: 600; color: #2d3748;">Raw trainer record</summary>
-                        <pre id="trainer-raw-json" style="margin-top: 10px; padding: 12px; background: #0B1220; color: #E2E8F0; border-radius: 8px; overflow: auto; font-size: 12px; line-height: 1.4;"></pre>
+                        <summary style="cursor: pointer; font-weight: 600; color: #1A1A1A;">Raw trainer record</summary>
+                        <pre id="trainer-raw-json" style="margin-top: 10px; padding: 12px; background: #1A1A1A; color: #F5F5F5; border-radius: 8px; overflow: auto; font-size: 12px; line-height: 1.4;"></pre>
                     </details>
                 `;
 
@@ -3022,8 +3022,8 @@
                             </div>
 
                             ${client.account_status === 'suspended' ? `
-                                <div style="background: #FFF5F5; border: 1px solid #FED7D7; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-                                    <p style="font-size: 13px; color: #C53030; margin: 0;">
+                                <div style="background: #FDECEC; border: 1px solid #F3C6C2; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                                    <p style="font-size: 13px; color: #C0362C; margin: 0;">
                                         <strong>Suspended:</strong> ${escapeHtml(client.suspended_reason) || 'No reason provided'}
                                     </p>
                                 </div>
@@ -3564,9 +3564,9 @@
                             <td>${sub.auto_renew ? 'Yes' : 'No'}</td>
                             <td>
                                 <div style="display: flex; gap: 8px;">
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #3182ce; color: white; border: none;" onclick="openExtendModal('${sub.id}')">Extend</button>
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #f56565; color: white; border: none;" onclick="openCancelModal('${sub.id}')">Cancel</button>
-                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #ed8936; color: white; border: none;" onclick="openRefundModal('${sub.id}')">Refund</button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #000000; color: white; border: none;" onclick="openExtendModal('${sub.id}')">Extend</button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #C0362C; color: white; border: none;" onclick="openCancelModal('${sub.id}')">Cancel</button>
+                                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; background-color: #8A5A00; color: white; border: none;" onclick="openRefundModal('${sub.id}')">Refund</button>
                                 </div>
                             </td>
                         </tr>
@@ -4242,7 +4242,7 @@
 
                 const messagesHTML = messages && messages.length > 0 ? 
                     messages.map(m => `
-                        <div style="background: ${m.is_internal ? '#FFF9E6' : '#F5F5F5'}; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="background: ${m.is_internal ? '#FDF3E3' : '#F5F5F5'}; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                                 <strong style="font-size: 13px;">${escapeHtml(m.sender?.name) || 'Unknown'} ${m.is_internal ? '(Internal Note)' : ''}</strong>
                                 <span style="font-size: 11px; color: #666;">${new Date(m.created_at).toLocaleString('en-IN')}</span>
@@ -4514,7 +4514,7 @@
                     datasets: [{
                         label: 'Revenue (₹)',
                         data: amounts,
-                        borderColor: '#FF5A5F',
+                        borderColor: '#000000',
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         tension: 0.4,
                         fill: true
@@ -4562,11 +4562,11 @@
                     datasets: [{
                         data: Object.values(revenueByPlan),
                         backgroundColor: [
-                            '#FF5A5F',
-                            '#FFB6B8',
-                            '#999999',
-                            '#CCCCCC',
-                            '#E8E8E8'
+                            '#000000',
+                            '#444444',
+                            '#777777',
+                            '#AAAAAA',
+                            '#D9D9D9'
                         ]
                     }]
                 },
@@ -4655,7 +4655,7 @@
                         {
                             label: 'Trainers',
                             data: trainersData,
-                            borderColor: '#FF5A5F',
+                            borderColor: '#000000',
                             backgroundColor: 'rgba(0, 0, 0, 0.1)',
                             tension: 0.4
                         },
@@ -4745,7 +4745,7 @@
                     datasets: [{
                         label: 'Bookings',
                         data: counts,
-                        backgroundColor: '#FF5A5F',
+                        backgroundColor: '#000000',
                         borderRadius: 4
                     }]
                 },
@@ -4834,7 +4834,7 @@
                     datasets: [{
                         label: 'Bookings',
                         data: trainersWithBookings.map(t => t.bookings),
-                        backgroundColor: '#FF5A5F',
+                        backgroundColor: '#000000',
                         borderRadius: 4
                     }]
                 },

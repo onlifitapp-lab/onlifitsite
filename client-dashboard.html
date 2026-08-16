@@ -67,7 +67,7 @@
             transform: translateX(4px);
         }
         .sidebar-link.active {
-            background: linear-gradient(90deg, rgba(255,90,95,0.12) 0%, rgba(255,90,95,0) 100%);
+            background: linear-gradient(90deg, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0) 100%);
         }
 
         /* Booking card hover */
@@ -76,14 +76,15 @@
         }
         .booking-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 20px 40px -12px rgba(255,90,95,0.10);
+            box-shadow: 0 20px 40px -12px rgba(0,0,0,0.10);
         }
 
-        /* Status badges */
-        .status-confirmed { background: #E0F5F4; color: #00A699; }
-        .status-pending   { background: #FFF3E0; color: #E67E22; }
+        /* Status badges — soft semantic tints, kept clearly distinct from the
+           WhatsApp CTA green (#25D366) so status color never reads as a contact action. */
+        .status-confirmed { background: #E7F4EC; color: #1B7A43; }
+        .status-pending   { background: #FDF3E3; color: #8A5A00; }
         .status-completed { background: #F5F5F5; color: #717171; }
-        .status-cancelled { background: #FFDEDE; color: #E54343; }
+        .status-cancelled { background: #FDECEC; color: #B3261E; }
 
         /* Messages view helpers */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -98,7 +99,7 @@
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
         .msg-status { font-size: 14px; opacity: 0.6; }
-        .msg-status.seen { color: #4CAF50; opacity: 1; }
+        .msg-status.seen { color: #000000; opacity: 1; }
         .toast {
             position: fixed;
             bottom: 24px;
@@ -196,7 +197,7 @@
 
     <nav class="flex flex-col px-4 md:px-0 gap-2 md:gap-0 flex-1">
         <!-- Dashboard link removed: Client sidebar simplified -->
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/bookings" data-route="bookings">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="client-dashboard.html#bookings" data-route="bookings">
             <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             <span>My Trainers</span>
         </a>
@@ -204,12 +205,12 @@
         <!-- Saved Trainers removed -->
         <!-- Settings removed from sidebar -->
         <!-- New: Billing -->
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/billing" data-route="billing">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="billing.html" data-route="billing">
             <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
             <span>Billing</span>
         </a>
         <!-- New: Support -->
-        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="/client/support" data-route="support">
+        <a class="sidebar-link flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:translate-x-1 hover:text-primary transition-all" href="support.html" data-route="support">
             <span class="material-symbols-outlined text-[20px]">support_agent</span>
             <span>Support</span>
         </a>
@@ -249,7 +250,7 @@
     <!-- â”€â”€ Stats Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="overview-stats-grid dash-stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
         <!-- Upcoming Sessions -->
-        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-1 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-lg shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-1 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-primary/5 rounded-full blob-pulse"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -264,7 +265,7 @@
         </div>
 
         <!-- Completed Sessions -->
-        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-2 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-lg shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-2 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-tertiary/5 rounded-full blob-pulse" style="animation-delay: 1s;"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -278,7 +279,7 @@
         </div>
 
         <!-- Active Trainers -->
-        <div class="dash-stat-card bg-white p-6 rounded-2xl shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-3 booking-card">
+        <div class="dash-stat-card bg-white p-6 rounded-lg shadow-sm border border-surface-container-high relative overflow-hidden anim-slide-up anim-delay-3 booking-card">
             <div class="absolute -top-6 -right-6 w-20 h-20 bg-secondary/5 rounded-full blob-pulse" style="animation-delay: 2s;"></div>
             <div class="relative">
                 <div class="flex items-center justify-between mb-3">
@@ -579,7 +580,7 @@
             if (!upcoming || upcoming.length === 0) {
                 container.innerHTML = `
                     <div class="bg-white rounded-xl p-8 border border-outline-variant/20 text-center">
-                        <p class="text-sm text-on-surface-variant">No active trainers${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="/client/find-trainers" class="text-primary font-bold hover:underline">Book one now!</a></p>
+                        <p class="text-sm text-on-surface-variant">No active trainers${currentFilter !== 'all' ? ' with this filter' : ''}. <a href="trainers.html" class="text-primary font-bold hover:underline">Book one now!</a></p>
                     </div>`;
                 return;
             }
@@ -1503,8 +1504,10 @@ class DashboardRouter {
             return;
         }
 
-        // Default SPA navigation
-        history.pushState(null, '', '/client/' + clean + (search || ''));
+        // Default SPA navigation. Hash-based (not /client/*) since that path
+        // rewrite 404s in production (Vercel routing issue) -- a hash on the
+        // already-loaded client-dashboard.html never touches the server.
+        history.pushState(null, '', '#' + clean + (search || ''));
         this.handleRoute();
     }
 }

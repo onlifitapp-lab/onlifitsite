@@ -2259,7 +2259,7 @@ function ensureOnlifitBadgeStyles() {
             .onlifit-badge{display:inline-flex;align-items:center;gap:6px;border-radius:9999px;line-height:1;font-weight:800;letter-spacing:.04em;text-transform:uppercase;user-select:none;white-space:nowrap}
             .onlifit-badge__icon{font-size:16px;line-height:1;opacity:.95}
 
-            .onlifit-badge--verified{background:#111827;color:#ecfeff;box-shadow:0 0 0 1px rgba(6,182,212,.35),0 12px 24px rgba(6,182,212,.18)}
+            .onlifit-badge--verified{background:#000;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 12px 24px rgba(0,0,0,.28)}
             .onlifit-badge--black{background:#000;color:#FFD700;box-shadow:0 0 0 1px rgba(255,215,0,.25),0 14px 28px rgba(0,0,0,.28),0 0 18px rgba(255,215,0,.18)}
 
             .onlifit-badge--xs{font-size:10px;padding:5px 9px}
@@ -2485,7 +2485,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const favFill = saved ? 1 : 0;
 
         return `
-                <div class="relative w-full bg-gradient-to-br from-primary/10 to-primary-container/20 overflow-hidden border-b border-outline-variant/20" style="aspect-ratio: ${imageWidth} / ${imageHeight};">
+                <div class="relative w-full bg-surface-container overflow-hidden border-b border-outline-variant/20" style="aspect-ratio: ${imageWidth} / ${imageHeight};">
                 ${hasUrl
                     ? `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" class="trainer-card-image w-full h-full object-cover bg-surface-container-low" style="object-position: 50% 18%;" width="${imageWidth}" height="${imageHeight}" loading="lazy" decoding="async" />`
                     : `<div class="w-full h-full flex items-center justify-center">
@@ -2581,9 +2581,16 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
         const messageHref = getDefaultMessageHref(id, options);
         const saved = typeof options?.saved === 'boolean' ? options.saved : isTrainerSaved(id);
         const cardImageDimensions = { width: 4, height: 3 };
+        // WhatsApp green is reserved for the actual WhatsApp contact action only —
+        // the paywall ("Pay ₹499") state stays monochrome since it isn't a WhatsApp CTA.
+        const isContactLocked = getCachedClientSubscriptionStatus() === null;
+        const contactCtaClass = isContactLocked
+            ? 'bg-primary/10 text-primary rounded-lg hover:bg-primary/20'
+            : 'text-white rounded-full hover:opacity-90';
+        const contactCtaStyle = isContactLocked ? '' : 'background-color:#25D366;';
 
         return `
-            <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-2xl overflow-hidden shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5 h-full flex flex-col">
+            <div onclick="onlifitOpenTrainerProfile(${JSON.stringify(id)}, event)" class="card-appear group relative bg-white border border-outline-variant/20 rounded-lg overflow-hidden shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full flex flex-col">
                 ${renderTrainerImageArea({ ...t, id }, { saved, imageWidth: cardImageDimensions.width, imageHeight: cardImageDimensions.height })}
                 <div class="p-3 flex flex-col flex-grow">
                     <div class="flex items-start justify-between gap-3">
@@ -2623,7 +2630,7 @@ window.renderTrainerBadgesHtml = renderTrainerBadgesHtml;
                             ${renderOfferLine()}
                         </div>
                         <div class="mt-2 grid grid-cols-2 gap-2">
-                            <a href="${escapeHtml(messageHref)}" class="h-9 inline-flex items-center justify-center gap-1 px-3 bg-primary/10 text-primary rounded-lg text-[11px] font-bold hover:bg-primary/20 transition-colors truncate" onclick="event.stopPropagation()"><span class="material-symbols-outlined text-[14px]">${getCachedClientSubscriptionStatus() === null ? 'lock' : 'chat'}</span>${getCachedClientSubscriptionStatus() === null ? 'Pay ₹499' : 'WhatsApp'}</a>
+                            <a href="${escapeHtml(messageHref)}" style="${contactCtaStyle}" class="h-9 inline-flex items-center justify-center gap-1 px-3 ${contactCtaClass} text-[11px] font-bold transition-all truncate" onclick="event.stopPropagation()"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' ${isContactLocked ? '0' : '1'};">${isContactLocked ? 'lock' : 'chat'}</span>${isContactLocked ? 'Pay ₹499' : 'WhatsApp'}</a>
                             <a href="${escapeHtml(profileHref)}" class="h-9 inline-flex items-center justify-center px-3 bg-surface-container-low text-on-surface-variant rounded-lg text-[11px] font-bold hover:text-primary transition-colors truncate" onclick="event.stopPropagation()">View Profile</a>
                         </div>
                     </div>

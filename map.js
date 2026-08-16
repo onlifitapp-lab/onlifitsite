@@ -247,8 +247,8 @@
                     'circle-color': [
                         'case',
                         ['boolean', ['get', 'nearest'], false], '#000000',
-                        ['boolean', ['get', 'black'], false], '#f59e0b',
-                        '#ff5a5f'
+                        ['boolean', ['get', 'black'], false], '#FFD700',
+                        '#666666'
                     ],
                     'circle-radius': 10,
                     'circle-stroke-width': 2,

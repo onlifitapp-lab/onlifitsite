@@ -38,7 +38,7 @@
         
         /* Loading spinner */
         .spinner {
-            border: 3px solid #f3f3f3;
+            border: 3px solid #E8E8E8;
             border-top: 3px solid #000;
             border-radius: 50%;
             width: 20px;
@@ -279,8 +279,11 @@
     // Function to go back to dashboard
     function goBackToDashboard() {
         const go = (isTrainer) => {
-            // Use SPA routes (same tab). Vercel rewrites map these to the dashboard shells.
-            window.location.href = isTrainer ? '/trainer/dashboard' : '/client/dashboard';
+            // Direct to the real dashboard files -- the /trainer/* and /client/*
+            // pretty-URL rewrites are broken in production (Vercel routing
+            // issue), and '/client/dashboard' isn't even a route the client
+            // dashboard's router recognizes.
+            window.location.href = isTrainer ? 'bookings.html' : 'client-dashboard.html';
         };
 
         // Check if user is loaded

@@ -24,7 +24,7 @@
             </div>
             <h3 class="text-xl font-bold">No trainers yet</h3>
             <p class="text-on-surface-variant mt-2">Book a trainer to see them here.</p>
-            <a href="/client/find-trainers" class="mt-4 inline-flex px-6 py-3 bg-primary text-on-primary rounded-full font-bold">Find Trainers</a>
+            <a href="trainers.html" class="mt-4 inline-flex px-6 py-3 bg-primary text-on-primary rounded-full font-bold">Find Trainers</a>
         </div>
     </main>
 </div>
@@ -48,6 +48,16 @@
         if (s === 'completed') return 'Completed';
         if (s === 'cancelled' || s === 'canceled') return 'Cancelled';
         return status;
+    }
+
+    // Established semantic-status palette (same tones used in client-dashboard.html
+    // and admin-dashboard.html) — soft background + readable text, not saturated fills.
+    function getStatusBadgeStyle(status) {
+        const s = String(status || '').toLowerCase();
+        if (s === 'confirmed' || s === 'active') return 'background:#E7F4EC;color:#1B7A43;';
+        if (s === 'pending' || s === 'pending_confirmation') return 'background:#FDF3E3;color:#8A5A00;';
+        if (s === 'cancelled' || s === 'canceled') return 'background:#FDECEC;color:#C0362C;';
+        return 'background:#F5F5F5;color:#717171;'; // completed / unknown — neutral
     }
 
     function renderAvatarInner(trainer) {
@@ -97,9 +107,9 @@
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-3">
-                            <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant">${statusLabel}</span>
+                            <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider" style="${getStatusBadgeStyle(b.status)}">${statusLabel}</span>
                             <div class="flex gap-2">
-                                <a ${phone ? `href="${waHref}" target="_blank"` : 'href="#"'} class="px-3 py-2 bg-white border border-outline-variant rounded-lg text-xs font-bold hover:bg-surface-container transition-all">WhatsApp</a>
+                                <a ${phone ? `href="${waHref}" target="_blank"` : 'href="#"'} style="background-color:#25D366;" class="px-3 py-2 text-white rounded-full text-xs font-bold hover:opacity-90 transition-all">WhatsApp</a>
                                 <a href="trainer-profile.html?id=${b.trainer_id}" class="px-3 py-2 bg-primary text-on-primary rounded-lg text-xs font-bold hover:opacity-90 transition-all">View Profile</a>
                             </div>
                         </div>
