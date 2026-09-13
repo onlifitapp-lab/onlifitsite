@@ -357,6 +357,10 @@
         setNotice('', 'error');
         setBusy(true);
 
+        const googleLabel = document.getElementById('google-btn-label');
+        const previousGoogleLabel = googleLabel ? googleLabel.textContent : null;
+        if (googleLabel) googleLabel.textContent = 'Redirecting to Google…';
+
         try {
             const isSignup = state.mode === 'signup';
             const strictTrainerIntent = isTrainerJoinUsSignupFlow();
@@ -379,7 +383,13 @@
             const result = await signInWithGoogle(targetRole, effectiveIsSignup, options);
             if (result && result.success === false) {
                 setNotice(result.error || 'Google authentication failed. Please try again.', 'error');
+                if (googleLabel && previousGoogleLabel) googleLabel.textContent = previousGoogleLabel;
             }
+            // On success, signInWithOAuth is already navigating the browser away to Google,
+            // so there's nothing left to restore here.
+        } catch (error) {
+            if (googleLabel && previousGoogleLabel) googleLabel.textContent = previousGoogleLabel;
+            setNotice(error?.message || 'Google authentication failed. Please try again.', 'error');
         } finally {
             setBusy(false);
         }
